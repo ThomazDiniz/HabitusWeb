@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habitus - Task Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1 class="app-title">Habitus</h1>
+        </div>
+        <div class="header-right">
+            <select id="language-selector" class="language-selector">
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="zh">中文</option>
+                <option value="ja">日本語</option>
+                <option value="de">Deutsch</option>
+                <option value="it">Italiano</option>
+                <option value="pt_BR">Português BR</option>
+                <option value="pt">Português PT</option>
+                <option value="fr">Français</option>
+            </select>
+            <button class="export-btn" id="export-btn" title="Exportar">📋</button>
+            <button class="import-btn" id="import-btn" title="Importar">📥</button>
+            <input type="file" id="import-file" accept=".json" style="display: none;">
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tasks-container">
+            <!-- Dailies Column -->
+            <div class="tasks-column">
+                <div class="column-header">
+                    <h2 id="dailies-title">Dailies <span class="count" id="dailies-count">(0)</span></h2>
+                    <button class="add-btn" id="add-daily-btn">+</button>
+                </div>
+                <div class="tag-filters" id="dailies-tag-filters"></div>
+                <div class="tasks-list" id="dailies-list"></div>
+                <div class="completed-section" id="dailies-completed-section" style="display: none;">
+                    <div class="completed-header">
+                        <button class="toggle-completed-btn" id="toggle-dailies-completed">
+                            <span id="toggle-dailies-text">Mostrar concluídas</span>
+                        </button>
+                        <button class="delete-completed-btn" id="delete-dailies-completed">Deletar Concluídas</button>
+                    </div>
+                    <div class="completed-list" id="dailies-completed-list"></div>
+                </div>
+                <div class="scheduled-section" id="dailies-scheduled-section" style="display: none;">
+                    <div class="scheduled-header">
+                        <button class="toggle-scheduled-btn" id="toggle-dailies-scheduled">
+                            <span id="toggle-dailies-scheduled-text">Mostrar agendadas</span>
+                        </button>
+                    </div>
+                    <div class="scheduled-list" id="dailies-scheduled-list"></div>
+                </div>
+            </div>
+
+            <!-- Tasks Column -->
+            <div class="tasks-column">
+                <div class="column-header">
+                    <h2 id="tasks-title">Tasks <span class="count" id="tasks-count">(0)</span></h2>
+                    <button class="add-btn" id="add-task-btn">+</button>
+                </div>
+                <div class="tag-filters" id="tasks-tag-filters"></div>
+                <div class="tasks-list" id="tasks-list"></div>
+                <div class="completed-section" id="tasks-completed-section" style="display: none;">
+                    <div class="completed-header">
+                        <button class="toggle-completed-btn" id="toggle-tasks-completed">
+                            <span id="toggle-tasks-text">Mostrar concluídas</span>
+                        </button>
+                        <button class="delete-completed-btn" id="delete-tasks-completed">Deletar Concluídas</button>
+                    </div>
+                    <div class="completed-list" id="tasks-completed-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p class="motivational-message" id="motivational-message">✨ Você consegue! ✨</p>
+    </div>
+
+    <!-- Pomodoro Timer Modal -->
+    <div class="modal-overlay" id="pomodoro-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="pomodoro-task-title">Pomodoro Timer</h3>
+                <button class="close-btn" id="close-pomodoro">×</button>
+            </div>
+            <div class="timer-display">
+                <input type="text" id="timer-time" value="15:00" class="timer-time-input">
+            </div>
+            <div class="timer-progress">
+                <div class="progress-bar" id="timer-progress-bar"></div>
+            </div>
+            <div class="timer-controls">
+                <button class="timer-btn" id="timer-start">Iniciar</button>
+                <button class="timer-btn" id="timer-pause" style="display: none;">Pausar</button>
+                <button class="timer-btn" id="timer-resume" style="display: none;">Continuar</button>
+                <button class="timer-btn" id="timer-reset">Reiniciar</button>
+            </div>
+            <div class="timer-settings">
+                <label>
+                    <span id="timer-duration-label">Duração (minutos):</span>
+                    <input type="number" id="timer-duration" min="1" max="60" value="15">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task/Daily Modal -->
+    <div class="modal-overlay" id="task-modal" style="display: none;">
+        <div class="modal-content task-modal-content">
+            <div class="modal-header">
+                <h3 id="task-modal-title">Nova Task</h3>
+                <button class="close-btn" id="close-task-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label id="task-title-label">Título *</label>
+                    <input type="text" id="task-title-input" placeholder="Título da task" required>
+                </div>
+                <div class="form-group">
+                    <label id="task-status-label">Status</label>
+                    <select id="task-status-select">
+                        <option value="pending">Pendente</option>
+                        <option value="in_progress">Em Progresso</option>
+                        <option value="done">Concluída</option>
+                    </select>
+                </div>
+                <div class="form-group" id="task-priority-group">
+                    <label id="task-priority-label">Prioridade</label>
+                    <select id="task-priority-select">
+                        <option value="">Nenhuma</option>
+                        <option value="low">Baixa</option>
+                        <option value="medium">Média</option>
+                        <option value="high">Alta</option>
+                    </select>
+                </div>
+                <div class="form-group" id="task-due-date-group">
+                    <label id="task-due-date-label">Data de Vencimento</label>
+                    <input type="date" id="task-due-date-input">
+                </div>
+                <div class="form-group" id="task-days-of-week-group" style="display: none;">
+                    <label id="task-days-label">Dias da Semana</label>
+                    <div class="days-checkboxes">
+                        <label><input type="checkbox" value="monday" class="day-checkbox"> Seg</label>
+                        <label><input type="checkbox" value="tuesday" class="day-checkbox"> Ter</label>
+                        <label><input type="checkbox" value="wednesday" class="day-checkbox"> Qua</label>
+                        <label><input type="checkbox" value="thursday" class="day-checkbox"> Qui</label>
+                        <label><input type="checkbox" value="friday" class="day-checkbox"> Sex</label>
+                        <label><input type="checkbox" value="saturday" class="day-checkbox"> Sáb</label>
+                        <label><input type="checkbox" value="sunday" class="day-checkbox"> Dom</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label id="task-tags-label">Tags (separadas por vírgula)</label>
+                    <input type="text" id="task-tags-input" placeholder="tag1, tag2, tag3">
+                </div>
+                <div class="form-group" id="task-subtasks-group">
+                    <label id="task-subtasks-label">Subtasks</label>
+                    <div id="subtasks-list"></div>
+                    <button type="button" class="add-subtask-btn" id="add-subtask-btn">+ Adicionar Subtask</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancel-task-btn">Cancelar</button>
+                <button class="btn-primary" id="save-task-btn">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Core Modules -->
+    <script src="i18n.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/utils.js"></script>
+    
+    <!-- Feature Modules -->
+    <script src="js/tasks.js"></script>
+    <script src="js/subtasks.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/drag-drop.js"></script>
+    <script src="js/pomodoro.js"></script>
+    <script src="js/export-import.js"></script>
+    
+    <!-- UI Modules -->
+    <script src="js/inline-edit.js"></script>
+    <script src="js/render.js"></script>
+    <script src="js/modal.js"></script>
+    
+    <!-- Main App -->
+    <script src="app.js"></script>
+</body>
+</html>
