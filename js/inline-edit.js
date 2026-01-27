@@ -3,6 +3,7 @@
 
 const InlineEditManager = {
     editingTaskId: null,
+    editingDaysOfWeekTaskId: null,
     
     // Create a new task directly (no modal)
     createTaskDirectly(taskType) {
@@ -435,8 +436,17 @@ const InlineEditManager = {
     editDaysOfWeekInline(card, task) {
         if (task.task_type !== 'daily') return;
         
+        // Clear any previous editing state
+        this.editingDaysOfWeekTaskId = null;
+        
+        // Set current editing task
+        this.editingDaysOfWeekTaskId = task.id;
+        
         const daysEl = card.querySelector('.task-days-of-week');
-        if (!daysEl) return;
+        if (!daysEl) {
+            this.editingDaysOfWeekTaskId = null;
+            return;
+        }
         
         const currentDays = task.meta?.days_of_week || [];
         const dayLabels = {
@@ -506,6 +516,7 @@ const InlineEditManager = {
         const saveHandler = () => {
             if (saved) return;
             saved = true;
+            this.editingDaysOfWeekTaskId = null;
             save();
         };
         
@@ -520,16 +531,24 @@ const InlineEditManager = {
         
         // Save on blur (click outside)
         const blurHandler = (e) => {
-            if (!container.contains(e.target) && !saved) {
-                saveHandler();
+            if (!container.contains(e.target)) {
+                if (!saved) {
+                    saveHandler();
+                } else {
+                    this.editingDaysOfWeekTaskId = null;
+                }
                 document.removeEventListener('click', blurHandler);
             }
         };
         
         // Also save on Escape key
         const escapeHandler = (e) => {
-            if (e.key === 'Escape' && !saved) {
-                saveHandler();
+            if (e.key === 'Escape') {
+                if (!saved) {
+                    saveHandler();
+                } else {
+                    this.editingDaysOfWeekTaskId = null;
+                }
                 document.removeEventListener('keydown', escapeHandler);
                 document.removeEventListener('click', blurHandler);
             }

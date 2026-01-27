@@ -65,11 +65,16 @@ const RenderManager = {
             const scheduledToday = TasksManager.isDailyScheduledForToday(task);
             const isCompletedToday = task.status === 'done' && Utils.isToday(task.last_completed_date);
             
+            // Check if this task is currently being edited (days of week)
+            const isBeingEdited = InlineEditManager.editingDaysOfWeekTaskId === task.id;
+            
             if (isCompletedToday) {
                 completedDailies.push(task);
-            } else if (!scheduledToday) {
+            } else if (!scheduledToday && !isBeingEdited) {
+                // Only move to scheduled if not being edited
                 scheduledDailies.push(task);
             } else {
+                // Keep in active if scheduled for today OR being edited
                 activeDailies.push(task);
             }
         });
