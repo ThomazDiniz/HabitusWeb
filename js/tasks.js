@@ -5,6 +5,11 @@ const TasksManager = {
     // Create a new task object
     createTask(taskType = 'todo', data = {}) {
         const now = new Date().toISOString();
+        // Default days of week for dailies: all days if not specified
+        const defaultDaysOfWeek = taskType === 'daily' && (!data.days_of_week || data.days_of_week.length === 0)
+            ? ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+            : (data.days_of_week || []);
+        
         const task = {
             id: DataManager.generateId(),
             title: data.title || '',
@@ -19,7 +24,7 @@ const TasksManager = {
             order_index: DataManager.appData.tasks.length,
             meta: {
                 tags: data.tags || [],
-                days_of_week: data.days_of_week || []
+                days_of_week: defaultDaysOfWeek
             },
             is_deleted: false,
             created_at: now,

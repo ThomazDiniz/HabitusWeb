@@ -429,5 +429,115 @@ const InlineEditManager = {
         const currentTags = task.meta?.tags || [];
         const updatedTags = currentTags.filter(tag => tag !== tagToRemove);
         TasksManager.updateTask(taskId, { tags: updatedTags });
+    },
+    
+    // Edit days of week inline for dailies
+    editDaysOfWeekInline(card, task) {
+        if (task.task_type !== 'daily') return;
+        
+        const daysEl = card.querySelector('.task-days-of-week');
+        if (!daysEl) return;
+        
+        const currentDays = task.meta?.days_of_week || [];
+        const dayLabels = {
+            monday: t('monday'),
+            tuesday: t('tuesday'),
+            wednesday: t('wednesday'),
+            thursday: t('thursday'),
+            friday: t('friday'),
+            saturday: t('saturday'),
+            sunday: t('sunday')
+        };
+        
+        // Create container for checkboxes
+        const container = document.createElement('div');
+        container.className = 'inline-days-container';
+        container.style.display = 'flex';
+        container.style.flexWrap = 'wrap';
+        container.style.gap = '8px';
+        container.style.alignItems = 'center';
+        container.style.background = 'rgba(0, 0, 0, 0.3)';
+        container.style.border = '1px solid var(--blue-primary)';
+        container.style.borderRadius = '6px';
+        container.style.padding = '6px 8px';
+        container.style.fontSize = '11px';
+        
+        const allDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        allDays.forEach(day => {
+            const label = document.createElement('label');
+            label.style.display = 'flex';
+            label.style.alignItems = 'center';
+            label.style.gap = '4px';
+            label.style.cursor = 'pointer';
+            label.style.userSelect = 'none';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = day;
+            checkbox.checked = currentDays.includes(day);
+            checkbox.style.cursor = 'pointer';
+            checkbox.style.accentColor = 'var(--blue-primary)';
+            
+            const span = document.createElement('span');
+            span.textContent = dayLabels[day];
+            span.style.color = 'var(--text-primary)';
+            
+            label.appendChild(checkbox);
+            label.appendChild(span);
+            container.appendChild(label);
+        });
+        
+        // Replace element
+        const parent = daysEl.parentElement;
+        daysEl.replaceWith(container);
+        
+        const save = () => {
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+            const selectedDays = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            
+            TasksManager.updateTask(task.id, { days_of_week: selectedDays });
+            RenderManager.renderAll();
+        };
+        
+        let saved = false;
+        
+        const saveHandler = () => {
+            if (saved) return;
+            saved = true;
+            save();
+        };
+        
+        // Save on any checkbox change
+        container.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                if (!saved) {
+                    saveHandler();
+                }
+            });
+        });
+        
+        // Save on blur (click outside)
+        const blurHandler = (e) => {
+            if (!container.contains(e.target) && !saved) {
+                saveHandler();
+                document.removeEventListener('click', blurHandler);
+            }
+        };
+        
+        // Also save on Escape key
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape' && !saved) {
+                saveHandler();
+                document.removeEventListener('keydown', escapeHandler);
+                document.removeEventListener('click', blurHandler);
+            }
+        };
+        
+        setTimeout(() => {
+            document.addEventListener('click', blurHandler);
+            document.addEventListener('keydown', escapeHandler);
+        }, 100);
     }
 };

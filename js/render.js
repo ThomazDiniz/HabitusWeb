@@ -205,38 +205,71 @@ const RenderManager = {
         const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'done';
         const progress = SubtasksManager.getSubtasksProgress(task);
         
+        // Format days of week for dailies
+        const formatDaysOfWeek = (days) => {
+            if (!days || days.length === 0) return '';
+            const dayLabels = {
+                monday: t('monday'),
+                tuesday: t('tuesday'),
+                wednesday: t('wednesday'),
+                thursday: t('thursday'),
+                friday: t('friday'),
+                saturday: t('saturday'),
+                sunday: t('sunday')
+            };
+            const allDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            if (days.length === 7) return t('everyDay');
+            return days.map(d => dayLabels[d] || d).join(', ');
+        };
+        
+        const daysOfWeek = task.meta?.days_of_week || [];
+        const formattedDays = formatDaysOfWeek(daysOfWeek);
+        
         card.innerHTML = `
             <div class="task-header">
                 <input type="checkbox" class="task-checkbox" ${task.status === 'done' ? 'checked' : ''}>
                 <div class="task-content">
                     <div class="task-title">${Utils.linkify(task.title)}</div>
-                    <div class="task-meta">
-                        ${task.task_type === 'todo' && task.priority ? `<span class="task-priority-badge ${task.priority}" data-field="priority" data-task-id="${task.id}">${t(task.priority)}</span>` : ''}
-                        ${task.task_type === 'todo' && !task.priority ? `<span class="task-priority-badge add-priority" data-field="priority" data-task-id="${task.id}">+ ${t('priority')}</span>` : ''}
-                        ${task.task_type === 'todo' && task.due_date ? `<span class="task-due-date ${isOverdue ? 'overdue' : ''}" data-field="due_date" data-task-id="${task.id}">${Utils.formatDate(task.due_date)}</span>` : ''}
-                        ${task.task_type === 'todo' && !task.due_date ? `<span class="task-due-date add-due-date" data-field="due_date" data-task-id="${task.id}">+ ${t('dueDate')}</span>` : ''}
+                    <div class="task-info-row">
                         ${task.task_type === 'daily' ? `
-                            <div class="daily-streak">
+                            <div class="task-info-left">
+                                ${formattedDays ? `<span class="task-days-of-week" data-field="days_of_week" data-task-id="${task.id}">📅 ${formattedDays}</span>` : `<span class="task-days-of-week add-days" data-field="days_of_week" data-task-id="${task.id}">+ ${t('daysOfWeek')}</span>`}
                                 <span class="streak-badge">🔥 ${task.streak_count || 0} ${t('days')}</span>
                                 ${task.max_streak > 0 ? `<span class="streak-badge">⭐ ${task.max_streak} ${t('maxStreak')}</span>` : ''}
+                                <div class="task-tags-inline" data-field="tags" data-task-id="${task.id}">
+                                    ${task.meta?.tags?.length > 0 ? task.meta.tags.map(tag => `
+                                        <span class="task-tag" data-tag="${tag}">
+                                            ${tag}
+                                            <span class="tag-remove" data-tag="${tag}">×</span>
+                                        </span>
+                                    `).join('') : ''}
+                                    <span class="task-tag add-tag">+ ${t('tags')}</span>
+                                </div>
                             </div>
-                        ` : ''}
-                    </div>
-                    <div class="task-tags" data-field="tags" data-task-id="${task.id}">
-                        ${task.meta?.tags?.length > 0 ? task.meta.tags.map(tag => `
-                            <span class="task-tag" data-tag="${tag}">
-                                ${tag}
-                                <span class="tag-remove" data-tag="${tag}">×</span>
-                            </span>
-                        `).join('') : ''}
-                        <span class="task-tag add-tag">+ ${t('tags')}</span>
+                        ` : `
+                            <div class="task-info-left">
+                                ${task.priority ? `<span class="task-priority-badge ${task.priority}" data-field="priority" data-task-id="${task.id}">${t(task.priority)}</span>` : ''}
+                                ${!task.priority ? `<span class="task-priority-badge add-priority" data-field="priority" data-task-id="${task.id}">+ ${t('priority')}</span>` : ''}
+                                ${task.due_date ? `<span class="task-due-date ${isOverdue ? 'overdue' : ''}" data-field="due_date" data-task-id="${task.id}">${Utils.formatDate(task.due_date)}</span>` : ''}
+                                ${!task.due_date ? `<span class="task-due-date add-due-date" data-field="due_date" data-task-id="${task.id}">+ ${t('dueDate')}</span>` : ''}
+                                <div class="task-tags-inline" data-field="tags" data-task-id="${task.id}">
+                                    ${task.meta?.tags?.length > 0 ? task.meta.tags.map(tag => `
+                                        <span class="task-tag" data-tag="${tag}">
+                                            ${tag}
+                                            <span class="tag-remove" data-tag="${tag}">×</span>
+                                        </span>
+                                    `).join('') : ''}
+                                    <span class="task-tag add-tag">+ ${t('tags')}</span>
+                                </div>
+                            </div>
+                        `}
+                        <div class="task-actions">
+                            <button class="task-btn pomodoro" data-task-id="${task.id}">🍅 ${t('pomodoro')}</button>
+                            <button class="task-btn edit" data-task-id="${task.id}">${t('edit')}</button>
+                            <button class="task-btn delete" data-task-id="${task.id}">${t('delete')}</button>
+                        </div>
                     </div>
                     ${task.subtasks?.length > 0 ? this.createSubtasksHTML(task, progress) : ''}
-                    <div class="task-actions">
-                        <button class="task-btn pomodoro" data-task-id="${task.id}">🍅 ${t('pomodoro')}</button>
-                        <button class="task-btn edit" data-task-id="${task.id}">${t('edit')}</button>
-                        <button class="task-btn delete" data-task-id="${task.id}">${t('delete')}</button>
-                    </div>
                 </div>
             </div>
         `;
@@ -269,6 +302,16 @@ const RenderManager = {
                 }
             });
         });
+        
+        // Days of week for dailies - click to edit
+        const daysOfWeekEl = card.querySelector('.task-days-of-week');
+        if (daysOfWeekEl && task.task_type === 'daily') {
+            daysOfWeekEl.style.cursor = 'pointer';
+            daysOfWeekEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                InlineEditManager.editDaysOfWeekInline(card, task);
+            });
+        }
         
         // Priority - click to edit or add
         const priorityEl = card.querySelector('.task-priority-badge');

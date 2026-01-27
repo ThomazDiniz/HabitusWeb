@@ -217,7 +217,7 @@ body {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 12px 14px;
     cursor: move;
     transition: all 0.2s ease;
     position: relative;
@@ -388,8 +388,86 @@ body {
     font-size: 15px;
     font-weight: 500;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     word-break: break-word;
+}
+
+.task-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .task-info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .task-actions {
+        align-self: flex-end;
+    }
+}
+
+.task-info-left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+.tags-count {
+    font-size: 11px;
+    color: var(--text-secondary);
+    padding: 2px 6px;
+    transition: all 0.2s ease;
+}
+
+.tags-count:hover {
+    color: var(--blue-primary);
+    opacity: 0.8;
+}
+
+.task-days-of-week {
+    font-size: 11px;
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.task-days-of-week:hover {
+    color: var(--blue-primary);
+    background: var(--blue-hover);
+}
+
+.task-days-of-week.add-days {
+    opacity: 0.6;
+    font-style: italic;
+}
+
+.task-days-of-week.add-days:hover {
+    opacity: 1;
+    color: var(--blue-primary);
+}
+
+.inline-days-container {
+    position: relative;
+    z-index: 100;
+}
+
+.inline-days-container label {
+    font-size: 11px;
+    color: var(--text-primary);
+    margin: 0;
 }
 
 .task-title a {
@@ -409,6 +487,13 @@ body {
     margin-top: 8px;
     font-size: 12px;
     color: var(--text-secondary);
+}
+
+.task-tags-inline {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
 }
 
 .task-status-badge {
@@ -525,7 +610,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 8px;
+    margin-top: 6px;
 }
 
 .task-tag {
@@ -566,7 +651,7 @@ body {
 .task-actions {
     display: flex;
     gap: 4px;
-    margin-top: 8px;
+    flex-shrink: 0;
 }
 
 .task-btn {
@@ -597,7 +682,6 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 4px;
 }
 
 .streak-badge {

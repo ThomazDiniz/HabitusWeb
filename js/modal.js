@@ -103,7 +103,8 @@ const ModalManager = {
                 daysOfWeekGroup.style.display = 'block';
                 priorityGroup.style.display = 'none';
                 dueDateGroup.style.display = 'none';
-                daysOfWeekGroup.querySelectorAll('.day-checkbox').forEach(cb => cb.checked = false);
+                // Mark all days as checked by default for new dailies
+                daysOfWeekGroup.querySelectorAll('.day-checkbox').forEach(cb => cb.checked = true);
             } else {
                 daysOfWeekGroup.style.display = 'none';
                 priorityGroup.style.display = 'block';
