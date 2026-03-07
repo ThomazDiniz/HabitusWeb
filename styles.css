@@ -153,12 +153,44 @@ body {
     font-weight: 400;
 }
 
+.add-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 280px;
+    margin-left: auto;
+}
+
+.add-input {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.add-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.add-input:focus {
+    outline: none;
+    border-color: var(--blue-primary);
+    background: var(--bg-card-hover);
+}
+
 .add-btn {
     background: var(--blue-gradient);
     border: none;
     border-radius: 8px;
     width: 36px;
     height: 36px;
+    min-width: 36px;
     color: white;
     font-size: 24px;
     font-weight: 300;

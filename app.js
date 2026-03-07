@@ -21,13 +21,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Setup all event listeners
 function setupEventListeners() {
-    // Add task/daily buttons - create directly
-    document.getElementById('add-task-btn').addEventListener('click', () => {
-        InlineEditManager.createTaskDirectly('todo');
+    // Add task/daily - create with title from input (Enter or click +)
+    const addTaskInput = document.getElementById('add-task-input');
+    const addTaskBtn = document.getElementById('add-task-btn');
+    const addDailyInput = document.getElementById('add-daily-input');
+    const addDailyBtn = document.getElementById('add-daily-btn');
+    
+    const handleAddTask = () => {
+        const title = addTaskInput.value.trim();
+        InlineEditManager.createTaskDirectly('todo', title);
+        addTaskInput.value = '';
+    };
+    
+    const handleAddDaily = () => {
+        const title = addDailyInput.value.trim();
+        InlineEditManager.createTaskDirectly('daily', title);
+        addDailyInput.value = '';
+    };
+    
+    addTaskBtn.addEventListener('click', handleAddTask);
+    addTaskInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddTask();
+        }
     });
     
-    document.getElementById('add-daily-btn').addEventListener('click', () => {
-        InlineEditManager.createTaskDirectly('daily');
+    addDailyBtn.addEventListener('click', handleAddDaily);
+    addDailyInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleAddDaily();
+        }
     });
     
     // Delete completed buttons

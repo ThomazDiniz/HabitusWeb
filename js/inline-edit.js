@@ -6,21 +6,26 @@ const InlineEditManager = {
     editingDaysOfWeekTaskId: null,
     
     // Create a new task directly (no modal)
-    createTaskDirectly(taskType) {
+    // title: optional - if provided, creates task with that title; otherwise creates empty and focuses for editing
+    createTaskDirectly(taskType, title = '') {
         const task = TasksManager.addTask(taskType, {
-            title: '',
+            title: (title || '').trim(),
             status: 'pending'
         });
         
         if (task) {
-            // Mark as new/editing
-            task._isNew = true;
+            if (!task.title) {
+                // Mark as new/editing - focus on title
+                task._isNew = true;
+            }
             RenderManager.renderAll();
             
-            // Focus on the new task title after render
-            setTimeout(() => {
-                this.startEditing(task.id, 'title');
-            }, 100);
+            if (!task.title) {
+                // Focus on the new task title after render
+                setTimeout(() => {
+                    this.startEditing(task.id, 'title');
+                }, 100);
+            }
         }
     },
     

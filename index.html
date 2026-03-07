@@ -35,7 +35,10 @@
             <div class="tasks-column">
                 <div class="column-header">
                     <h2 id="dailies-title">Dailies <span class="count" id="dailies-count">(0)</span></h2>
-                    <button class="add-btn" id="add-daily-btn">+</button>
+                    <div class="add-input-row">
+                        <input type="text" class="add-input" id="add-daily-input" data-i18n-placeholder="addDaily" placeholder="Adicionar Diária">
+                        <button class="add-btn" id="add-daily-btn">+</button>
+                    </div>
                 </div>
                 <div class="tag-filters" id="dailies-tag-filters"></div>
                 <div class="tasks-list" id="dailies-list"></div>
@@ -62,7 +65,10 @@
             <div class="tasks-column">
                 <div class="column-header">
                     <h2 id="tasks-title">Tasks <span class="count" id="tasks-count">(0)</span></h2>
-                    <button class="add-btn" id="add-task-btn">+</button>
+                    <div class="add-input-row">
+                        <input type="text" class="add-input" id="add-task-input" data-i18n-placeholder="addTask" placeholder="Adicionar Tarefa">
+                        <button class="add-btn" id="add-task-btn">+</button>
+                    </div>
                 </div>
                 <div class="tag-filters" id="tasks-tag-filters"></div>
                 <div class="tasks-list" id="tasks-list"></div>
