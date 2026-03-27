@@ -280,9 +280,19 @@ const RenderManager = {
         `;
         
         // Event listeners
-        card.querySelector('.task-checkbox').addEventListener('change', () => {
+        card.querySelector('.task-checkbox').addEventListener('change', (e) => {
+            const isMarkingDone = e.target.checked;
             TasksManager.toggleTaskStatus(task.id);
-            this.renderAll();
+            
+            if (isMarkingDone) {
+                // Animation: strikethrough + green for 2 seconds, then move to completed
+                card.classList.add('completing');
+                setTimeout(() => {
+                    this.renderAll();
+                }, 2000);
+            } else {
+                this.renderAll();
+            }
         });
         
         // Tags - click to filter, or add new tag, or remove tag

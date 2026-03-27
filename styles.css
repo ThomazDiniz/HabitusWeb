@@ -137,8 +137,7 @@ body {
 
 .column-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 16px;
 }
 
@@ -157,9 +156,8 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex: 1;
-    max-width: 280px;
-    margin-left: auto;
+    width: 100%;
+    margin-bottom: 12px;
 }
 
 .add-input {
@@ -271,6 +269,19 @@ body {
 
 .task-card.completed .task-title {
     text-decoration: line-through;
+}
+
+/* Completing animation - strikethrough + green before moving to completed list */
+.task-card.completing {
+    border-color: var(--success);
+    background: rgba(74, 222, 128, 0.08);
+    transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.task-card.completing .task-title {
+    text-decoration: line-through;
+    color: var(--success);
+    transition: color 0.3s ease, text-decoration 0.3s ease;
 }
 
 .task-card.editing-full {
