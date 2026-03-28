@@ -87,6 +87,7 @@ function setupEventListeners() {
     ModalManager.setupEventListeners();
     PomodoroManager.setupEventListeners();
     ExportImportManager.setupEventListeners();
+    KeyboardNavManager.init();
     
     // Language selector
     const languageSelector = document.getElementById('language-selector');

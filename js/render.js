@@ -8,6 +8,9 @@ const RenderManager = {
         this.renderTasks();
         this.updateCounts();
         this.updateMotivationalMessage();
+        if (typeof KeyboardNavManager !== 'undefined') {
+            KeyboardNavManager.afterRender();
+        }
     },
     
     // Update task counts
