@@ -18,13 +18,71 @@ const Utils = {
     
     formatDate(dateString) {
         if (!dateString) return '';
-        const date = new Date(dateString);
+        const date = new Date(dateString + (dateString.length === 10 ? 'T12:00:00' : ''));
         const lang = typeof currentLanguage !== 'undefined' ? currentLanguage.replace('_', '-') : 'pt-BR';
         return date.toLocaleDateString(lang, { 
             day: '2-digit', 
             month: '2-digit', 
             year: 'numeric' 
         });
+    },
+
+    /** Local calendar date YYYY-MM-DD (no UTC shift) */
+    dateToYMD(d) {
+        const x =
+            d instanceof Date && !isNaN(d.getTime())
+                ? d
+                : new Date();
+        const y = x.getFullYear();
+        const m = String(x.getMonth() + 1).padStart(2, '0');
+        const day = String(x.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    },
+
+    /** Monday 00:00 local of the week containing `date` */
+    getMondayOfWeek(date) {
+        const base =
+            date instanceof Date && !isNaN(date.getTime())
+                ? date
+                : new Date();
+        const d = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+        const day = d.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        d.setDate(d.getDate() + diff);
+        return d;
+    },
+
+    /** monday..sunday from YYYY-MM-DD */
+    ymdToDayOfWeek(ymd) {
+        const d = new Date(ymd + 'T12:00:00');
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        return days[d.getDay()];
+    },
+
+    /** Normalize time to HH:MM 24h or null */
+    normalizeDueTime(value) {
+        if (value == null || value === '') return null;
+        const s = String(value).trim();
+        const m = s.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+        if (!m) return null;
+        let h = parseInt(m[1], 10);
+        let min = parseInt(m[2], 10);
+        if (h < 0 || h > 23 || min < 0 || min > 59) return null;
+        return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+    },
+
+    formatDueTime(hhmm) {
+        if (!hhmm) return '';
+        return hhmm;
+    },
+
+    dueTimeToMinutes(hhmm) {
+        if (!hhmm) return null;
+        const n = Utils.normalizeDueTime(hhmm);
+        if (!n) return null;
+        const m = n.match(/^(\d{2}):(\d{2})$/);
+        if (!m) return null;
+        return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
     },
     
     // Linkify URLs in text

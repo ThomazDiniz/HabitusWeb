@@ -3,26 +3,34 @@
 
 const ModalManager = {
     currentEditingTask: null,
-    
-    // Open task modal
-    openTaskModal(task = null, taskType = 'todo') {
+
+    // Open task modal (options: { prefillDueDate, prefillDueTime, prefillDailyDay })
+    openTaskModal(task = null, taskType = 'todo', options = {}) {
+        options = options || {};
         this.currentEditingTask = task;
         const modal = document.getElementById('task-modal');
         const titleInput = document.getElementById('task-title-input');
         const statusSelect = document.getElementById('task-status-select');
         const prioritySelect = document.getElementById('task-priority-select');
         const dueDateInput = document.getElementById('task-due-date-input');
+        const dueTimeInput = document.getElementById('task-due-time-input');
         const tagsInput = document.getElementById('task-tags-input');
         const daysOfWeekGroup = document.getElementById('task-days-of-week-group');
         const priorityGroup = document.getElementById('task-priority-group');
         const dueDateGroup = document.getElementById('task-due-date-group');
         const subtasksList = document.getElementById('subtasks-list');
+
+        if (!modal || !titleInput || !statusSelect || !daysOfWeekGroup || !prioritySelect || !dueDateInput || !tagsInput || !priorityGroup || !dueDateGroup) {
+            console.error('openTaskModal: missing required DOM elements');
+            return;
+        }
         
         // Update labels
         document.getElementById('task-title-label').textContent = `${t('title')} *`;
         document.getElementById('task-status-label').textContent = t('status');
         document.getElementById('task-priority-label').textContent = t('priority');
         document.getElementById('task-due-date-label').textContent = t('dueDate');
+        document.getElementById('task-due-time-label').textContent = t('dueTimeOptional');
         document.getElementById('task-days-label').textContent = t('daysOfWeek');
         document.getElementById('task-tags-label').textContent = t('tags');
         document.getElementById('task-subtasks-label').textContent = t('subtasks');
@@ -56,23 +64,29 @@ const ModalManager = {
             sunday: t('sunday')
         };
         
-        daysOfWeekGroup.querySelectorAll('label').forEach((label, index) => {
-            const checkbox = label.querySelector('.day-checkbox');
-            if (checkbox) {
-                const dayValue = checkbox.value;
-                label.innerHTML = `<input type="checkbox" value="${dayValue}" class="day-checkbox"> ${dayLabels[dayValue]}`;
-            }
-        });
+        if (daysOfWeekGroup) {
+            daysOfWeekGroup.querySelectorAll('label').forEach((label) => {
+                const checkbox = label.querySelector('.day-checkbox');
+                if (checkbox) {
+                    const dayValue = checkbox.value;
+                    label.innerHTML = `<input type="checkbox" value="${dayValue}" class="day-checkbox"> ${dayLabels[dayValue]}`;
+                }
+            });
+        }
         
         document.getElementById('task-modal-title').textContent = 
             task ? (task.task_type === 'daily' ? t('editDaily') : t('editTask')) : 
             (taskType === 'daily' ? t('newDaily') : t('newTask'));
         
+        const dueTimeGroup = document.getElementById('task-due-time-group');
+        if (dueTimeGroup) dueTimeGroup.style.display = 'block';
+
         if (task) {
             titleInput.value = task.title;
             statusSelect.value = task.status;
             prioritySelect.value = task.priority || '';
             dueDateInput.value = task.due_date || '';
+            if (dueTimeInput) dueTimeInput.value = task.due_time || '';
             tagsInput.value = (task.meta?.tags || []).join(', ');
             
             if (task.task_type === 'daily') {
@@ -94,7 +108,13 @@ const ModalManager = {
             titleInput.value = '';
             statusSelect.value = 'pending';
             prioritySelect.value = '';
-            dueDateInput.value = '';
+            dueDateInput.value = options.prefillDueDate && taskType === 'todo' ? options.prefillDueDate : '';
+            if (dueTimeInput) {
+                dueTimeInput.value =
+                    taskType === 'todo' && options.prefillDueTime
+                        ? options.prefillDueTime
+                        : '';
+            }
             tagsInput.value = '';
             titleInput.placeholder = t('title');
             tagsInput.placeholder = 'tag1, tag2, tag3';
@@ -103,15 +123,16 @@ const ModalManager = {
                 daysOfWeekGroup.style.display = 'block';
                 priorityGroup.style.display = 'none';
                 dueDateGroup.style.display = 'none';
-                // Mark all days as checked by default for new dailies
-                daysOfWeekGroup.querySelectorAll('.day-checkbox').forEach(cb => cb.checked = true);
+                daysOfWeekGroup.querySelectorAll('.day-checkbox').forEach(cb => {
+                    cb.checked = options.prefillDailyDay ? cb.value === options.prefillDailyDay : true;
+                });
             } else {
                 daysOfWeekGroup.style.display = 'none';
                 priorityGroup.style.display = 'block';
                 dueDateGroup.style.display = 'block';
             }
             
-            subtasksList.innerHTML = '';
+            if (subtasksList) subtasksList.innerHTML = '';
         }
         
         modal.style.display = 'flex';
@@ -129,8 +150,14 @@ const ModalManager = {
         const statusSelect = document.getElementById('task-status-select');
         const prioritySelect = document.getElementById('task-priority-select');
         const dueDateInput = document.getElementById('task-due-date-input');
+        const dueTimeInput = document.getElementById('task-due-time-input');
         const tagsInput = document.getElementById('task-tags-input');
         const daysOfWeekGroup = document.getElementById('task-days-of-week-group');
+
+        if (!titleInput || !statusSelect || !daysOfWeekGroup) {
+            console.error('Task modal: missing required fields');
+            return;
+        }
         
         const title = titleInput.value.trim();
         if (!title) {
@@ -138,18 +165,24 @@ const ModalManager = {
             return;
         }
         
-        const tags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
+        const tags = tagsInput ? tagsInput.value.split(',').map((x) => x.trim()).filter((x) => x) : [];
         const daysOfWeek = Array.from(daysOfWeekGroup.querySelectorAll('.day-checkbox:checked'))
             .map(cb => cb.value);
         
         const taskType = this.currentEditingTask ? this.currentEditingTask.task_type : 
             (daysOfWeekGroup.style.display === 'none' ? 'todo' : 'daily');
         
+        const due_time =
+            dueTimeInput && dueTimeInput.value
+                ? Utils.normalizeDueTime(dueTimeInput.value)
+                : null;
+
         const taskData = {
             title,
             status: statusSelect.value,
-            priority: taskType === 'todo' ? (prioritySelect.value || null) : null,
-            due_date: taskType === 'todo' ? (dueDateInput.value || null) : null,
+            priority: taskType === 'todo' && prioritySelect ? (prioritySelect.value || null) : null,
+            due_date: taskType === 'todo' && dueDateInput ? (dueDateInput.value || null) : null,
+            due_time,
             tags,
             days_of_week: taskType === 'daily' ? daysOfWeek : []
         };
@@ -169,6 +202,7 @@ const ModalManager = {
     // Render subtasks in modal
     renderSubtasksInModal(task) {
         const subtasksList = document.getElementById('subtasks-list');
+        if (!subtasksList) return;
         subtasksList.innerHTML = '';
         
         // Get fresh task data

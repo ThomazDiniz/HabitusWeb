@@ -26,6 +26,7 @@ const DragDropManager = {
         e.currentTarget.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
+        e.dataTransfer.setData('application/x-habitus-task-id', String(this.draggedTaskId));
     },
     
     handleDragEnd(e) {

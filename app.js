@@ -9,6 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize data manager
     DataManager.init();
     
+    if (typeof WeekCalendarManager !== 'undefined') {
+        try {
+            WeekCalendarManager.init();
+        } catch (err) {
+            console.error('WeekCalendarManager.init failed:', err);
+        }
+    }
+    
     // Check daily resets
     TasksManager.checkDailyResets();
     
@@ -88,16 +96,43 @@ function setupEventListeners() {
     PomodoroManager.setupEventListeners();
     ExportImportManager.setupEventListeners();
     KeyboardNavManager.init();
-    
-    // Language selector
-    const languageSelector = document.getElementById('language-selector');
-    if (languageSelector) {
-        languageSelector.addEventListener('change', (e) => {
-            saveLanguage(e.target.value);
-            updateUI();
-            RenderManager.renderAll();
-        });
+    setupViewToggle();
+}
+
+/** Next header toggle scroll target: true → week calendar, false → lists */
+let viewToggleNextToCalendar = true;
+
+function updateViewToggleButton() {
+    const btn = document.getElementById('view-toggle-btn');
+    if (!btn) return;
+    if (viewToggleNextToCalendar) {
+        btn.textContent = t('viewToggleWeek');
+        const hint = t('viewToggleWeekTitle');
+        btn.title = hint;
+        btn.setAttribute('aria-label', hint);
+    } else {
+        btn.textContent = t('viewToggleLists');
+        const hint = t('viewToggleListsTitle');
+        btn.title = hint;
+        btn.setAttribute('aria-label', hint);
     }
+}
+
+function setupViewToggle() {
+    const btn = document.getElementById('view-toggle-btn');
+    const listsEl = document.getElementById('main-lists-view');
+    const calEl = document.getElementById('week-calendar-section');
+    if (!btn || !listsEl || !calEl) return;
+    updateViewToggleButton();
+    btn.addEventListener('click', () => {
+        if (viewToggleNextToCalendar) {
+            calEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            listsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        viewToggleNextToCalendar = !viewToggleNextToCalendar;
+        updateViewToggleButton();
+    });
 }
 
 // Toggle completed section
@@ -149,5 +184,6 @@ window.updateUI = function() {
     if (deleteTasksCompleted) deleteTasksCompleted.textContent = t('deleteCompleted');
     if (deleteDailiesCompleted) deleteDailiesCompleted.textContent = t('deleteCompleted');
     
+    updateViewToggleButton();
     RenderManager.renderAll();
 };

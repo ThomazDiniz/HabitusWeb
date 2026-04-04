@@ -175,6 +175,10 @@ const InlineEditManager = {
                 </div>
             `}
             <div class="edit-form-row">
+                <label>${t('dueTimeOptional')}</label>
+                <input type="time" class="edit-due-time-input" step="60" value="${task.due_time || ''}">
+            </div>
+            <div class="edit-form-row">
                 <label>${t('tags')}</label>
                 <input type="text" class="edit-tags-input" value="${(task.meta?.tags || []).join(', ')}" placeholder="tag1, tag2, tag3">
             </div>
@@ -248,6 +252,11 @@ const InlineEditManager = {
         if (task.task_type === 'todo') {
             updates.priority = prioritySelect.value || null;
             updates.due_date = dueDateInput.value || null;
+        }
+
+        const dueTimeInput = editForm.querySelector('.edit-due-time-input');
+        if (dueTimeInput) {
+            updates.due_time = dueTimeInput.value ? Utils.normalizeDueTime(dueTimeInput.value) : null;
         }
         
         TasksManager.updateTask(task.id, updates);

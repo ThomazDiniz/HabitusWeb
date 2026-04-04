@@ -35,20 +35,27 @@ const DataManager = {
             const saved = localStorage.getItem(this.STORAGE_KEY);
             if (saved) {
                 const parsed = JSON.parse(saved);
+                const rawTasks = parsed.tasks;
+                const taskList = Array.isArray(rawTasks) ? rawTasks : [];
                 this.appData = {
                     ...this.appData,
                     ...parsed,
-                    tasks: parsed.tasks || []
+                    tasks: taskList
                 };
                 // Migrate old data structure if needed
                 this.appData.tasks = this.appData.tasks.map(task => ({
                     ...task,
+                    due_time: task.due_time != null ? task.due_time : null,
                     meta: task.meta || { tags: [], days_of_week: [] },
                     subtasks: task.subtasks || []
                 }));
             }
+            if (!Array.isArray(this.appData.tasks)) {
+                this.appData.tasks = [];
+            }
         } catch (e) {
             console.error('Error loading data:', e);
+            this.appData.tasks = [];
         }
     },
     
@@ -64,12 +71,16 @@ const DataManager = {
     
     // Get tasks by type
     getTasksByType(taskType) {
-        return this.appData.tasks.filter(t => t.task_type === taskType && !t.is_deleted);
+        const list = this.appData.tasks;
+        if (!Array.isArray(list)) return [];
+        return list.filter(t => t.task_type === taskType && !t.is_deleted);
     },
     
     // Get active tasks count
     getActiveTasksCount(taskType) {
-        return this.appData.tasks.filter(t => 
+        const list = this.appData.tasks;
+        if (!Array.isArray(list)) return 0;
+        return list.filter(t => 
             t.task_type === taskType && 
             !t.is_deleted && 
             t.status !== 'done'

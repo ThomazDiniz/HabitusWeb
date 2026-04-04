@@ -1,202 +1,232 @@
-# Habitus - Task Manager
+# Habitus — Task Manager
 
-Uma aplicação web de gerenciamento de tarefas com tema dark, construída com HTML, CSS e JavaScript puro. Sem backend, sem sistema de usuários - tudo salvo localmente no navegador.
+Aplicação web de gestão de tarefas e hábitos com tema escuro, feita com **HTML, CSS e JavaScript puro**. Não há backend nem contas de utilizador: os dados ficam **localmente no navegador** (`localStorage`).
 
-## Funcionalidades
+Este ficheiro é a **fonte de verdade** do produto para evolução futura (por exemplo, para uma app nativa ou PWA). **Sempre que acrescentares ou alterares uma funcionalidade, atualiza este README** na secção correspondente e, se fizer sentido, a estrutura de dados e a árvore de ficheiros.
 
-### Tasks (Todos)
-- Criar, editar e deletar tasks
-- Status: Pendente, Em Progresso, Concluída
-- Prioridade: Baixa, Média, Alta
-- Data de vencimento
-- Tags múltiplas por task
+---
+
+## Visão geral
+
+| Aspeto | Descrição |
+|--------|-----------|
+| **Stack** | HTML5, CSS3, JavaScript (ES6+), sem frameworks |
+| **Persistência** | `localStorage` (chave principal `habitus_data`) |
+| **i18n** | 9 idiomas; preferência em `habitus_language` |
+| **UI** | Duas grandes áreas: **listas** (Diárias + Tasks) e **calendário semanal** (abaixo, com scroll na página) |
+
+---
+
+## Funcionalidades (catálogo)
+
+### Tasks (todos)
+
+- Criar, editar e eliminar tasks
+- Estados: pendente, em progresso, concluída
+- Prioridade: nenhuma, baixa, média, alta
+- **Data de vencimento** (`due_date`, formato `YYYY-MM-DD`)
+- **Hora opcional** (`due_time`, formato `HH:MM`, alinhada a 15 minutos no calendário)
+- Tags múltiplas
 - Subtasks com progresso
-- Drag and drop para reordenar
-- Limite de 200 tasks
-- Seção de tasks concluídas (oculta por padrão)
+- Reordenação por **drag and drop** nas listas
+- Limite de **200** tasks ativas
+- Secção de concluídas (oculta por defeito) com eliminar todas as concluídas
+- Criação rápida pelo campo `+` e teclado (ver atalhos)
+- Edição inline de título e dias da semana (quando aplicável) nas listas
 
-### Dailies
-- Criar, editar e deletar dailies
-- Streak count (sequência de dias consecutivos)
-- Max streak (maior sequência alcançada)
-- Seleção de dias da semana
-- Reset automático diário
-- Limite de 20 dailies
-- Seções: ativas, concluídas, agendadas
+### Dailies (diárias)
 
-### Tags e Filtros
+- Criar, editar e eliminar diárias
+- **Streak** e **max streak**
+- **Dias da semana** em que a diária conta (meta `days_of_week`)
+- Reset lógico diário (estado “hoje” / conclusão)
+- Limite de **20** diárias ativas
+- Secções: ativas, concluídas, agendadas (quando aplicável à UI)
+- Integração com o mesmo modelo de dados que tasks (`task_type: "daily"`)
+
+### Tags e filtros
+
 - Adicionar/remover tags em tasks e dailies
-- Filtro por tags (lógica OR)
-- Destaque visual para tags selecionadas
-- Clicar em tag na task filtra automaticamente
+- Filtro por tags com lógica **OR**
+- Destaque visual das tags selecionadas
+- Clicar numa tag num card aplica o filtro
 
-### Pomodoro Timer
-- Timer configurável (padrão: 15 minutos)
-- Controles: Iniciar, Pausar, Continuar, Reiniciar
-- Barra de progresso visual
-- Notificação e som ao completar
+### Calendário semanal
+
+- Vista **segunda a domingo** para a semana corrente (navegação ‹ / Hoje / ›)
+- **Todos com `due_date`** no dia aparecem nesse dia; **dailies** aparecem nos dias em que estão agendadas (`days_of_week`). Diárias **para todos os dias** (`days_of_week` vazio ou os 7 dias) aparecem **só na coluna do dia de hoje** (data real), para não repetir em toda a semana
+- **Faixa superior (sem hora)**: itens **sem** `due_time` — **sem scroll interno**; a grelha de horas começa **só depois** de toda essa faixa (altura uniforme entre colunas via CSS Grid)
+- **Grelha de tempo** (5:00–22:00, linhas ~1 h): itens **com** `due_time` posicionados por hora (a posição indica o horário; edição fina pelo lápis/modal ou arrastando)
+- **Drag and drop**: arrastar desde as listas ou desde o calendário; largar na grelha define **data + hora** (snap 15 min); largar na faixa superior mantém só o **dia** e **limpa** a hora
+- **Arrastar no calendário**: usar o identificador **⋮** no card (não o título nem o lápis)
+- **Duplo clique** em espaço vazio na grelha abre modal de **nova task** com data/hora pré-preenchidas
+- Botões **+** (nova task na data) e **☀** (nova diária para aquele dia da semana) no cabeçalho de cada dia
+- **Edição no calendário**:
+  - **Título**: clique no texto do título (chip ou bloco) para edição **inline**; Enter ou blur grava
+  - **Hora**: definida pela **posição** na grelha; ajustar **arrastando** o cartão ou pelo **lápis** (modal com campo de hora)
+  - **Lápis**: abre o **modal completo** de edição da atividade
+  - **Ícone ✓ (concluir)**: alterna pendente/concluída (`TasksManager.toggleTaskStatus`), igual às listas
+- Títulos dos botões e textos traduzíveis (`weekCalendar*`, `weekCalendarDragHandle`, `weekCalendarNowLine`, etc.); **não** há parágrafo de dicas longas abaixo do calendário
+
+### Navegação na página
+
+- **Header fixo**: além do título e do botão de alternar vista, mostra a etiqueta **Hoje** (traduzida), a **data corrente** por extenso no idioma ativo e o **relógio** local `HH:MM:SS` (atualizado a cada segundo por `WeekCalendarManager`)
+- Botão no header alterna **scroll suave** entre as **listas** e o **calendário semanal**
+- `scroll-margin-top` nas âncoras para compensar o header fixo
+
+### Teclado (listas)
+
+- **Setas ↑↓**: mover seleção entre cards na coluna ativa
+- **Setas ←→**: alternar coluna Diárias / Tasks
+- **Enter** (com card selecionado): alternar conclusão (checkbox)
+- Nos campos de adicionar: **↓** para o primeiro card; **←→** para mudar de coluna de adição
+- Ignorado quando modais estão abertos, em inputs, ou durante edição inline específica
+
+### Pomodoro
+
+- Timer configurável (predefinição 15 minutos)
+- Iniciar, pausar, continuar, reiniciar
+- Barra de progresso
+- Notificação e som ao terminar
 - Associado a uma task específica
 
-### Internacionalização
-- Suporte a 9 idiomas: Inglês, Espanhol, Chinês, Japonês, Alemão, Italiano, Português BR, Português PT, Francês
-- Detecção automática do idioma do sistema
-- Preferência salva no localStorage
+### Internacionalização (i18n)
 
-### Exportação/Importação
-- Exportar todas as tasks em JSON
-- Importar tasks de arquivo JSON
-- Copiar para clipboard
-- Validação de formato
+- Idiomas: EN, ES, ZH, JA, DE, IT, PT-BR, PT, FR
+- Deteção pelo idioma do sistema
+- `updateUI` estendido na app para títulos de botões export/import, secções de concluídas, **toggle de vista**, etc.
 
-## Como Usar
+### Exportação / importação
 
-### Instalação
-1. Clone ou baixe este repositório
-2. Abra `index.html` no seu navegador
-3. Pronto! Não precisa de instalação ou configuração
+- Exportar dados (JSON) e copiar para a área de transferência
+- Importar ficheiro JSON com validação
+- Botões no canto superior direito
 
-### Uso Básico
+### Robustez e dados
 
-#### Criar uma Task
-1. Clique no botão `+` na coluna "Tasks"
-2. A task será criada e você pode editar diretamente
-3. Clique no título para editar rapidamente ou no botão "Editar" para edição completa
+- `tasks` em memória tratado como **array** (fallback se JSON corromper)
+- Calendário: `ensureWeekStart()` evita estado inválido da segunda-feira da semana; utilitários de data toleram valores inválidos onde aplicável
+- Inicialização do calendário envolvida em `try/catch` na app para não bloquear o resto
 
-#### Criar uma Daily
-1. Clique no botão `+` na coluna "Dailies"
-2. Preencha o título
-3. Selecione os dias da semana (ou deixe vazio para todos os dias)
+---
 
-#### Adicionar Subtasks
-1. Abra uma task para editar
-2. Clique em "+ Adicionar Subtask"
-3. Digite o título da subtask
-4. Pressione Enter ou clique fora para salvar
+## Como usar (rápido)
 
-#### Usar Pomodoro Timer
-1. Clique no botão Pomodoro em qualquer task
-2. Ajuste a duração (em minutos)
-3. Clique em "Iniciar"
-4. O timer notificará quando completar
+1. Clonar ou descarregar o repositório e abrir `index.html` num navegador moderno.
+2. **Tasks / Diárias**: usar `+` ou os campos de texto e Enter.
+3. **Calendário**: navegar a semana, arrastar itens, editar título inline ou abrir o modal com o lápis para hora e outros campos.
+4. **Alternar vista**: botão no topo para saltar entre listas e calendário.
 
-#### Filtrar por Tags
-1. Clique em uma tag abaixo do cabeçalho da coluna
-2. Ou clique em uma tag diretamente na task
-3. Múltiplas tags = lógica OR (mostra tasks com qualquer uma)
+---
 
-#### Exportar/Importar
-- **Exportar**: Clique no botão de exportar no topo direito
-- **Importar**: Clique no botão de importar e selecione um arquivo JSON
-
-## Estrutura do Projeto
+## Estrutura do projeto
 
 ```
-habitus/
-├── index.html          # HTML principal
-├── styles.css          # Estilos (tema dark)
-├── i18n.js             # Sistema de internacionalização
-├── app.js              # Inicialização principal
-├── README.md           # Documentação geral do projeto
-└── js/                 # Módulos JavaScript
-    ├── data.js         # Gerenciamento de dados
-    ├── utils.js        # Funções utilitárias
-    ├── tasks.js        # Lógica de tasks/dailies
-    ├── subtasks.js     # Lógica de subtasks
-    ├── filters.js      # Sistema de filtros
-    ├── drag-drop.js    # Drag and drop
-    ├── pomodoro.js     # Timer Pomodoro
-    ├── export-import.js # Exportação/importação
-    ├── render.js       # Renderização da UI
-    ├── inline-edit.js  # Edição inline
-    ├── modal.js        # Gerenciamento de modais
-    └── README.md       # Documentação técnica dos módulos
+HabitusWeb/
+├── index.html           # Marcação principal (header, listas, calendário, modais)
+├── styles.css           # Tema, layout, calendário, responsivo
+├── i18n.js              # Traduções e `t()`, `updateUI`, seletor de idioma
+├── app.js               # DOMContentLoaded, listeners globais, `window.updateUI`, toggle de vista
+├── README.md            # Este documento (fonte de verdade)
+├── LICENSE
+└── js/
+    ├── data.js          # Persistência, limites MAX_TASKS / MAX_DAILIES
+    ├── utils.js         # Datas (incl. getMondayOfWeek, dateToYMD, due_time)
+    ├── tasks.js         # CRUD e regras de tasks/dailies
+    ├── subtasks.js
+    ├── filters.js
+    ├── drag-drop.js     # Reordenar nas listas; integração com dados
+    ├── pomodoro.js
+    ├── export-import.js
+    ├── inline-edit.js   # Criação rápida e edição inline nas listas
+    ├── keyboard-nav.js  # Navegação por teclado nas listas
+    ├── week-calendar.js # Vista semanal, DnD, edição inline, hora
+    ├── render.js        # RenderManager.renderAll()
+    ├── modal.js         # Modal de task/daily e Pomodoro (referência)
+    └── README.md        # Notas técnicas dos módulos
 ```
 
-Para informações técnicas detalhadas sobre a arquitetura dos módulos, consulte [js/README.md](js/README.md)
+Ordem de scripts em `index.html`: i18n e dados primeiro; `week-calendar.js` antes de `render.js`; `app.js` por último.
 
-## Estrutura de Dados
+---
 
-Os dados são salvos no `localStorage` com a chave `habitus_data`. Estrutura:
+## Estrutura de dados (referência)
+
+Persistência na chave **`habitus_data`**. Exemplo simplificado de um item em `tasks`:
 
 ```json
 {
-  "tasks": [
-    {
-      "id": 1234567890,
-      "title": "Título da task",
-      "status": "pending",
-      "task_type": "todo",
-      "due_date": "2025-12-31",
-      "priority": "high",
-      "completed_at": null,
-      "last_completed_date": null,
-      "streak_count": 0,
-      "max_streak": 0,
-      "order_index": 0,
-      "meta": {
-        "tags": ["tag1", "tag2"],
-        "days_of_week": ["monday", "tuesday"]
-      },
-      "is_deleted": false,
-      "created_at": "2025-01-01T00:00:00Z",
-      "updated_at": "2025-01-01T00:00:00Z",
-      "subtasks": []
-    }
-  ],
-  "settings": {
-    "language": "pt_BR"
-  }
+  "id": 1234567890,
+  "title": "Título",
+  "status": "pending",
+  "task_type": "todo",
+  "due_date": "2026-12-31",
+  "due_time": "14:30",
+  "priority": "high",
+  "completed_at": null,
+  "last_completed_date": null,
+  "streak_count": 0,
+  "max_streak": 0,
+  "order_index": 0,
+  "meta": {
+    "tags": ["tag1"],
+    "days_of_week": ["monday", "wednesday"]
+  },
+  "is_deleted": false,
+  "created_at": "2026-01-01T00:00:00.000Z",
+  "updated_at": "2026-01-01T00:00:00.000Z",
+  "subtasks": []
 }
 ```
+
+- **`task_type`**: `"todo"` | `"daily"`
+- **`due_time`**: `null` ou string `HH:MM` (normalizada nos updates)
+- **`meta.days_of_week`**: nomes em inglês minúsculos (`monday` … `sunday`)
+
+Preferência de idioma: chave separada **`habitus_language`** (ex.: `pt_BR`).
+
+---
 
 ## Personalização
 
-### Cores do Tema
-As cores principais podem ser ajustadas em `styles.css` através das variáveis CSS:
+- **Tema**: variáveis em `:root` em `styles.css` (`--bg-primary`, `--blue-primary`, etc.)
+- **Limites**: `MAX_TASKS` e `MAX_DAILIES` em `js/data.js`
 
-```css
-:root {
-  --bg-primary: linear-gradient(135deg, #0f1117 0%, #1a1d29 100%);
-  --blue-primary: #7c9eff;
-  --blue-secondary: #5b8def;
-  --text-primary: #e4e7eb;
-}
-```
+---
 
-### Limites
-Os limites de tasks podem ser alterados em `js/data.js`:
+## Tecnologias e APIs
 
-```javascript
-const DataManager = {
-    MAX_TASKS: 200,
-    MAX_DAILIES: 20
-};
-```
-
-## Tecnologias Utilizadas
-
-- HTML5
-- CSS3
+- HTML5, CSS3 (Grid, Flexbox, variáveis CSS)
 - JavaScript ES6+
-- localStorage API
-- Web Audio API
+- `localStorage`
+- Web Audio (Pomodoro)
 - Drag and Drop API
+- Notificações (quando permitidas)
 
-## Notas
+---
 
-- Sem Backend: Tudo funciona localmente no navegador
-- Sem Dependências: JavaScript puro, sem frameworks
-- Responsivo: Funciona em desktop, tablet e mobile
-- Offline: Funciona sem conexão à internet
-- Privacidade: Dados ficam apenas no seu navegador
+## Limitações atuais
 
-## Limitações Conhecidas
+- Dados apenas no navegador/dispositivo atual
+- Sem sincronização entre dispositivos
+- Limite prático do `localStorage` (~5–10 MB)
+- Navegadores muito antigos podem ter limitações em DnD ou `input type="time"`
 
-- Dados são salvos apenas no navegador atual
-- Não há sincronização entre dispositivos
-- Limite de armazenamento do localStorage (~5-10MB)
-- Drag and drop pode não funcionar em alguns navegadores antigos
+---
+
+## Manutenção deste README
+
+Ao implementar algo novo:
+
+1. Acrescentar à secção **Funcionalidades (catálogo)** ou criar subsecção clara.
+2. Atualizar **Estrutura do projeto** se ficheiros ou responsabilidades mudarem.
+3. Atualizar **Estrutura de dados** se campos ou chaves mudarem.
+4. Se alterar atalhos ou fluxos críticos, refletir em **Como usar** ou nas subsecções relevantes.
+
+Assim o repositório continua pronto para evoluir para PWA, app embutida ou backend opcional sem perder o mapa do produto.
+
+---
 
 ## Licença
 
-Este projeto está sob a licença MIT.
+Este projeto está sob a licença MIT (ver ficheiro `LICENSE`).

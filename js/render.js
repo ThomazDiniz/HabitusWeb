@@ -8,8 +8,19 @@ const RenderManager = {
         this.renderTasks();
         this.updateCounts();
         this.updateMotivationalMessage();
-        if (typeof KeyboardNavManager !== 'undefined') {
-            KeyboardNavManager.afterRender();
+        if (typeof KeyboardNavManager !== 'undefined' && KeyboardNavManager.afterRender) {
+            try {
+                KeyboardNavManager.afterRender();
+            } catch (err) {
+                console.error('KeyboardNavManager.afterRender failed:', err);
+            }
+        }
+        if (typeof WeekCalendarManager !== 'undefined' && WeekCalendarManager.render) {
+            try {
+                WeekCalendarManager.render();
+            } catch (err) {
+                console.error('WeekCalendarManager.render failed:', err);
+            }
         }
     },
     
@@ -244,6 +255,7 @@ const RenderManager = {
                                 ${formattedDays ? `<span class="task-days-of-week" data-field="days_of_week" data-task-id="${task.id}">📅 ${formattedDays}</span>` : `<span class="task-days-of-week add-days" data-field="days_of_week" data-task-id="${task.id}">+ ${t('daysOfWeek')}</span>`}
                                 <span class="streak-badge">🔥 ${task.streak_count || 0} ${t('days')}</span>
                                 ${task.max_streak > 0 ? `<span class="streak-badge">⭐ ${task.max_streak} ${t('maxStreak')}</span>` : ''}
+                                ${task.due_time ? `<span class="task-due-time-badge">🕐 ${task.due_time}</span>` : ''}
                                 <div class="task-tags-inline" data-field="tags" data-task-id="${task.id}">
                                     ${task.meta?.tags?.length > 0 ? task.meta.tags.map(tag => `
                                         <span class="task-tag" data-tag="${tag}">
@@ -260,6 +272,7 @@ const RenderManager = {
                                 ${!task.priority ? `<span class="task-priority-badge add-priority" data-field="priority" data-task-id="${task.id}">+ ${t('priority')}</span>` : ''}
                                 ${task.due_date ? `<span class="task-due-date ${isOverdue ? 'overdue' : ''}" data-field="due_date" data-task-id="${task.id}">${Utils.formatDate(task.due_date)}</span>` : ''}
                                 ${!task.due_date ? `<span class="task-due-date add-due-date" data-field="due_date" data-task-id="${task.id}">+ ${t('dueDate')}</span>` : ''}
+                                ${task.due_time ? `<span class="task-due-time-badge">🕐 ${task.due_time}</span>` : ''}
                                 <div class="task-tags-inline" data-field="tags" data-task-id="${task.id}">
                                     ${task.meta?.tags?.length > 0 ? task.meta.tags.map(tag => `
                                         <span class="task-tag" data-tag="${tag}">

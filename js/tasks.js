@@ -16,6 +16,9 @@ const TasksManager = {
             status: data.status || 'pending',
             task_type: taskType,
             due_date: data.due_date || null,
+            due_time: typeof Utils !== 'undefined'
+                ? Utils.normalizeDueTime(data.due_time)
+                : (data.due_time || null),
             priority: data.priority || null,
             completed_at: null,
             last_completed_date: null,
@@ -54,15 +57,23 @@ const TasksManager = {
         return DataManager.addTask(task);
     },
     
-    // Update task
+    // Update task (merges meta; does not wipe tags/days on partial updates)
     updateTask(id, updates) {
-        const taskData = {
-            ...updates,
-            meta: {
-                tags: updates.tags || [],
-                days_of_week: updates.days_of_week || []
-            }
-        };
+        const task = DataManager.findTask(id);
+        if (!task) return null;
+        const prevMeta = task.meta || { tags: [], days_of_week: [] };
+        const tags = updates.tags !== undefined ? updates.tags : prevMeta.tags;
+        const days_of_week = updates.days_of_week !== undefined ? updates.days_of_week : prevMeta.days_of_week;
+        const { tags: _tg, days_of_week: _dw, due_time: dueTimeRaw, ...rest } = updates;
+        const taskData = { ...rest, meta: { tags, days_of_week } };
+        if ('due_time' in updates) {
+            taskData.due_time =
+                dueTimeRaw === '' || dueTimeRaw == null
+                    ? null
+                    : typeof Utils !== 'undefined'
+                      ? Utils.normalizeDueTime(dueTimeRaw)
+                      : dueTimeRaw;
+        }
         return DataManager.updateTask(id, taskData);
     },
     
@@ -113,6 +124,28 @@ const TasksManager = {
         if (daysOfWeek.length === 0) return true;
         const today = Utils.getDayOfWeek();
         return daysOfWeek.includes(today);
+    },
+
+    /** All-week dailies: empty days_of_week or explicit all 7 weekdays */
+    isDailyEveryDayOfWeek(task) {
+        if (task.task_type !== 'daily') return false;
+        const days = task.meta?.days_of_week || [];
+        if (days.length === 0) return true;
+        if (days.length < 7) return false;
+        const all = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        const set = new Set(days);
+        return all.every((d) => set.has(d));
+    },
+
+    /** Daily appears on this calendar day (YYYY-MM-DD)? */
+    isDailyScheduledOnDate(task, ymd) {
+        if (task.task_type !== 'daily') return false;
+        if (this.isDailyEveryDayOfWeek(task)) {
+            return ymd === Utils.getTodayDate();
+        }
+        const daysOfWeek = task.meta?.days_of_week || [];
+        const dow = Utils.ymdToDayOfWeek(ymd);
+        return daysOfWeek.includes(dow);
     },
     
     // Check and reset dailies

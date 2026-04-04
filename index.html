@@ -10,6 +10,14 @@
     <div class="header">
         <div class="header-left">
             <h1 class="app-title">Habitus</h1>
+            <button type="button" class="view-toggle-btn" id="view-toggle-btn" aria-label=""></button>
+            <div class="header-datetime" id="header-datetime">
+                <span class="header-today-pill" id="header-today-pill" data-i18n="weekCalendarToday">Hoje</span>
+                <div class="header-datetime-text">
+                    <span class="header-today-date" id="header-today-date" aria-live="polite"></span>
+                    <time class="header-today-clock" id="header-today-clock" datetime="" aria-live="polite"></time>
+                </div>
+            </div>
         </div>
         <div class="header-right">
             <select id="language-selector" class="language-selector">
@@ -30,7 +38,7 @@
     </div>
 
     <div class="container">
-        <div class="tasks-container">
+        <div class="tasks-container main-view-scroll-anchor" id="main-lists-view">
             <!-- Dailies Column -->
             <div class="tasks-column">
                 <div class="column-header">
@@ -83,6 +91,21 @@
                 </div>
             </div>
         </div>
+
+        <section class="week-calendar-section main-view-scroll-anchor" id="week-calendar-section" aria-label="Calendar">
+            <div class="week-calendar-toolbar">
+                <div class="week-calendar-toolbar-left">
+                    <h2 class="week-calendar-title" id="week-calendar-title" data-i18n="weekCalendar">Semana</h2>
+                    <span class="week-calendar-range" id="week-calendar-range"></span>
+                </div>
+                <div class="week-calendar-nav">
+                    <button type="button" class="week-cal-nav-btn" id="week-cal-prev" aria-label="Previous week">‹</button>
+                    <button type="button" class="week-cal-nav-btn week-cal-today-btn" id="week-cal-today" data-i18n="weekCalendarToday">Hoje</button>
+                    <button type="button" class="week-cal-nav-btn" id="week-cal-next" aria-label="Next week">›</button>
+                </div>
+            </div>
+            <div class="week-calendar-scroll" id="week-calendar-root"></div>
+        </section>
     </div>
 
     <div class="footer">
@@ -150,6 +173,10 @@
                     <label id="task-due-date-label">Data de Vencimento</label>
                     <input type="date" id="task-due-date-input">
                 </div>
+                <div class="form-group" id="task-due-time-group">
+                    <label id="task-due-time-label">Hora</label>
+                    <input type="time" id="task-due-time-input" step="60">
+                </div>
                 <div class="form-group" id="task-days-of-week-group" style="display: none;">
                     <label id="task-days-label">Dias da Semana</label>
                     <div class="days-checkboxes">
@@ -198,6 +225,7 @@
     <!-- UI Modules -->
     <script src="js/inline-edit.js"></script>
     <script src="js/keyboard-nav.js"></script>
+    <script src="js/week-calendar.js"></script>
     <script src="js/render.js"></script>
     <script src="js/modal.js"></script>
     

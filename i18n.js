@@ -71,7 +71,18 @@ const translations = {
         dailyLimitReached: "Daily limit reached (20 dailies maximum)",
         titleRequired: "Title is required",
         confirmDelete: "Are you sure you want to delete this?",
-        confirmDeleteCompleted: "Are you sure you want to delete all completed items?"
+        confirmDeleteCompleted: "Are you sure you want to delete all completed items?",
+        dueTimeOptional: "Time (optional)",
+        weekCalendar: "Week",
+        weekCalendarToday: "Today",
+        weekCalendarAddTask: "New task on this date",
+        weekCalendarAddDaily: "New daily on this weekday",
+        viewToggleWeek: "Week",
+        viewToggleLists: "Lists",
+        viewToggleWeekTitle: "Scroll to week calendar",
+        viewToggleListsTitle: "Scroll to dailies and tasks",
+        weekCalendarDragHandle: "Drag to move",
+        weekCalendarNowLine: "Now"
     },
     es: {
         appTitle: "Habitus",
@@ -143,7 +154,18 @@ const translations = {
         dailyLimitReached: "Límite de diarias alcanzado (máximo 20 diarias)",
         titleRequired: "El título es obligatorio",
         confirmDelete: "¿Estás seguro de que quieres eliminar esto?",
-        confirmDeleteCompleted: "¿Estás seguro de que quieres eliminar todos los elementos completados?"
+        confirmDeleteCompleted: "¿Estás seguro de que quieres eliminar todos los elementos completados?",
+        dueTimeOptional: "Hora (opcional)",
+        weekCalendar: "Semana",
+        weekCalendarToday: "Hoy",
+        weekCalendarAddTask: "Nueva tarea en esta fecha",
+        weekCalendarAddDaily: "Nueva diaria en este día",
+        viewToggleWeek: "Semana",
+        viewToggleLists: "Listas",
+        viewToggleWeekTitle: "Ir al calendario semanal",
+        viewToggleListsTitle: "Ir a diarias y tareas",
+        weekCalendarDragHandle: "Arrastrar para mover",
+        weekCalendarNowLine: "Ahora"
     },
     zh: {
         appTitle: "Habitus",
@@ -215,7 +237,18 @@ const translations = {
         dailyLimitReached: "已达到每日任务限制（最多20个每日任务）",
         titleRequired: "标题是必需的",
         confirmDelete: "您确定要删除这个吗？",
-        confirmDeleteCompleted: "您确定要删除所有已完成的项目吗？"
+        confirmDeleteCompleted: "您确定要删除所有已完成的项目吗？",
+        dueTimeOptional: "Time (optional)",
+        weekCalendar: "Week",
+        weekCalendarToday: "Today",
+        weekCalendarAddTask: "New task on this date",
+        weekCalendarAddDaily: "New daily on this weekday",
+        viewToggleWeek: "周视图",
+        viewToggleLists: "列表",
+        viewToggleWeekTitle: "滚动到周历",
+        viewToggleListsTitle: "滚动到每日任务与待办",
+        weekCalendarDragHandle: "拖动以移动",
+        weekCalendarNowLine: "现在"
     },
     ja: {
         appTitle: "Habitus",
@@ -287,7 +320,18 @@ const translations = {
         dailyLimitReached: "デイリー制限に達しました（最大20デイリー）",
         titleRequired: "タイトルは必須です",
         confirmDelete: "これを削除してもよろしいですか？",
-        confirmDeleteCompleted: "すべての完了項目を削除してもよろしいですか？"
+        confirmDeleteCompleted: "すべての完了項目を削除してもよろしいですか？",
+        dueTimeOptional: "Time (optional)",
+        weekCalendar: "Week",
+        weekCalendarToday: "Today",
+        weekCalendarAddTask: "New task on this date",
+        weekCalendarAddDaily: "New daily on this weekday",
+        viewToggleWeek: "週間",
+        viewToggleLists: "リスト",
+        viewToggleWeekTitle: "週間カレンダーへスクロール",
+        viewToggleListsTitle: "デイリーとタスクへスクロール",
+        weekCalendarDragHandle: "ドラッグで移動",
+        weekCalendarNowLine: "現在"
     },
     de: {
         appTitle: "Habitus",
@@ -359,7 +403,18 @@ const translations = {
         dailyLimitReached: "Täglichenlimit erreicht (maximal 20 Tägliche)",
         titleRequired: "Titel ist erforderlich",
         confirmDelete: "Sind Sie sicher, dass Sie dies löschen möchten?",
-        confirmDeleteCompleted: "Sind Sie sicher, dass Sie alle erledigten Elemente löschen möchten?"
+        confirmDeleteCompleted: "Sind Sie sicher, dass Sie alle erledigten Elemente löschen möchten?",
+        dueTimeOptional: "Time (optional)",
+        weekCalendar: "Week",
+        weekCalendarToday: "Today",
+        weekCalendarAddTask: "New task on this date",
+        weekCalendarAddDaily: "New daily on this weekday",
+        viewToggleWeek: "Woche",
+        viewToggleLists: "Listen",
+        viewToggleWeekTitle: "Zur Wochenkalender-Ansicht scrollen",
+        viewToggleListsTitle: "Zu Täglichen und Aufgaben scrollen",
+        weekCalendarDragHandle: "Ziehen zum Verschieben",
+        weekCalendarNowLine: "Jetzt"
     },
     it: {
         appTitle: "Habitus",
@@ -431,7 +486,18 @@ const translations = {
         dailyLimitReached: "Limite quotidiane raggiunto (massimo 20 quotidiane)",
         titleRequired: "Il titolo è obbligatorio",
         confirmDelete: "Sei sicuro di voler eliminare questo?",
-        confirmDeleteCompleted: "Sei sicuro di voler eliminare tutti gli elementi completati?"
+        confirmDeleteCompleted: "Sei sicuro di voler eliminare tutti gli elementi completati?",
+        dueTimeOptional: "Time (optional)",
+        weekCalendar: "Week",
+        weekCalendarToday: "Today",
+        weekCalendarAddTask: "New task on this date",
+        weekCalendarAddDaily: "New daily on this weekday",
+        viewToggleWeek: "Settimana",
+        viewToggleLists: "Liste",
+        viewToggleWeekTitle: "Scorri al calendario settimanale",
+        viewToggleListsTitle: "Scorri a diarie e attività",
+        weekCalendarDragHandle: "Trascina per spostare",
+        weekCalendarNowLine: "Adesso"
     },
     pt_BR: {
         appTitle: "Habitus",
@@ -503,7 +569,18 @@ const translations = {
         dailyLimitReached: "Limite de dailies atingido (máximo 20 dailies)",
         titleRequired: "Título é obrigatório",
         confirmDelete: "Tem certeza que deseja deletar isso?",
-        confirmDeleteCompleted: "Tem certeza que deseja deletar todos os itens concluídos?"
+        confirmDeleteCompleted: "Tem certeza que deseja deletar todos os itens concluídos?",
+        dueTimeOptional: "Hora (opcional)",
+        weekCalendar: "Semana",
+        weekCalendarToday: "Hoje",
+        weekCalendarAddTask: "Nova task nesta data",
+        weekCalendarAddDaily: "Nova diária neste dia da semana",
+        viewToggleWeek: "Semana",
+        viewToggleLists: "Listas",
+        viewToggleWeekTitle: "Rolar até o calendário da semana",
+        viewToggleListsTitle: "Rolar até diárias e tarefas",
+        weekCalendarDragHandle: "Arrastar para mover",
+        weekCalendarNowLine: "Agora"
     },
     pt: {
         appTitle: "Habitus",
@@ -575,7 +652,18 @@ const translations = {
         dailyLimitReached: "Limite de diárias atingido (máximo 20 diárias)",
         titleRequired: "Título é obrigatório",
         confirmDelete: "Tem certeza que deseja eliminar isto?",
-        confirmDeleteCompleted: "Tem certeza que deseja eliminar todos os itens concluídos?"
+        confirmDeleteCompleted: "Tem certeza que deseja eliminar todos os itens concluídos?",
+        dueTimeOptional: "Hora (opcional)",
+        weekCalendar: "Semana",
+        weekCalendarToday: "Hoje",
+        weekCalendarAddTask: "Nova tarefa nesta data",
+        weekCalendarAddDaily: "Nova diária neste dia da semana",
+        viewToggleWeek: "Semana",
+        viewToggleLists: "Listas",
+        viewToggleWeekTitle: "Ir para o calendário da semana",
+        viewToggleListsTitle: "Ir para as listas (diárias e tarefas)",
+        weekCalendarDragHandle: "Arrastar para mover",
+        weekCalendarNowLine: "Agora"
     },
     fr: {
         appTitle: "Habitus",
@@ -647,7 +735,18 @@ const translations = {
         dailyLimitReached: "Limite de quotidiennes atteinte (20 quotidiennes maximum)",
         titleRequired: "Le titre est obligatoire",
         confirmDelete: "Êtes-vous sûr de vouloir supprimer ceci ?",
-        confirmDeleteCompleted: "Êtes-vous sûr de vouloir supprimer tous les éléments terminés ?"
+        confirmDeleteCompleted: "Êtes-vous sûr de vouloir supprimer tous les éléments terminés ?",
+        dueTimeOptional: "Heure (facultatif)",
+        weekCalendar: "Semaine",
+        weekCalendarToday: "Aujourd'hui",
+        weekCalendarAddTask: "Nouvelle tâche à cette date",
+        weekCalendarAddDaily: "Nouvelle habitude ce jour",
+        viewToggleWeek: "Semaine",
+        viewToggleLists: "Listes",
+        viewToggleWeekTitle: "Faire défiler vers le calendrier hebdomadaire",
+        viewToggleListsTitle: "Faire défiler vers quotidiennes et tâches",
+        weekCalendarDragHandle: "Glisser pour déplacer",
+        weekCalendarNowLine: "Maintenant"
     }
 };
 
@@ -730,9 +829,13 @@ function initI18n() {
         selector.value = currentLanguage;
         selector.addEventListener('change', (e) => {
             saveLanguage(e.target.value);
-            updateUI();
-            if (typeof renderAll === 'function') {
-                renderAll();
+            if (typeof window.updateUI === 'function') {
+                window.updateUI();
+            } else {
+                updateUI();
+                if (typeof RenderManager !== 'undefined' && RenderManager.renderAll) {
+                    RenderManager.renderAll();
+                }
             }
         });
     }
