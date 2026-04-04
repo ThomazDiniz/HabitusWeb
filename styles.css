@@ -1510,20 +1510,29 @@ body {
 }
 
 .week-cal-completed-stack {
-    align-self: flex-end;
+    align-self: stretch;
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px;
     width: 100%;
-    max-width: min(100%, 440px);
+    max-width: 100%;
 }
 
 .week-cal-completed-aside {
-    width: 100%;
+    flex: 0 1 min(440px, calc(50% - 8px));
+    min-width: min(100%, 200px);
+    max-width: 440px;
     border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 10px 12px 12px;
     background: rgba(15, 17, 23, 0.45);
+}
+
+/* Diárias à esquerda; atividades (todos) à direita — margin empurra só o segundo bloco quando ambos existem */
+.week-cal-completed-todos-aside {
+    margin-left: auto;
 }
 
 .week-cal-completed-heading {
@@ -2006,5 +2015,21 @@ body {
 
     .week-cal-layout.is-today-only {
         min-width: 260px;
+    }
+}
+
+@media (max-width: 640px) {
+    .week-cal-completed-stack {
+        flex-direction: column;
+    }
+
+    .week-cal-completed-aside {
+        flex: 1 1 auto;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .week-cal-completed-todos-aside {
+        margin-left: 0;
     }
 }
