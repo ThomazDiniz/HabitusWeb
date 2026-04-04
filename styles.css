@@ -1490,10 +1490,36 @@ body {
     min-width: 640px;
 }
 
-.week-cal-completed-aside {
+.week-cal-layout.is-today-only {
+    grid-template-columns: 52px minmax(0, 1fr);
+    min-width: min(100%, 360px);
+}
+
+.week-cal-layout.is-today-only .week-cal-day-headers {
+    grid-template-columns: 1fr;
+}
+
+.week-cal-view-toggle.is-active {
+    border-color: var(--blue-primary);
+    background: var(--blue-hover);
+}
+
+.week-cal-nav-btn:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+}
+
+.week-cal-completed-stack {
     align-self: flex-end;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     width: 100%;
     max-width: min(100%, 440px);
+}
+
+.week-cal-completed-aside {
+    width: 100%;
     border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 10px 12px 12px;
@@ -1655,6 +1681,20 @@ body {
     text-align: right;
     padding-top: 0;
     line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Last gutter cell: 21:00 (start of final hour) + 22:00 at bottom (end of 05:00–22:00 range) */
+.week-cal-hour-label-split {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.week-cal-hour-label-split .week-cal-hour-end-mark {
+    line-height: 1;
+    color: var(--text-secondary);
     font-variant-numeric: tabular-nums;
 }
 
@@ -1962,5 +2002,9 @@ body {
 @media (max-width: 768px) {
     .week-cal-layout {
         min-width: 560px;
+    }
+
+    .week-cal-layout.is-today-only {
+        min-width: 260px;
     }
 }

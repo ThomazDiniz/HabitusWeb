@@ -1,10 +1,14 @@
-// Week calendar (Mon–Sun): todos by due_date, dailies by weekday; time grid drop sets due_time; untimed zone clears time
+// Week calendar (Mon–Sun or today-only): time grid 05:00–22:00 local; todos by due_date, dailies by weekday; DnD sets due_time
 
 const WeekCalendarManager = {
     weekStart: null,
+    /** When true, the grid shows only today's column (toggle with week view). */
+    todayOnlyView: false,
+    /** Timeline and DnD scale: local 05:00 inclusive → 22:00 exclusive (last slot ends at 22:00). */
     START_HOUR: 5,
     END_HOUR: 22,
     SNAP_MINUTES: 15,
+    _CAL_VIEW_STORAGE_KEY: 'habitus-week-cal-today-only',
 
     ensureWeekStart() {
         if (
@@ -18,9 +22,11 @@ const WeekCalendarManager = {
 
     init() {
         this.ensureWeekStart();
+        this.loadCalendarViewMode();
         const prev = document.getElementById('week-cal-prev');
         const next = document.getElementById('week-cal-next');
         const todayBtn = document.getElementById('week-cal-today');
+        const viewToggle = document.getElementById('week-cal-view-toggle');
         if (prev) prev.addEventListener('click', () => this.shiftWeek(-7));
         if (next) next.addEventListener('click', () => this.shiftWeek(7));
         if (todayBtn) {
@@ -29,7 +35,66 @@ const WeekCalendarManager = {
                 this.render();
             });
         }
+        if (viewToggle) {
+            viewToggle.addEventListener('click', () => {
+                this.todayOnlyView = !this.todayOnlyView;
+                this.saveCalendarViewMode();
+                this.render();
+            });
+        }
         this.startLiveClock();
+    },
+
+    loadCalendarViewMode() {
+        try {
+            const v = localStorage.getItem(this._CAL_VIEW_STORAGE_KEY);
+            this.todayOnlyView = v === '1';
+        } catch (e) {
+            /* ignore */
+        }
+    },
+
+    saveCalendarViewMode() {
+        try {
+            localStorage.setItem(this._CAL_VIEW_STORAGE_KEY, this.todayOnlyView ? '1' : '0');
+        } catch (e) {
+            /* ignore */
+        }
+    },
+
+    /** Local midnight Date for today (visible day in today-only mode). */
+    getTodayOnlyDate() {
+        const ymd = Utils.getTodayDate();
+        const parts = ymd.split('-').map((x) => parseInt(x, 10));
+        if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return new Date();
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    },
+
+    /** Dates shown as columns: full Mon–Sun week or single today. */
+    getVisibleDates() {
+        if (this.todayOnlyView) {
+            return [this.getTodayOnlyDate()];
+        }
+        return this.getWeekDates();
+    },
+
+    syncToolbar() {
+        const titleEl = document.getElementById('week-calendar-title');
+        const toggleBtn = document.getElementById('week-cal-view-toggle');
+        const prev = document.getElementById('week-cal-prev');
+        const next = document.getElementById('week-cal-next');
+        if (typeof t !== 'function') return;
+        if (titleEl) {
+            titleEl.textContent = this.todayOnlyView ? t('weekCalendarTitleToday') : t('weekCalendar');
+        }
+        if (toggleBtn) {
+            toggleBtn.setAttribute('aria-pressed', this.todayOnlyView ? 'true' : 'false');
+            toggleBtn.textContent = this.todayOnlyView ? t('weekCalendarShowWeek') : t('weekCalendarShowTodayOnly');
+            toggleBtn.title = this.todayOnlyView ? t('weekCalendarShowWeekTitle') : t('weekCalendarShowTodayOnlyTitle');
+            toggleBtn.classList.toggle('is-active', this.todayOnlyView);
+        }
+        if (prev) prev.disabled = this.todayOnlyView;
+        if (next) next.disabled = this.todayOnlyView;
     },
 
     /** Minutes from midnight (local), fractional for sub-minute line position */
@@ -49,9 +114,9 @@ const WeekCalendarManager = {
         return ((now - startM) / total) * 100;
     },
 
-    isTodayVisibleInWeek() {
+    isTodayInVisibleGrid() {
         const todayYmd = Utils.getTodayDate();
-        return this.getWeekDates().some((d) => Utils.dateToYMD(d) === todayYmd);
+        return this.getVisibleDates().some((d) => Utils.dateToYMD(d) === todayYmd);
     },
 
     updateNowClockDisplay() {
@@ -86,7 +151,7 @@ const WeekCalendarManager = {
         const hhmm = `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
         const tip = typeof t === 'function' ? `${t('weekCalendarNowLine')} (${hhmm})` : hhmm;
 
-        if (gutter && this.isTodayVisibleInWeek()) {
+        if (gutter && this.isTodayInVisibleGrid()) {
             const g = document.createElement('div');
             g.className = 'week-cal-now-line-gutter';
             g.style.top = `${top}%`;
@@ -94,7 +159,7 @@ const WeekCalendarManager = {
             gutter.appendChild(g);
         }
 
-        if (!this.isTodayVisibleInWeek()) return;
+        if (!this.isTodayInVisibleGrid()) return;
         const todayYmd = Utils.getTodayDate();
         const tl = root.querySelector(`.week-cal-timeline.is-today[data-date="${todayYmd}"]`);
         if (!tl) return;
@@ -190,8 +255,8 @@ const WeekCalendarManager = {
         return items;
     },
 
-    /** Diárias concluídas na semana visível (uma entrada por tarefa, primeiro dia encontrado). Todos concluídas ficam nas colunas. */
-    completedItemsForWeek(dates) {
+    /** Diárias concluídas na semana visível (uma entrada por tarefa, primeiro dia encontrado). */
+    completedDailiesForWeek(dates) {
         const out = [];
         const seen = new Set();
         dates.forEach((d) => {
@@ -206,12 +271,41 @@ const WeekCalendarManager = {
         return out;
     },
 
-    renderCompletedAside(dates) {
-        const entries = this.completedItemsForWeek(dates);
+    /** Todos (atividades) concluídos com due_date nos dias visíveis; uma entrada por tarefa. */
+    completedTodosForWeek(dates) {
+        const out = [];
+        const seen = new Set();
+        dates.forEach((d) => {
+            const ymd = Utils.dateToYMD(d);
+            this.itemsForDay(ymd).forEach((task) => {
+                if (task.task_type !== 'todo' || task.status !== 'done') return;
+                if (seen.has(task.id)) return;
+                seen.add(task.id);
+                out.push({ task, ymd });
+            });
+        });
+        return out;
+    },
+
+    renderCompletedDailiesAside(dates) {
+        const entries = this.completedDailiesForWeek(dates);
         if (entries.length === 0) return '';
-        const title = this.escapeHtml(t('weekCalendarCompletedTitle'));
-        const aria = this.escapeAttr(t('weekCalendarCompletedTitle'));
-        let h = `<aside class="week-cal-completed-aside" aria-label="${aria}">`;
+        const titleKey = dates.length === 1 ? 'weekCalendarCompletedTitleToday' : 'weekCalendarCompletedTitle';
+        return this.renderCompletedListAside(entries, titleKey, 'week-cal-completed-aside week-cal-completed-dailies-aside');
+    },
+
+    renderCompletedTodosAside(dates) {
+        const entries = this.completedTodosForWeek(dates);
+        if (entries.length === 0) return '';
+        const titleKey =
+            dates.length === 1 ? 'weekCalendarCompletedTodosTitleToday' : 'weekCalendarCompletedTodosTitle';
+        return this.renderCompletedListAside(entries, titleKey, 'week-cal-completed-aside week-cal-completed-todos-aside');
+    },
+
+    renderCompletedListAside(entries, titleKey, asideClass) {
+        const title = this.escapeHtml(t(titleKey));
+        const aria = this.escapeAttr(t(titleKey));
+        let h = `<aside class="${asideClass}" aria-label="${aria}">`;
         h += `<h3 class="week-cal-completed-heading">${title}</h3>`;
         h += '<div class="week-cal-completed-list">';
         entries.forEach(({ task, ymd }) => {
@@ -223,6 +317,13 @@ const WeekCalendarManager = {
         });
         h += '</div></aside>';
         return h;
+    },
+
+    renderCompletedPanels(dates) {
+        const d = this.renderCompletedDailiesAside(dates);
+        const td = this.renderCompletedTodosAside(dates);
+        if (!d && !td) return '';
+        return `<div class="week-cal-completed-stack">${d}${td}</div>`;
     },
 
     hasCalendarDrag(types) {
@@ -520,20 +621,26 @@ const WeekCalendarManager = {
         const root = document.getElementById('week-calendar-root');
         if (!root) return;
 
-        const dates = this.getWeekDates();
+        const dates = this.getVisibleDates();
         const lang = typeof currentLanguage !== 'undefined' ? currentLanguage.replace('_', '-') : 'pt-BR';
         const rangeSpan = document.getElementById('week-calendar-range');
         if (rangeSpan) {
-            rangeSpan.textContent = `${Utils.formatDate(Utils.dateToYMD(dates[0]))} – ${Utils.formatDate(Utils.dateToYMD(dates[6]))}`;
+            if (dates.length === 1) {
+                rangeSpan.textContent = Utils.formatDate(Utils.dateToYMD(dates[0]));
+            } else {
+                rangeSpan.textContent = `${Utils.formatDate(Utils.dateToYMD(dates[0]))} – ${Utils.formatDate(Utils.dateToYMD(dates[dates.length - 1]))}`;
+            }
         }
+        this.syncToolbar();
 
         const hours = [];
         for (let h = this.START_HOUR; h < this.END_HOUR; h++) {
             hours.push(h);
         }
 
+        const todayOnlyClass = dates.length === 1 ? ' is-today-only' : '';
         let html = '<div class="week-cal-outer">';
-        html += '<div class="week-cal-layout">';
+        html += `<div class="week-cal-layout${todayOnlyClass}">`;
         html += '<div class="week-cal-corner"></div>';
         html += '<div class="week-cal-day-headers">';
         dates.forEach((d) => {
@@ -588,8 +695,15 @@ const WeekCalendarManager = {
         });
 
         html += '<div class="week-cal-time-gutter">';
-        hours.forEach((h) => {
-            html += `<div class="week-cal-hour-label">${String(h).padStart(2, '0')}:00</div>`;
+        hours.forEach((h, idx) => {
+            const hh = String(h).padStart(2, '0');
+            const isLast = idx === hours.length - 1;
+            if (isLast) {
+                const endHh = String(this.END_HOUR).padStart(2, '0');
+                html += `<div class="week-cal-hour-label week-cal-hour-label-split"><span class="week-cal-hour-start">${hh}:00</span><span class="week-cal-hour-end-mark">${endHh}:00</span></div>`;
+            } else {
+                html += `<div class="week-cal-hour-label">${hh}:00</div>`;
+            }
         });
         html += '</div>';
 
@@ -619,7 +733,7 @@ const WeekCalendarManager = {
         });
 
         html += '</div>';
-        html += this.renderCompletedAside(dates);
+        html += this.renderCompletedPanels(dates);
         html += '</div>';
 
         root.innerHTML = html;

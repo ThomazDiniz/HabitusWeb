@@ -83,7 +83,15 @@ const translations = {
         viewToggleListsTitle: "Scroll to dailies and tasks",
         weekCalendarDragHandle: "Drag to move",
         weekCalendarNowLine: "Now",
-        weekCalendarCompletedTitle: "Completed dailies this week"
+        weekCalendarCompletedTitle: "Completed dailies this week",
+        weekCalendarCompletedTitleToday: "Completed dailies today",
+        weekCalendarTitleToday: "Today",
+        weekCalendarShowTodayOnly: "Today only",
+        weekCalendarShowWeek: "Full week",
+        weekCalendarShowTodayOnlyTitle: "Show only today in the calendar",
+        weekCalendarShowWeekTitle: "Show the full week (Mon–Sun)",
+        weekCalendarCompletedTodosTitle: "Completed tasks this week",
+        weekCalendarCompletedTodosTitleToday: "Completed tasks today"
     },
     es: {
         appTitle: "Habitus",
@@ -167,7 +175,15 @@ const translations = {
         viewToggleListsTitle: "Ir a diarias y tareas",
         weekCalendarDragHandle: "Arrastrar para mover",
         weekCalendarNowLine: "Ahora",
-        weekCalendarCompletedTitle: "Diarias completadas esta semana"
+        weekCalendarCompletedTitle: "Diarias completadas esta semana",
+        weekCalendarCompletedTitleToday: "Diarias completadas hoy",
+        weekCalendarTitleToday: "Hoy",
+        weekCalendarShowTodayOnly: "Solo hoy",
+        weekCalendarShowWeek: "Semana completa",
+        weekCalendarShowTodayOnlyTitle: "Mostrar solo el día de hoy en el calendario",
+        weekCalendarShowWeekTitle: "Mostrar la semana completa (lun–dom)",
+        weekCalendarCompletedTodosTitle: "Tareas completadas esta semana",
+        weekCalendarCompletedTodosTitleToday: "Tareas completadas hoy"
     },
     zh: {
         appTitle: "Habitus",
@@ -251,7 +267,15 @@ const translations = {
         viewToggleListsTitle: "滚动到每日任务与待办",
         weekCalendarDragHandle: "拖动以移动",
         weekCalendarNowLine: "现在",
-        weekCalendarCompletedTitle: "本周已完成的日常"
+        weekCalendarCompletedTitle: "本周已完成的日常",
+        weekCalendarCompletedTitleToday: "今日已完成的日常",
+        weekCalendarTitleToday: "今天",
+        weekCalendarShowTodayOnly: "仅今天",
+        weekCalendarShowWeek: "整周",
+        weekCalendarShowTodayOnlyTitle: "日历中仅显示今天",
+        weekCalendarShowWeekTitle: "显示整周（周一至周日）",
+        weekCalendarCompletedTodosTitle: "本周已完成的任务",
+        weekCalendarCompletedTodosTitleToday: "今日已完成的任务"
     },
     ja: {
         appTitle: "Habitus",
@@ -335,7 +359,15 @@ const translations = {
         viewToggleListsTitle: "デイリーとタスクへスクロール",
         weekCalendarDragHandle: "ドラッグで移動",
         weekCalendarNowLine: "現在",
-        weekCalendarCompletedTitle: "今週完了したデイリー"
+        weekCalendarCompletedTitle: "今週完了したデイリー",
+        weekCalendarCompletedTitleToday: "今日完了したデイリー",
+        weekCalendarTitleToday: "今日",
+        weekCalendarShowTodayOnly: "今日のみ",
+        weekCalendarShowWeek: "1週間",
+        weekCalendarShowTodayOnlyTitle: "カレンダーは今日の列だけ表示",
+        weekCalendarShowWeekTitle: "月曜から日曜までの1週間を表示",
+        weekCalendarCompletedTodosTitle: "今週完了したタスク",
+        weekCalendarCompletedTodosTitleToday: "今日完了したタスク"
     },
     de: {
         appTitle: "Habitus",
@@ -419,7 +451,15 @@ const translations = {
         viewToggleListsTitle: "Zu Täglichen und Aufgaben scrollen",
         weekCalendarDragHandle: "Ziehen zum Verschieben",
         weekCalendarNowLine: "Jetzt",
-        weekCalendarCompletedTitle: "Erledigte Tägliche diese Woche"
+        weekCalendarCompletedTitle: "Erledigte Tägliche diese Woche",
+        weekCalendarCompletedTitleToday: "Heute erledigte Tägliche",
+        weekCalendarTitleToday: "Heute",
+        weekCalendarShowTodayOnly: "Nur heute",
+        weekCalendarShowWeek: "Ganze Woche",
+        weekCalendarShowTodayOnlyTitle: "Im Kalender nur den heutigen Tag anzeigen",
+        weekCalendarShowWeekTitle: "Die ganze Woche (Mo–So) anzeigen",
+        weekCalendarCompletedTodosTitle: "Erledigte Aufgaben diese Woche",
+        weekCalendarCompletedTodosTitleToday: "Heute erledigte Aufgaben"
     },
     it: {
         appTitle: "Habitus",
@@ -503,7 +543,15 @@ const translations = {
         viewToggleListsTitle: "Scorri a diarie e attività",
         weekCalendarDragHandle: "Trascina per spostare",
         weekCalendarNowLine: "Adesso",
-        weekCalendarCompletedTitle: "Diarie completate questa settimana"
+        weekCalendarCompletedTitle: "Diarie completate questa settimana",
+        weekCalendarCompletedTitleToday: "Diarie completate oggi",
+        weekCalendarTitleToday: "Oggi",
+        weekCalendarShowTodayOnly: "Solo oggi",
+        weekCalendarShowWeek: "Settimana intera",
+        weekCalendarShowTodayOnlyTitle: "Mostra solo oggi nel calendario",
+        weekCalendarShowWeekTitle: "Mostra la settimana intera (lun–dom)",
+        weekCalendarCompletedTodosTitle: "Attività completate questa settimana",
+        weekCalendarCompletedTodosTitleToday: "Attività completate oggi"
     },
     pt_BR: {
         appTitle: "Habitus",
@@ -587,7 +635,15 @@ const translations = {
         viewToggleListsTitle: "Rolar até diárias e tarefas",
         weekCalendarDragHandle: "Arrastar para mover",
         weekCalendarNowLine: "Agora",
-        weekCalendarCompletedTitle: "Diárias concluídas na semana"
+        weekCalendarCompletedTitle: "Diárias concluídas na semana",
+        weekCalendarCompletedTitleToday: "Diárias concluídas hoje",
+        weekCalendarTitleToday: "Hoje",
+        weekCalendarShowTodayOnly: "Só hoje",
+        weekCalendarShowWeek: "Semana inteira",
+        weekCalendarShowTodayOnlyTitle: "Mostrar só o dia de hoje no calendário",
+        weekCalendarShowWeekTitle: "Mostrar a semana completa (seg–dom)",
+        weekCalendarCompletedTodosTitle: "Atividades concluídas na semana",
+        weekCalendarCompletedTodosTitleToday: "Atividades concluídas hoje"
     },
     pt: {
         appTitle: "Habitus",
@@ -671,7 +727,15 @@ const translations = {
         viewToggleListsTitle: "Ir para as listas (diárias e tarefas)",
         weekCalendarDragHandle: "Arrastar para mover",
         weekCalendarNowLine: "Agora",
-        weekCalendarCompletedTitle: "Diárias concluídas na semana"
+        weekCalendarCompletedTitle: "Diárias concluídas na semana",
+        weekCalendarCompletedTitleToday: "Diárias concluídas hoje",
+        weekCalendarTitleToday: "Hoje",
+        weekCalendarShowTodayOnly: "Só hoje",
+        weekCalendarShowWeek: "Semana inteira",
+        weekCalendarShowTodayOnlyTitle: "Mostrar só o dia de hoje no calendário",
+        weekCalendarShowWeekTitle: "Mostrar a semana completa (seg–dom)",
+        weekCalendarCompletedTodosTitle: "Atividades concluídas na semana",
+        weekCalendarCompletedTodosTitleToday: "Atividades concluídas hoje"
     },
     fr: {
         appTitle: "Habitus",
@@ -755,7 +819,15 @@ const translations = {
         viewToggleListsTitle: "Faire défiler vers quotidiennes et tâches",
         weekCalendarDragHandle: "Glisser pour déplacer",
         weekCalendarNowLine: "Maintenant",
-        weekCalendarCompletedTitle: "Quotidiennes terminées cette semaine"
+        weekCalendarCompletedTitle: "Quotidiennes terminées cette semaine",
+        weekCalendarCompletedTitleToday: "Quotidiennes terminées aujourd'hui",
+        weekCalendarTitleToday: "Aujourd'hui",
+        weekCalendarShowTodayOnly: "Aujourd'hui seulement",
+        weekCalendarShowWeek: "Semaine entière",
+        weekCalendarShowTodayOnlyTitle: "N'afficher que la colonne d'aujourd'hui",
+        weekCalendarShowWeekTitle: "Afficher la semaine complète (lun–dim)",
+        weekCalendarCompletedTodosTitle: "Tâches terminées cette semaine",
+        weekCalendarCompletedTodosTitleToday: "Tâches terminées aujourd'hui"
     }
 };
 
