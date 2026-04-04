@@ -190,6 +190,41 @@ const WeekCalendarManager = {
         return items;
     },
 
+    /** Diárias concluídas na semana visível (uma entrada por tarefa, primeiro dia encontrado). Todos concluídas ficam nas colunas. */
+    completedItemsForWeek(dates) {
+        const out = [];
+        const seen = new Set();
+        dates.forEach((d) => {
+            const ymd = Utils.dateToYMD(d);
+            this.itemsForDay(ymd).forEach((task) => {
+                if (task.task_type !== 'daily' || task.status !== 'done') return;
+                if (seen.has(task.id)) return;
+                seen.add(task.id);
+                out.push({ task, ymd });
+            });
+        });
+        return out;
+    },
+
+    renderCompletedAside(dates) {
+        const entries = this.completedItemsForWeek(dates);
+        if (entries.length === 0) return '';
+        const title = this.escapeHtml(t('weekCalendarCompletedTitle'));
+        const aria = this.escapeAttr(t('weekCalendarCompletedTitle'));
+        let h = `<aside class="week-cal-completed-aside" aria-label="${aria}">`;
+        h += `<h3 class="week-cal-completed-heading">${title}</h3>`;
+        h += '<div class="week-cal-completed-list">';
+        entries.forEach(({ task, ymd }) => {
+            const dateStr = Utils.formatDate(ymd);
+            h += `<div class="week-cal-completed-item" data-date="${ymd}">`;
+            h += `<span class="week-cal-completed-date">${this.escapeHtml(dateStr)}</span>`;
+            h += `<div class="week-cal-completed-chip-wrap">${this.renderChipHtml(task)}</div>`;
+            h += '</div>';
+        });
+        h += '</div></aside>';
+        return h;
+    },
+
     hasCalendarDrag(types) {
         if (!types) return false;
         const t = Array.from(types);
@@ -497,7 +532,8 @@ const WeekCalendarManager = {
             hours.push(h);
         }
 
-        let html = '<div class="week-cal-layout">';
+        let html = '<div class="week-cal-outer">';
+        html += '<div class="week-cal-layout">';
         html += '<div class="week-cal-corner"></div>';
         html += '<div class="week-cal-day-headers">';
         dates.forEach((d) => {
@@ -531,6 +567,7 @@ const WeekCalendarManager = {
             const timed = [];
             const untimed = [];
             items.forEach((task) => {
+                if (task.status === 'done' && task.task_type === 'daily') return;
                 const nt = task.due_time ? Utils.normalizeDueTime(task.due_time) : null;
                 if (nt) timed.push(task);
                 else untimed.push(task);
@@ -562,6 +599,7 @@ const WeekCalendarManager = {
             const items = this.itemsForDay(ymd);
             const timed = [];
             items.forEach((task) => {
+                if (task.status === 'done' && task.task_type === 'daily') return;
                 const nt = task.due_time ? Utils.normalizeDueTime(task.due_time) : null;
                 if (nt) timed.push(task);
             });
@@ -580,6 +618,8 @@ const WeekCalendarManager = {
             html += '</div>';
         });
 
+        html += '</div>';
+        html += this.renderCompletedAside(dates);
         html += '</div>';
 
         root.innerHTML = html;

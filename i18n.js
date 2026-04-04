@@ -82,7 +82,8 @@ const translations = {
         viewToggleWeekTitle: "Scroll to week calendar",
         viewToggleListsTitle: "Scroll to dailies and tasks",
         weekCalendarDragHandle: "Drag to move",
-        weekCalendarNowLine: "Now"
+        weekCalendarNowLine: "Now",
+        weekCalendarCompletedTitle: "Completed dailies this week"
     },
     es: {
         appTitle: "Habitus",
@@ -165,7 +166,8 @@ const translations = {
         viewToggleWeekTitle: "Ir al calendario semanal",
         viewToggleListsTitle: "Ir a diarias y tareas",
         weekCalendarDragHandle: "Arrastrar para mover",
-        weekCalendarNowLine: "Ahora"
+        weekCalendarNowLine: "Ahora",
+        weekCalendarCompletedTitle: "Diarias completadas esta semana"
     },
     zh: {
         appTitle: "Habitus",
@@ -248,7 +250,8 @@ const translations = {
         viewToggleWeekTitle: "滚动到周历",
         viewToggleListsTitle: "滚动到每日任务与待办",
         weekCalendarDragHandle: "拖动以移动",
-        weekCalendarNowLine: "现在"
+        weekCalendarNowLine: "现在",
+        weekCalendarCompletedTitle: "本周已完成的日常"
     },
     ja: {
         appTitle: "Habitus",
@@ -331,7 +334,8 @@ const translations = {
         viewToggleWeekTitle: "週間カレンダーへスクロール",
         viewToggleListsTitle: "デイリーとタスクへスクロール",
         weekCalendarDragHandle: "ドラッグで移動",
-        weekCalendarNowLine: "現在"
+        weekCalendarNowLine: "現在",
+        weekCalendarCompletedTitle: "今週完了したデイリー"
     },
     de: {
         appTitle: "Habitus",
@@ -414,7 +418,8 @@ const translations = {
         viewToggleWeekTitle: "Zur Wochenkalender-Ansicht scrollen",
         viewToggleListsTitle: "Zu Täglichen und Aufgaben scrollen",
         weekCalendarDragHandle: "Ziehen zum Verschieben",
-        weekCalendarNowLine: "Jetzt"
+        weekCalendarNowLine: "Jetzt",
+        weekCalendarCompletedTitle: "Erledigte Tägliche diese Woche"
     },
     it: {
         appTitle: "Habitus",
@@ -497,7 +502,8 @@ const translations = {
         viewToggleWeekTitle: "Scorri al calendario settimanale",
         viewToggleListsTitle: "Scorri a diarie e attività",
         weekCalendarDragHandle: "Trascina per spostare",
-        weekCalendarNowLine: "Adesso"
+        weekCalendarNowLine: "Adesso",
+        weekCalendarCompletedTitle: "Diarie completate questa settimana"
     },
     pt_BR: {
         appTitle: "Habitus",
@@ -580,7 +586,8 @@ const translations = {
         viewToggleWeekTitle: "Rolar até o calendário da semana",
         viewToggleListsTitle: "Rolar até diárias e tarefas",
         weekCalendarDragHandle: "Arrastar para mover",
-        weekCalendarNowLine: "Agora"
+        weekCalendarNowLine: "Agora",
+        weekCalendarCompletedTitle: "Diárias concluídas na semana"
     },
     pt: {
         appTitle: "Habitus",
@@ -663,7 +670,8 @@ const translations = {
         viewToggleWeekTitle: "Ir para o calendário da semana",
         viewToggleListsTitle: "Ir para as listas (diárias e tarefas)",
         weekCalendarDragHandle: "Arrastar para mover",
-        weekCalendarNowLine: "Agora"
+        weekCalendarNowLine: "Agora",
+        weekCalendarCompletedTitle: "Diárias concluídas na semana"
     },
     fr: {
         appTitle: "Habitus",
@@ -746,7 +754,8 @@ const translations = {
         viewToggleWeekTitle: "Faire défiler vers le calendrier hebdomadaire",
         viewToggleListsTitle: "Faire défiler vers quotidiennes et tâches",
         weekCalendarDragHandle: "Glisser pour déplacer",
-        weekCalendarNowLine: "Maintenant"
+        weekCalendarNowLine: "Maintenant",
+        weekCalendarCompletedTitle: "Quotidiennes terminées cette semaine"
     }
 };
 
