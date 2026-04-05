@@ -1600,6 +1600,8 @@ body {
 }
 
 .week-cal-layout {
+    /* Altura de cada faixa de 1h na grelha (labels + linhas + blocos usam o mesmo valor) */
+    --week-cal-hour-px: 72px;
     display: grid;
     grid-template-columns: 52px repeat(7, minmax(72px, 1fr));
     /* Row 3 must fit full hour range (min-height on timelines); do not cap with 50vh or hours clip ~17:00 */
@@ -1805,7 +1807,7 @@ body {
 
 .week-cal-hour-label {
     flex: 1;
-    min-height: 36px;
+    min-height: var(--week-cal-hour-px, 72px);
     font-size: 10px;
     color: var(--text-secondary);
     text-align: right;
@@ -2101,16 +2103,16 @@ body {
     grid-row: 3;
     position: relative;
     min-width: 0;
-    min-height: calc(var(--week-cal-hours, 17) * 36px);
+    min-height: calc(var(--week-cal-hours, 17) * var(--week-cal-hour-px, 72px));
     cursor: cell;
     border-right: 1px solid var(--border-color);
     transition: background 0.15s ease;
     background-image: repeating-linear-gradient(
         to bottom,
         transparent 0,
-        transparent 35px,
-        var(--border-color) 35px,
-        var(--border-color) 36px
+        transparent calc(var(--week-cal-hour-px, 72px) - 1px),
+        var(--border-color) calc(var(--week-cal-hour-px, 72px) - 1px),
+        var(--border-color) var(--week-cal-hour-px, 72px)
     );
 }
 
