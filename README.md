@@ -38,7 +38,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 
 - Criar, editar e eliminar diárias
 - **Streak** e **max streak**
-- **Dias da semana** em que a diária conta (meta `days_of_week`)
+- **Dias da semana** em que a diária conta (meta `days_of_week`); no cartão, o seletor inline permite marcar **vários dias** de seguida — **OK** ou clique **fora** grava; **Esc** descarta
 - Reset lógico diário (estado “hoje” / conclusão)
 - Limite de **20** diárias ativas
 - Secções: ativas, concluídas, agendadas (quando aplicável à UI)

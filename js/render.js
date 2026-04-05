@@ -243,7 +243,24 @@ const RenderManager = {
         
         const daysOfWeek = task.meta?.days_of_week || [];
         const formattedDays = formatDaysOfWeek(daysOfWeek);
-        
+
+        const inlineTimePicker =
+            !task.due_time &&
+            (task.task_type === 'daily' || (task.task_type === 'todo' && task.due_date))
+                ? `<input type="time" class="task-inline-time-input" data-task-id="${task.id}" step="1800" aria-label="${t('weekCalendarPickTime')}" title="${t('weekCalendarPickTime')}" />`
+                : '';
+        const dueTimeDisplay = task.due_time
+            ? `<span class="task-due-time-badge">🕐 ${task.due_time}</span>`
+            : inlineTimePicker;
+
+        const durM = Utils.getTaskDurationMinutes(task);
+        const durationStepper = `
+            <div class="task-duration-stepper" data-task-id="${task.id}" title="${t('taskDurationLabel')}">
+                <button type="button" class="task-duration-btn task-duration-minus" aria-label="${t('taskDurationDecrease')}">−</button>
+                <span class="task-duration-value">${durM}</span>
+                <button type="button" class="task-duration-btn task-duration-plus" aria-label="${t('taskDurationIncrease')}">+</button>
+            </div>`;
+
         card.innerHTML = `
             <div class="task-header">
                 <input type="checkbox" class="task-checkbox" ${task.status === 'done' ? 'checked' : ''}>
@@ -255,7 +272,8 @@ const RenderManager = {
                                 ${formattedDays ? `<span class="task-days-of-week" data-field="days_of_week" data-task-id="${task.id}">📅 ${formattedDays}</span>` : `<span class="task-days-of-week add-days" data-field="days_of_week" data-task-id="${task.id}">+ ${t('daysOfWeek')}</span>`}
                                 <span class="streak-badge">🔥 ${task.streak_count || 0} ${t('days')}</span>
                                 ${task.max_streak > 0 ? `<span class="streak-badge">⭐ ${task.max_streak} ${t('maxStreak')}</span>` : ''}
-                                ${task.due_time ? `<span class="task-due-time-badge">🕐 ${task.due_time}</span>` : ''}
+                                ${dueTimeDisplay}
+                                ${durationStepper}
                                 <div class="task-tags-inline" data-field="tags" data-task-id="${task.id}">
                                     ${task.meta?.tags?.length > 0 ? task.meta.tags.map(tag => `
                                         <span class="task-tag" data-tag="${tag}">
@@ -272,7 +290,8 @@ const RenderManager = {
                                 ${!task.priority ? `<span class="task-priority-badge add-priority" data-field="priority" data-task-id="${task.id}">+ ${t('priority')}</span>` : ''}
                                 ${task.due_date ? `<span class="task-due-date ${isOverdue ? 'overdue' : ''}" data-field="due_date" data-task-id="${task.id}">${Utils.formatDate(task.due_date)}</span>` : ''}
                                 ${!task.due_date ? `<span class="task-due-date add-due-date" data-field="due_date" data-task-id="${task.id}">+ ${t('dueDate')}</span>` : ''}
-                                ${task.due_time ? `<span class="task-due-time-badge">🕐 ${task.due_time}</span>` : ''}
+                                ${dueTimeDisplay}
+                                ${durationStepper}
                                 <div class="task-tags-inline" data-field="tags" data-task-id="${task.id}">
                                     ${task.meta?.tags?.length > 0 ? task.meta.tags.map(tag => `
                                         <span class="task-tag" data-tag="${tag}">
@@ -363,7 +382,38 @@ const RenderManager = {
                 InlineEditManager.editDueDateInline(card, task);
             });
         }
-        
+
+        const inlineTimeEl = card.querySelector('.task-inline-time-input');
+        if (inlineTimeEl) {
+            inlineTimeEl.addEventListener('click', (e) => e.stopPropagation());
+            inlineTimeEl.addEventListener('keydown', (e) => e.stopPropagation());
+            inlineTimeEl.addEventListener('change', () => {
+                const v = inlineTimeEl.value;
+                const normalized = v ? Utils.normalizeDueTime(v) : null;
+                if (v && !normalized) return;
+                TasksManager.updateTask(task.id, { due_time: normalized || null });
+                if (typeof RenderManager !== 'undefined') {
+                    RenderManager.renderAll();
+                }
+            });
+        }
+
+        const durationStepperEl = card.querySelector('.task-duration-stepper');
+        if (durationStepperEl) {
+            durationStepperEl.addEventListener('click', (e) => {
+                const btn = e.target.closest('.task-duration-btn');
+                if (!btn) return;
+                e.stopPropagation();
+                const fresh = DataManager.findTask(task.id);
+                if (!fresh) return;
+                const cur = Utils.getTaskDurationMinutes(fresh);
+                const delta = btn.classList.contains('task-duration-minus') ? -15 : 15;
+                const next = Utils.normalizeDurationMinutes(cur + delta);
+                TasksManager.updateTask(task.id, { duration_minutes: next });
+                this.renderAll();
+            });
+        }
+
         // Subtask event listeners
         card.querySelectorAll('.subtask-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', (e) => {

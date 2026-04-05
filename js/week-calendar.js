@@ -67,7 +67,7 @@ const WeekCalendarManager = {
         const task = DataManager.findTask(parseFloat(id, 10));
         if (!task || task.is_deleted) return;
         const hhmm = this.timeFromTimelineClientY(timelineEl, clientY);
-        const pos = this.positionTimedEvent({ due_time: hhmm });
+        const pos = this.positionTimedEvent({ due_time: hhmm, meta: task.meta });
         if (!pos) return;
         const typeClass = task.task_type === 'daily' ? 'is-daily' : 'is-todo';
         const div = document.createElement('div');
@@ -271,8 +271,15 @@ const WeekCalendarManager = {
         const rel = m - startM;
         const total = this.totalMinutes();
         const topPct = (rel / total) * 100;
-        const slotPct = (this.SNAP_MINUTES / total) * 100;
-        const heightPct = Math.max(slotPct, 7.5);
+
+        let durationM = Utils.getTaskDurationMinutes(task);
+        const maxDuration = Math.max(Utils.DURATION_MINUTES_MIN, endM - m);
+        durationM = Math.min(durationM, maxDuration);
+        durationM = Math.max(durationM, Utils.DURATION_MINUTES_MIN);
+
+        let heightPct = (durationM / total) * 100;
+        const minVis = (Utils.DURATION_MINUTES_MIN / total) * 100;
+        heightPct = Math.max(heightPct, minVis, 2.5);
         return { topPct, heightPct };
     },
 
@@ -544,6 +551,8 @@ const WeekCalendarManager = {
                 this.applyDrop(id, ymd, hhmm, sourceYmd || null);
             });
         });
+
+        this.bindBlockResizeHandles(timelineEl);
     },
 
     pencilIcon() {
@@ -564,9 +573,16 @@ const WeekCalendarManager = {
         const dragHint = this.escapeAttr(t('weekCalendarDragHandle'));
         const editLabel = this.escapeAttr(t('edit'));
         const completeLabel = this.escapeAttr(t('complete'));
-        return `<div class="week-cal-chip ${typeClass} ${done ? 'is-done' : ''}" data-task-id="${task.id}">
+        const pickTimeLabel = this.escapeAttr(t('weekCalendarPickTime'));
+        const tipTitle = this.escapeAttr(task.title || '');
+        const hasTime = !!(task.due_time && Utils.normalizeDueTime(task.due_time));
+        const timeInput = !hasTime
+            ? `<input type="time" class="week-cal-chip-time-input" data-task-id="${task.id}" step="1800" aria-label="${pickTimeLabel}" title="${pickTimeLabel}" />`
+            : '';
+        return `<div class="week-cal-chip ${typeClass} ${done ? 'is-done' : ''}" data-task-id="${task.id}" title="${tipTitle}">
             <span class="week-cal-drag-handle" draggable="true" title="${dragHint}">⋮</span>
             <span class="week-cal-chip-title">${this.escapeHtml(task.title)}</span>
+            ${timeInput}
             <button type="button" class="week-cal-done-btn${done ? ' is-active' : ''}" data-task-id="${task.id}" draggable="false" aria-label="${completeLabel}">${this.checkIcon()}</button>
             <button type="button" class="week-cal-edit-btn" data-task-id="${task.id}" draggable="false" aria-label="${editLabel}">${this.pencilIcon()}</button>
         </div>`;
@@ -580,12 +596,72 @@ const WeekCalendarManager = {
         const dragHint = this.escapeAttr(t('weekCalendarDragHandle'));
         const editLabel = this.escapeAttr(t('edit'));
         const completeLabel = this.escapeAttr(t('complete'));
-        return `<div class="week-cal-block ${typeClass} ${done ? 'is-done' : ''}" style="top:${pos.topPct}%;height:${pos.heightPct}%" data-task-id="${task.id}">
-            <span class="week-cal-drag-handle" draggable="true" title="${dragHint}">⋮</span>
-            <span class="week-cal-block-title">${this.escapeHtml(task.title)}</span>
-            <button type="button" class="week-cal-done-btn${done ? ' is-active' : ''}" data-task-id="${task.id}" draggable="false" aria-label="${completeLabel}">${this.checkIcon()}</button>
-            <button type="button" class="week-cal-edit-btn" data-task-id="${task.id}" draggable="false" aria-label="${editLabel}">${this.pencilIcon()}</button>
+        const tipTitle = this.escapeAttr(task.title || '');
+        const resizeTip = this.escapeAttr(t('weekCalendarResizeDuration'));
+        return `<div class="week-cal-block ${typeClass} ${done ? 'is-done' : ''}" style="top:${pos.topPct}%;height:${pos.heightPct}%" data-task-id="${task.id}" title="${tipTitle}">
+            <div class="week-cal-block-main">
+                <span class="week-cal-drag-handle" draggable="true" title="${dragHint}">⋮</span>
+                <span class="week-cal-block-title" title="${tipTitle}">${this.escapeHtml(task.title)}</span>
+                <button type="button" class="week-cal-done-btn${done ? ' is-active' : ''}" data-task-id="${task.id}" draggable="false" aria-label="${completeLabel}">${this.checkIcon()}</button>
+                <button type="button" class="week-cal-edit-btn" data-task-id="${task.id}" draggable="false" aria-label="${editLabel}">${this.pencilIcon()}</button>
+            </div>
+            <div class="week-cal-resize-handle" title="${resizeTip}" aria-label="${resizeTip}" role="separator" aria-orientation="horizontal"></div>
         </div>`;
+    },
+
+    bindBlockResizeHandles(timelineEl) {
+        timelineEl.querySelectorAll('.week-cal-resize-handle').forEach((handle) => {
+            handle.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                const block = handle.closest('.week-cal-block');
+                if (!block) return;
+                const id = parseFloat(block.getAttribute('data-task-id'), 10);
+                const task = DataManager.findTask(id);
+                if (!task) return;
+                const rect = timelineEl.getBoundingClientRect();
+                const totalMin = this.totalMinutes();
+                const pxPerMin = rect.height / totalMin;
+                const startY = e.clientY;
+                const startDur = Utils.getTaskDurationMinutes(task);
+                const startDueM = Utils.dueTimeToMinutes(task.due_time);
+                if (startDueM == null) return;
+                const endDayM = this.END_HOUR * 60;
+                const maxDur = Math.max(Utils.DURATION_MINUTES_MIN, endDayM - startDueM);
+
+                let workingDur = startDur;
+                block.classList.add('week-cal-resizing');
+
+                const onMove = (ev) => {
+                    const deltaY = ev.clientY - startY;
+                    const deltaMin = Math.round(deltaY / pxPerMin / 15) * 15;
+                    workingDur = Utils.normalizeDurationMinutes(startDur + deltaMin);
+                    workingDur = Math.min(workingDur, maxDur);
+                    workingDur = Math.max(workingDur, Utils.DURATION_MINUTES_MIN);
+                    const hPct = Math.max(
+                        (workingDur / totalMin) * 100,
+                        (Utils.DURATION_MINUTES_MIN / totalMin) * 100,
+                        2.5
+                    );
+                    block.style.height = `${hPct}%`;
+                };
+
+                const onUp = () => {
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onUp);
+                    block.classList.remove('week-cal-resizing');
+                    if (workingDur !== startDur) {
+                        TasksManager.updateTask(id, { duration_minutes: workingDur });
+                    }
+                    if (typeof RenderManager !== 'undefined') {
+                        RenderManager.renderAll();
+                    }
+                };
+
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
+            });
+        });
     },
 
     bindInlineTitle(titleEl, taskIdStr) {
@@ -640,6 +716,22 @@ const WeekCalendarManager = {
             const row = el.closest('[data-task-id]');
             const id = row && row.getAttribute('data-task-id');
             if (id) this.bindInlineTitle(el, id);
+        });
+
+        root.querySelectorAll('.week-cal-chip-time-input').forEach((input) => {
+            input.addEventListener('click', (e) => e.stopPropagation());
+            input.addEventListener('keydown', (e) => e.stopPropagation());
+            input.addEventListener('change', () => {
+                const id = parseFloat(input.getAttribute('data-task-id'), 10);
+                if (!id) return;
+                const v = input.value;
+                const normalized = v ? Utils.normalizeDueTime(v) : null;
+                if (v && !normalized) return;
+                TasksManager.updateTask(id, { due_time: normalized || null });
+                if (typeof RenderManager !== 'undefined') {
+                    RenderManager.renderAll();
+                }
+            });
         });
 
         root.querySelectorAll('.week-cal-block-title').forEach((el) => {

@@ -91,7 +91,13 @@ const translations = {
         weekCalendarShowTodayOnlyTitle: "Show only today in the calendar",
         weekCalendarShowWeekTitle: "Show the full week (Mon–Sun)",
         weekCalendarCompletedTodosTitle: "Completed tasks this week",
-        weekCalendarCompletedTodosTitleToday: "Completed tasks today"
+        weekCalendarCompletedTodosTitleToday: "Completed tasks today",
+        weekCalendarPickTime: "Set time",
+        daysPickerOk: "OK",
+        taskDurationLabel: "Time block (minutes)",
+        taskDurationDecrease: "Shorter by 15 minutes",
+        taskDurationIncrease: "Longer by 15 minutes",
+        weekCalendarResizeDuration: "Drag to resize time block"
     },
     es: {
         appTitle: "Habitus",
@@ -183,7 +189,13 @@ const translations = {
         weekCalendarShowTodayOnlyTitle: "Mostrar solo el día de hoy en el calendario",
         weekCalendarShowWeekTitle: "Mostrar la semana completa (lun–dom)",
         weekCalendarCompletedTodosTitle: "Tareas completadas esta semana",
-        weekCalendarCompletedTodosTitleToday: "Tareas completadas hoy"
+        weekCalendarCompletedTodosTitleToday: "Tareas completadas hoy",
+        weekCalendarPickTime: "Hora",
+        daysPickerOk: "OK",
+        taskDurationLabel: "Bloque en calendario (min)",
+        taskDurationDecrease: "15 minutos menos",
+        taskDurationIncrease: "15 minutos más",
+        weekCalendarResizeDuration: "Arrastra para cambiar la duración"
     },
     zh: {
         appTitle: "Habitus",
@@ -275,7 +287,13 @@ const translations = {
         weekCalendarShowTodayOnlyTitle: "日历中仅显示今天",
         weekCalendarShowWeekTitle: "显示整周（周一至周日）",
         weekCalendarCompletedTodosTitle: "本周已完成的任务",
-        weekCalendarCompletedTodosTitleToday: "今日已完成的任务"
+        weekCalendarCompletedTodosTitleToday: "今日已完成的任务",
+        weekCalendarPickTime: "时间",
+        daysPickerOk: "确定",
+        taskDurationLabel: "日历时段（分钟）",
+        taskDurationDecrease: "缩短 15 分钟",
+        taskDurationIncrease: "延长 15 分钟",
+        weekCalendarResizeDuration: "拖动调整时长"
     },
     ja: {
         appTitle: "Habitus",
@@ -367,7 +385,13 @@ const translations = {
         weekCalendarShowTodayOnlyTitle: "カレンダーは今日の列だけ表示",
         weekCalendarShowWeekTitle: "月曜から日曜までの1週間を表示",
         weekCalendarCompletedTodosTitle: "今週完了したタスク",
-        weekCalendarCompletedTodosTitleToday: "今日完了したタスク"
+        weekCalendarCompletedTodosTitleToday: "今日完了したタスク",
+        weekCalendarPickTime: "時刻",
+        daysPickerOk: "OK",
+        taskDurationLabel: "カレンダーのブロック（分）",
+        taskDurationDecrease: "15分短く",
+        taskDurationIncrease: "15分長く",
+        weekCalendarResizeDuration: "ドラッグで長さを変更"
     },
     de: {
         appTitle: "Habitus",
@@ -459,7 +483,13 @@ const translations = {
         weekCalendarShowTodayOnlyTitle: "Im Kalender nur den heutigen Tag anzeigen",
         weekCalendarShowWeekTitle: "Die ganze Woche (Mo–So) anzeigen",
         weekCalendarCompletedTodosTitle: "Erledigte Aufgaben diese Woche",
-        weekCalendarCompletedTodosTitleToday: "Heute erledigte Aufgaben"
+        weekCalendarCompletedTodosTitleToday: "Heute erledigte Aufgaben",
+        weekCalendarPickTime: "Uhrzeit",
+        daysPickerOk: "OK",
+        taskDurationLabel: "Kalenderblock (Minuten)",
+        taskDurationDecrease: "15 Minuten kürzer",
+        taskDurationIncrease: "15 Minuten länger",
+        weekCalendarResizeDuration: "Ziehen, um die Dauer zu ändern"
     },
     it: {
         appTitle: "Habitus",
@@ -551,7 +581,13 @@ const translations = {
         weekCalendarShowTodayOnlyTitle: "Mostra solo oggi nel calendario",
         weekCalendarShowWeekTitle: "Mostra la settimana intera (lun–dom)",
         weekCalendarCompletedTodosTitle: "Attività completate questa settimana",
-        weekCalendarCompletedTodosTitleToday: "Attività completate oggi"
+        weekCalendarCompletedTodosTitleToday: "Attività completate oggi",
+        weekCalendarPickTime: "Ora",
+        daysPickerOk: "OK",
+        taskDurationLabel: "Blocco calendario (min)",
+        taskDurationDecrease: "Meno 15 minuti",
+        taskDurationIncrease: "Più 15 minuti",
+        weekCalendarResizeDuration: "Trascina per ridimensionare"
     },
     pt_BR: {
         appTitle: "Habitus",
@@ -643,7 +679,13 @@ const translations = {
         weekCalendarShowTodayOnlyTitle: "Mostrar só o dia de hoje no calendário",
         weekCalendarShowWeekTitle: "Mostrar a semana completa (seg–dom)",
         weekCalendarCompletedTodosTitle: "Atividades concluídas na semana",
-        weekCalendarCompletedTodosTitleToday: "Atividades concluídas hoje"
+        weekCalendarCompletedTodosTitleToday: "Atividades concluídas hoje",
+        weekCalendarPickTime: "Hora",
+        daysPickerOk: "OK",
+        taskDurationLabel: "Tempo no calendário (min)",
+        taskDurationDecrease: "Menos 15 minutos",
+        taskDurationIncrease: "Mais 15 minutos",
+        weekCalendarResizeDuration: "Arraste para redimensionar o bloco"
     },
     pt: {
         appTitle: "Habitus",
@@ -735,7 +777,13 @@ const translations = {
         weekCalendarShowTodayOnlyTitle: "Mostrar só o dia de hoje no calendário",
         weekCalendarShowWeekTitle: "Mostrar a semana completa (seg–dom)",
         weekCalendarCompletedTodosTitle: "Atividades concluídas na semana",
-        weekCalendarCompletedTodosTitleToday: "Atividades concluídas hoje"
+        weekCalendarCompletedTodosTitleToday: "Atividades concluídas hoje",
+        weekCalendarPickTime: "Hora",
+        daysPickerOk: "OK",
+        taskDurationLabel: "Tempo no calendário (min)",
+        taskDurationDecrease: "Menos 15 minutos",
+        taskDurationIncrease: "Mais 15 minutos",
+        weekCalendarResizeDuration: "Arraste para redimensionar o bloco"
     },
     fr: {
         appTitle: "Habitus",
@@ -827,7 +875,13 @@ const translations = {
         weekCalendarShowTodayOnlyTitle: "N'afficher que la colonne d'aujourd'hui",
         weekCalendarShowWeekTitle: "Afficher la semaine complète (lun–dim)",
         weekCalendarCompletedTodosTitle: "Tâches terminées cette semaine",
-        weekCalendarCompletedTodosTitleToday: "Tâches terminées aujourd'hui"
+        weekCalendarCompletedTodosTitleToday: "Tâches terminées aujourd'hui",
+        weekCalendarPickTime: "Heure",
+        daysPickerOk: "OK",
+        taskDurationLabel: "Bloc calendrier (min)",
+        taskDurationDecrease: "15 minutes de moins",
+        taskDurationIncrease: "15 minutes de plus",
+        weekCalendarResizeDuration: "Glisser pour redimensionner"
     }
 };
 

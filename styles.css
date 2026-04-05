@@ -41,8 +41,8 @@ body {
 .header {
     position: fixed;
     top: 0;
-    left: 0;
-    right: 0;
+    left: 2.5%;
+    right: 2.5%;
     background: rgba(15, 17, 23, 0.9);
     backdrop-filter: blur(10px);
     padding: 16px 24px;
@@ -173,9 +173,10 @@ body {
     border-color: var(--blue-primary);
 }
 
-/* Container */
+/* Container — 95% da largura da viewport (2,5% de margem de cada lado) */
 .container {
-    max-width: 1400px;
+    width: 95%;
+    max-width: none;
     margin: 0 auto;
     padding: 100px 24px 120px;
 }
@@ -450,6 +451,65 @@ body {
     height: 16px;
     cursor: pointer;
     accent-color: var(--blue-primary);
+}
+
+/* Popover de dias da semana no cartão (diárias) */
+.inline-days-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--blue-primary);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11px;
+    max-width: 100%;
+}
+
+.inline-days-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+}
+
+.inline-days-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+    color: var(--text-primary);
+}
+
+.inline-days-checkbox {
+    cursor: pointer;
+    accent-color: var(--blue-primary);
+}
+
+.inline-days-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border-color);
+}
+
+.inline-days-ok-btn {
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    background: var(--blue-gradient);
+    color: #fff;
+    transition: opacity 0.15s ease;
+}
+
+.inline-days-ok-btn:hover {
+    opacity: 0.92;
 }
 
 .edit-form-actions {
@@ -956,8 +1016,8 @@ body {
 .footer {
     position: fixed;
     bottom: 0;
-    left: 0;
-    right: 0;
+    left: 2.5%;
+    right: 2.5%;
     background: rgba(15, 17, 23, 0.9);
     backdrop-filter: blur(10px);
     padding: 16px 24px;
@@ -1402,6 +1462,67 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
+.task-inline-time-input {
+    font-size: 11px;
+    height: 26px;
+    padding: 0 6px;
+    font-variant-numeric: tabular-nums;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.task-inline-time-input:hover {
+    border-color: var(--blue-primary);
+}
+
+.task-duration-stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 4px;
+    padding: 1px 4px;
+    border-radius: 10px;
+    background: rgba(124, 158, 255, 0.1);
+    border: 1px solid rgba(124, 158, 255, 0.28);
+    font-variant-numeric: tabular-nums;
+    vertical-align: middle;
+}
+
+.task-duration-btn {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    line-height: 1;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.task-duration-btn:hover {
+    background: rgba(124, 158, 255, 0.35);
+}
+
+.task-duration-value {
+    min-width: 1.75rem;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.task-inline-time-input:focus {
+    outline: none;
+    border-color: var(--blue-primary);
+}
+
 /* Week calendar */
 .week-calendar-section {
     margin-top: 40px;
@@ -1793,8 +1914,10 @@ body {
     line-height: 1.3;
     word-break: break-word;
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     gap: 4px;
+    row-gap: 6px;
 }
 
 .week-cal-chip.is-todo {
@@ -1837,10 +1960,40 @@ body {
     cursor: grabbing;
 }
 
+.week-cal-chip-time-input {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 5.5rem;
+    max-width: 6.5rem;
+    height: 22px;
+    padding: 0 4px;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: rgba(15, 17, 23, 0.65);
+    color: var(--text-primary);
+    cursor: pointer;
+    align-self: center;
+}
+
+.week-cal-chip-time-input:hover {
+    border-color: var(--blue-primary);
+}
+
+.week-cal-chip-time-input:focus {
+    outline: none;
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 1px rgba(124, 158, 255, 0.35);
+}
+
 .week-cal-chip-title {
     flex: 1;
     min-width: 0;
     cursor: text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     outline: none;
     border-radius: 4px;
     padding: 2px 4px;
@@ -1856,6 +2009,7 @@ body {
     padding: 2px 4px;
     margin: -2px 0;
     font-size: 11px;
+    font-weight: 500;
     line-height: 1.3;
     white-space: nowrap;
     overflow: hidden;
@@ -1991,8 +2145,8 @@ body {
     position: absolute;
     left: 3px;
     right: 3px;
-    min-height: 40px;
-    padding: 4px 4px 4px 2px;
+    min-height: 0;
+    padding: 0;
     border-radius: 6px;
     border: 1px solid var(--border-color);
     font-size: 10px;
@@ -2000,11 +2154,44 @@ body {
     overflow: hidden;
     cursor: default;
     display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 3;
+}
+
+.week-cal-block-main {
+    display: flex;
     flex-direction: row;
     align-items: center;
     gap: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    z-index: 3;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    padding: 4px 4px 2px 2px;
+    overflow: hidden;
+}
+
+.week-cal-block.week-cal-resizing {
+    opacity: 0.92;
+    z-index: 14;
+}
+
+.week-cal-resize-handle {
+    flex-shrink: 0;
+    height: 7px;
+    margin: 0 2px 2px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: ns-resize;
+    z-index: 5;
+}
+
+.week-cal-resize-handle:hover {
+    background: rgba(124, 158, 255, 0.35);
+    border-color: rgba(124, 158, 255, 0.6);
 }
 
 .week-cal-block.is-todo {
@@ -2025,10 +2212,6 @@ body {
 
 .week-cal-block.is-done .week-cal-block-title {
     text-decoration: line-through;
-}
-
-.week-cal-block .week-cal-block-title {
-    font-weight: 500;
 }
 
 .week-cal-block .week-cal-drag-handle {

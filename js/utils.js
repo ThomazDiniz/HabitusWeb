@@ -89,7 +89,29 @@ const Utils = {
         if (hh === 24 && mi === 0) return 24 * 60;
         return hh * 60 + mi;
     },
-    
+
+    /** Duração do bloco na grelha (minutos), múltiplos de 15. */
+    DURATION_MINUTES_DEFAULT: 30,
+    DURATION_MINUTES_MIN: 15,
+    DURATION_MINUTES_MAX: 480,
+
+    normalizeDurationMinutes(value) {
+        if (value == null || value === '') return this.DURATION_MINUTES_DEFAULT;
+        const n = typeof value === 'number' ? value : parseInt(String(value), 10);
+        if (Number.isNaN(n)) return this.DURATION_MINUTES_DEFAULT;
+        const step = 15;
+        const snapped = Math.round(n / step) * step;
+        return Math.max(
+            this.DURATION_MINUTES_MIN,
+            Math.min(this.DURATION_MINUTES_MAX, snapped)
+        );
+    },
+
+    getTaskDurationMinutes(task) {
+        if (!task || !task.meta) return this.DURATION_MINUTES_DEFAULT;
+        return this.normalizeDurationMinutes(task.meta.duration_minutes);
+    },
+
     // Linkify URLs in text
     linkify(text) {
         if (!text) return '';

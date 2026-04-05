@@ -31,6 +31,9 @@ const ModalManager = {
         document.getElementById('task-priority-label').textContent = t('priority');
         document.getElementById('task-due-date-label').textContent = t('dueDate');
         document.getElementById('task-due-time-label').textContent = t('dueTimeOptional');
+        const durationLabel = document.getElementById('task-duration-label');
+        const durationInput = document.getElementById('task-duration-input');
+        if (durationLabel) durationLabel.textContent = t('taskDurationLabel');
         document.getElementById('task-days-label').textContent = t('daysOfWeek');
         document.getElementById('task-tags-label').textContent = t('tags');
         document.getElementById('task-subtasks-label').textContent = t('subtasks');
@@ -87,6 +90,7 @@ const ModalManager = {
             prioritySelect.value = task.priority || '';
             dueDateInput.value = task.due_date || '';
             if (dueTimeInput) dueTimeInput.value = task.due_time || '';
+            if (durationInput) durationInput.value = String(Utils.getTaskDurationMinutes(task));
             tagsInput.value = (task.meta?.tags || []).join(', ');
             
             if (task.task_type === 'daily') {
@@ -116,6 +120,7 @@ const ModalManager = {
                         : '';
             }
             tagsInput.value = '';
+            if (durationInput) durationInput.value = String(Utils.DURATION_MINUTES_DEFAULT);
             titleInput.placeholder = t('title');
             tagsInput.placeholder = 'tag1, tag2, tag3';
             
@@ -153,6 +158,7 @@ const ModalManager = {
         const dueTimeInput = document.getElementById('task-due-time-input');
         const tagsInput = document.getElementById('task-tags-input');
         const daysOfWeekGroup = document.getElementById('task-days-of-week-group');
+        const durationInputEl = document.getElementById('task-duration-input');
 
         if (!titleInput || !statusSelect || !daysOfWeekGroup) {
             console.error('Task modal: missing required fields');
@@ -184,7 +190,10 @@ const ModalManager = {
             due_date: taskType === 'todo' && dueDateInput ? (dueDateInput.value || null) : null,
             due_time,
             tags,
-            days_of_week: taskType === 'daily' ? daysOfWeek : []
+            days_of_week: taskType === 'daily' ? daysOfWeek : [],
+            duration_minutes: durationInputEl
+                ? Utils.normalizeDurationMinutes(durationInputEl.value)
+                : Utils.DURATION_MINUTES_DEFAULT
         };
         
         if (this.currentEditingTask) {

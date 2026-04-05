@@ -43,12 +43,21 @@ const DataManager = {
                     tasks: taskList
                 };
                 // Migrate old data structure if needed
-                this.appData.tasks = this.appData.tasks.map(task => ({
-                    ...task,
-                    due_time: task.due_time != null ? task.due_time : null,
-                    meta: task.meta || { tags: [], days_of_week: [] },
-                    subtasks: task.subtasks || []
-                }));
+                this.appData.tasks = this.appData.tasks.map((task) => {
+                    const m = task.meta || {};
+                    return {
+                        ...task,
+                        due_time: task.due_time != null ? task.due_time : null,
+                        meta: {
+                            tags: Array.isArray(m.tags) ? m.tags : [],
+                            days_of_week: Array.isArray(m.days_of_week) ? m.days_of_week : [],
+                            ...(typeof m.duration_minutes !== 'undefined'
+                                ? { duration_minutes: m.duration_minutes }
+                                : {})
+                        },
+                        subtasks: task.subtasks || []
+                    };
+                });
             }
             if (!Array.isArray(this.appData.tasks)) {
                 this.appData.tasks = [];

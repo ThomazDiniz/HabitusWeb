@@ -179,6 +179,10 @@ const InlineEditManager = {
                 <input type="time" class="edit-due-time-input" step="60" value="${task.due_time || ''}">
             </div>
             <div class="edit-form-row">
+                <label>${t('taskDurationLabel')}</label>
+                <input type="number" class="edit-duration-input" min="15" max="480" step="15" value="${Utils.getTaskDurationMinutes(task)}">
+            </div>
+            <div class="edit-form-row">
                 <label>${t('tags')}</label>
                 <input type="text" class="edit-tags-input" value="${(task.meta?.tags || []).join(', ')}" placeholder="tag1, tag2, tag3">
             </div>
@@ -257,6 +261,11 @@ const InlineEditManager = {
         const dueTimeInput = editForm.querySelector('.edit-due-time-input');
         if (dueTimeInput) {
             updates.due_time = dueTimeInput.value ? Utils.normalizeDueTime(dueTimeInput.value) : null;
+        }
+
+        const durationInput = editForm.querySelector('.edit-duration-input');
+        if (durationInput) {
+            updates.duration_minutes = Utils.normalizeDurationMinutes(durationInput.value);
         }
         
         TasksManager.updateTask(task.id, updates);
@@ -446,22 +455,18 @@ const InlineEditManager = {
         TasksManager.updateTask(taskId, { tags: updatedTags });
     },
     
-    // Edit days of week inline for dailies
+    // Edit days of week inline for dailies (multi-select: só grava em OK ou clique fora; Esc descarta)
     editDaysOfWeekInline(card, task) {
         if (task.task_type !== 'daily') return;
-        
-        // Clear any previous editing state
-        this.editingDaysOfWeekTaskId = null;
-        
-        // Set current editing task
+
         this.editingDaysOfWeekTaskId = task.id;
-        
+
         const daysEl = card.querySelector('.task-days-of-week');
         if (!daysEl) {
             this.editingDaysOfWeekTaskId = null;
             return;
         }
-        
+
         const currentDays = task.meta?.days_of_week || [];
         const dayLabels = {
             monday: t('monday'),
@@ -472,104 +477,94 @@ const InlineEditManager = {
             saturday: t('saturday'),
             sunday: t('sunday')
         };
-        
-        // Create container for checkboxes
+
         const container = document.createElement('div');
         container.className = 'inline-days-container';
-        container.style.display = 'flex';
-        container.style.flexWrap = 'wrap';
-        container.style.gap = '8px';
-        container.style.alignItems = 'center';
-        container.style.background = 'rgba(0, 0, 0, 0.3)';
-        container.style.border = '1px solid var(--blue-primary)';
-        container.style.borderRadius = '6px';
-        container.style.padding = '6px 8px';
-        container.style.fontSize = '11px';
-        
+
+        const row = document.createElement('div');
+        row.className = 'inline-days-row';
+
         const allDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-        allDays.forEach(day => {
+        allDays.forEach((day) => {
             const label = document.createElement('label');
-            label.style.display = 'flex';
-            label.style.alignItems = 'center';
-            label.style.gap = '4px';
-            label.style.cursor = 'pointer';
-            label.style.userSelect = 'none';
-            
+            label.className = 'inline-days-label';
+
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.value = day;
             checkbox.checked = currentDays.includes(day);
-            checkbox.style.cursor = 'pointer';
-            checkbox.style.accentColor = 'var(--blue-primary)';
-            
+            checkbox.className = 'inline-days-checkbox';
+
             const span = document.createElement('span');
             span.textContent = dayLabels[day];
-            span.style.color = 'var(--text-primary)';
-            
+
             label.appendChild(checkbox);
             label.appendChild(span);
-            container.appendChild(label);
+            row.appendChild(label);
         });
-        
-        // Replace element
-        const parent = daysEl.parentElement;
+
+        const okBtn = document.createElement('button');
+        okBtn.type = 'button';
+        okBtn.className = 'inline-days-ok-btn';
+        okBtn.textContent = t('daysPickerOk');
+
+        const actions = document.createElement('div');
+        actions.className = 'inline-days-actions';
+        actions.appendChild(okBtn);
+
+        container.appendChild(row);
+        container.appendChild(actions);
+
         daysEl.replaceWith(container);
-        
-        const save = () => {
+
+        let closed = false;
+
+        const cleanup = () => {
+            document.removeEventListener('click', outsideHandler, true);
+            document.removeEventListener('keydown', escapeHandler);
+        };
+
+        const persistAndClose = () => {
             const checkboxes = container.querySelectorAll('input[type="checkbox"]');
             const selectedDays = Array.from(checkboxes)
-                .filter(cb => cb.checked)
-                .map(cb => cb.value);
-            
+                .filter((cb) => cb.checked)
+                .map((cb) => cb.value);
             TasksManager.updateTask(task.id, { days_of_week: selectedDays });
             RenderManager.renderAll();
         };
-        
-        let saved = false;
-        
-        const saveHandler = () => {
-            if (saved) return;
-            saved = true;
+
+        const finish = (apply) => {
+            if (closed) return;
+            closed = true;
             this.editingDaysOfWeekTaskId = null;
-            save();
+            cleanup();
+            if (apply) {
+                persistAndClose();
+            } else {
+                RenderManager.renderAll();
+            }
         };
-        
-        // Save on any checkbox change
-        container.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', () => {
-                if (!saved) {
-                    saveHandler();
-                }
-            });
+
+        okBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            finish(true);
         });
-        
-        // Save on blur (click outside)
-        const blurHandler = (e) => {
-            if (!container.contains(e.target)) {
-                if (!saved) {
-                    saveHandler();
-                } else {
-                    this.editingDaysOfWeekTaskId = null;
-                }
-                document.removeEventListener('click', blurHandler);
-            }
+
+        const outsideHandler = (e) => {
+            if (closed) return;
+            if (container.contains(e.target)) return;
+            finish(true);
         };
-        
-        // Also save on Escape key
+
         const escapeHandler = (e) => {
-            if (e.key === 'Escape') {
-                if (!saved) {
-                    saveHandler();
-                } else {
-                    this.editingDaysOfWeekTaskId = null;
-                }
-                document.removeEventListener('keydown', escapeHandler);
-                document.removeEventListener('click', blurHandler);
-            }
+            if (e.key !== 'Escape') return;
+            e.preventDefault();
+            finish(false);
         };
-        
+
         setTimeout(() => {
-            document.addEventListener('click', blurHandler);
+            document.addEventListener('click', outsideHandler, true);
             document.addEventListener('keydown', escapeHandler);
         }, 100);
     }

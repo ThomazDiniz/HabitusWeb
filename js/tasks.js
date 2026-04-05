@@ -27,7 +27,15 @@ const TasksManager = {
             order_index: DataManager.appData.tasks.length,
             meta: {
                 tags: data.tags || [],
-                days_of_week: defaultDaysOfWeek
+                days_of_week: defaultDaysOfWeek,
+                duration_minutes:
+                    typeof Utils !== 'undefined'
+                        ? Utils.normalizeDurationMinutes(
+                              data.duration_minutes !== undefined
+                                  ? data.duration_minutes
+                                  : data.meta?.duration_minutes
+                          )
+                        : 30
             },
             is_deleted: false,
             created_at: now,
@@ -64,8 +72,12 @@ const TasksManager = {
         const prevMeta = task.meta || { tags: [], days_of_week: [] };
         const tags = updates.tags !== undefined ? updates.tags : prevMeta.tags;
         const days_of_week = updates.days_of_week !== undefined ? updates.days_of_week : prevMeta.days_of_week;
-        const { tags: _tg, days_of_week: _dw, due_time: dueTimeRaw, ...rest } = updates;
-        const taskData = { ...rest, meta: { tags, days_of_week } };
+        const duration_minutes =
+            updates.duration_minutes !== undefined
+                ? Utils.normalizeDurationMinutes(updates.duration_minutes)
+                : Utils.normalizeDurationMinutes(prevMeta.duration_minutes);
+        const { tags: _tg, days_of_week: _dw, due_time: dueTimeRaw, duration_minutes: _dm, ...rest } = updates;
+        const taskData = { ...rest, meta: { tags, days_of_week, duration_minutes } };
         if ('due_time' in updates) {
             taskData.due_time =
                 dueTimeRaw === '' || dueTimeRaw == null
