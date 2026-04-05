@@ -27,11 +27,20 @@ const DragDropManager = {
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
         e.dataTransfer.setData('application/x-habitus-task-id', String(this.draggedTaskId));
+        if (typeof WeekCalendarManager !== 'undefined') {
+            WeekCalendarManager._calendarDragTaskId = String(this.draggedTaskId);
+        }
     },
     
     handleDragEnd(e) {
         e.currentTarget.classList.remove('dragging');
         document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        if (typeof WeekCalendarManager !== 'undefined') {
+            WeekCalendarManager._calendarDragTaskId = null;
+            if (typeof WeekCalendarManager.clearAllTimelineDropPreviews === 'function') {
+                WeekCalendarManager.clearAllTimelineDropPreviews();
+            }
+        }
     },
     
     handleDragOver(e) {

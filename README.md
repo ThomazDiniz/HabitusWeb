@@ -25,7 +25,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - Estados: pendente, em progresso, concluída
 - Prioridade: nenhuma, baixa, média, alta
 - **Data de vencimento** (`due_date`, formato `YYYY-MM-DD`)
-- **Hora opcional** (`due_time`, formato `HH:MM`, alinhada a 15 minutos no calendário)
+- **Hora opcional** (`due_time`, formato `HH:MM`; na grelha do calendário o arrasto alinha a **30 em 30 minutos**)
 - Tags múltiplas
 - Subtasks com progresso
 - Reordenação por **drag and drop** nas listas
@@ -56,10 +56,10 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - Vista **segunda a domingo** para a semana corrente (navegação ‹ / Hoje / ›)
 - **Todos com `due_date`** no dia aparecem nesse dia; **dailies** aparecem nos dias em que estão agendadas (`days_of_week`). Diárias **para todos os dias** (`days_of_week` vazio ou os 7 dias) aparecem **só na coluna do dia de hoje** (data real), para não repetir em toda a semana
 - **Faixa superior (sem hora)**: itens **sem** `due_time` — **sem scroll interno**; a grelha de horas começa **só depois** de toda essa faixa (altura uniforme entre colunas via CSS Grid)
-- **Grelha de tempo** (5:00–22:00, linhas ~1 h): itens **com** `due_time` posicionados por hora (a posição indica o horário; edição fina pelo lápis/modal ou arrastando)
+- **Grelha de tempo** (5:00–24:00 / meia-noite, linhas ~1 h): itens **com** `due_time` posicionados por hora (a posição indica o horário; edição fina pelo lápis/modal ou arrastando; largar na grelha com snap de **30 min**)
 - **Diárias concluídas na semana**: só as **diárias** com estado **concluído** deixam de aparecer nas colunas e são listadas num painel **abaixo** da grelha, **à esquerda** (ao lado do painel de atividades concluídas à direita, em ecrã largo), com **data** e os mesmos controlos (⋮, lápis, ✓). Cada diária entra **uma vez** na lista (primeiro dia da semana em que entra na vista)
 - **Atividades (todos) concluídas na semana**: painel **adicional** com **todos** com `due_date` nos dias visíveis e estado **concluído**; resumo **abaixo** da grelha, **à direita**, ao lado do painel de diárias (**à esquerda**), em ecrãs largos; em ecrãs estreitos voltam a empilhar. Continuam **também** visíveis no calendário no respetivo dia
-- **Drag and drop**: arrastar desde as listas ou desde o calendário; largar na grelha define **data + hora** (snap 15 min); largar na faixa superior mantém só o **dia** e **limpa** a hora
+- **Drag and drop**: arrastar desde as listas ou desde o calendário; largar na grelha define **data + hora** com snap de **30 em 30 minutos**; durante o arrasto sobre a grelha aparece **pré-visualização** semitransparente do cartão na posição alinhada; largar na faixa superior mantém só o **dia** e **limpa** a hora
 - **Arrastar no calendário**: usar o identificador **⋮** no card (não o título nem o lápis)
 - **Duplo clique** em espaço vazio na grelha abre modal de **nova task** com data/hora pré-preenchidas
 - Botões **+** (nova task na data) e **☀** (nova diária para aquele dia da semana) no cabeçalho de cada dia

@@ -1693,7 +1693,7 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
-/* Last gutter cell: 21:00 (start of final hour) + 22:00 at bottom (end of 05:00–22:00 range) */
+/* Last gutter cell: hora do último slot + 24:00 no fundo (fim do dia 05:00–24:00) */
 .week-cal-hour-label-split {
     display: flex;
     flex-direction: column;
@@ -1754,7 +1754,35 @@ body {
 }
 
 .week-cal-dragging {
-    opacity: 0.65;
+    opacity: 0.32;
+}
+
+.week-cal-drop-preview {
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    z-index: 8;
+    box-sizing: border-box;
+    border-radius: 6px;
+    border: 2px dashed rgba(124, 158, 255, 0.75);
+    background: rgba(124, 158, 255, 0.12);
+    pointer-events: none;
+    display: flex;
+    align-items: flex-start;
+    padding: 4px 6px 4px 4px;
+    opacity: 0.5;
+    overflow: hidden;
+}
+
+.week-cal-drop-preview.is-daily {
+    border-color: rgba(251, 191, 36, 0.8);
+    background: rgba(251, 191, 36, 0.1);
+}
+
+.week-cal-drop-preview .week-cal-block-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .week-cal-chip {

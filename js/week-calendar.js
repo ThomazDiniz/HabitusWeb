@@ -1,13 +1,16 @@
-// Week calendar (Mon–Sun or today-only): time grid 05:00–22:00 local; todos by due_date, dailies by weekday; DnD sets due_time
+// Week calendar (Mon–Sun or today-only): time grid 05:00–24:00 local (meia-noite); todos by due_date, dailies by weekday; DnD sets due_time
 
 const WeekCalendarManager = {
     weekStart: null,
     /** When true, the grid shows only today's column (toggle with week view). */
     todayOnlyView: false,
-    /** Timeline and DnD scale: local 05:00 inclusive → 22:00 exclusive (last slot ends at 22:00). */
+    /** Timeline and DnD scale: local 05:00 inclusive → 24:00 (meia-noite) exclusive; último snap de largar ≈ 23:45. */
     START_HOUR: 5,
-    END_HOUR: 22,
-    SNAP_MINUTES: 15,
+    END_HOUR: 24,
+    /** Snap ao largar / pré-visualização na grelha de tempo (arrastar). */
+    SNAP_MINUTES: 30,
+    /** Task em arrasto (listas ou calendário); `getData` em dragover nem sempre existe no Chrome. */
+    _calendarDragTaskId: null,
     _CAL_VIEW_STORAGE_KEY: 'habitus-week-cal-today-only',
 
     ensureWeekStart() {
@@ -42,7 +45,40 @@ const WeekCalendarManager = {
                 this.render();
             });
         }
+        document.addEventListener(
+            'dragend',
+            () => {
+                this._calendarDragTaskId = null;
+                this.clearAllTimelineDropPreviews();
+            },
+            true
+        );
         this.startLiveClock();
+    },
+
+    clearAllTimelineDropPreviews() {
+        document.querySelectorAll('.week-cal-drop-preview').forEach((n) => n.remove());
+    },
+
+    updateTimelineDropPreview(timelineEl, clientY) {
+        this.clearAllTimelineDropPreviews();
+        const id = this._calendarDragTaskId;
+        if (!id) return;
+        const task = DataManager.findTask(parseFloat(id, 10));
+        if (!task || task.is_deleted) return;
+        const hhmm = this.timeFromTimelineClientY(timelineEl, clientY);
+        const pos = this.positionTimedEvent({ due_time: hhmm });
+        if (!pos) return;
+        const typeClass = task.task_type === 'daily' ? 'is-daily' : 'is-todo';
+        const div = document.createElement('div');
+        div.className = `week-cal-drop-preview week-cal-block ${typeClass}`;
+        div.style.top = `${pos.topPct}%`;
+        div.style.height = `${pos.heightPct}%`;
+        const title = document.createElement('span');
+        title.className = 'week-cal-block-title';
+        title.textContent = task.title || '';
+        div.appendChild(title);
+        timelineEl.appendChild(div);
     },
 
     loadCalendarViewMode() {
@@ -231,11 +267,11 @@ const WeekCalendarManager = {
         const endM = this.END_HOUR * 60;
         let m = mins;
         if (m < startM) m = startM;
-        if (m >= endM) m = endM - 30;
+        if (m >= endM) m = endM - this.SNAP_MINUTES;
         const rel = m - startM;
         const total = this.totalMinutes();
         const topPct = (rel / total) * 100;
-        const slotPct = (30 / total) * 100;
+        const slotPct = (this.SNAP_MINUTES / total) * 100;
         const heightPct = Math.max(slotPct, 7.5);
         return { topPct, heightPct };
     },
@@ -382,14 +418,32 @@ const WeekCalendarManager = {
                 e.preventDefault();
                 return;
             }
+            this._calendarDragTaskId = String(id);
             e.dataTransfer.setData('application/x-habitus-task-id', String(id));
             e.dataTransfer.setData('application/x-habitus-source-ymd', sourceYmd || '');
             e.dataTransfer.effectAllowed = 'move';
-            if (card) card.classList.add('week-cal-dragging');
+            if (card) {
+                card.classList.add('week-cal-dragging');
+                try {
+                    const ghost = card.cloneNode(true);
+                    ghost.classList.remove('week-cal-dragging');
+                    ghost.style.cssText =
+                        'position:fixed;left:-9999px;top:0;width:' +
+                        Math.min(card.offsetWidth, 280) +
+                        'px;opacity:0.42;pointer-events:none;z-index:10000;';
+                    document.body.appendChild(ghost);
+                    e.dataTransfer.setDragImage(ghost, Math.min(24, ghost.offsetWidth / 4), 12);
+                    document.addEventListener('dragend', () => ghost.remove(), { once: true });
+                } catch (err) {
+                    /* setDragImage opcional */
+                }
+            }
         });
         handleEl.addEventListener('dragend', () => {
             const card = handleEl.closest('.week-cal-chip, .week-cal-block');
             if (card) card.classList.remove('week-cal-dragging');
+            this._calendarDragTaskId = null;
+            this.clearAllTimelineDropPreviews();
             document.querySelectorAll('.week-cal-timeline.week-cal-drop-hover, .week-cal-untimed.week-cal-drop-hover').forEach((x) => {
                 x.classList.remove('week-cal-drop-hover');
             });
@@ -435,11 +489,13 @@ const WeekCalendarManager = {
             e.stopPropagation();
             e.dataTransfer.dropEffect = 'move';
             timelineEl.classList.add('week-cal-drop-hover');
+            this.updateTimelineDropPreview(timelineEl, e.clientY);
         };
 
         const onDragLeave = (e) => {
             if (!timelineEl.contains(e.relatedTarget)) {
                 timelineEl.classList.remove('week-cal-drop-hover');
+                this.clearAllTimelineDropPreviews();
             }
         };
 
@@ -448,6 +504,7 @@ const WeekCalendarManager = {
             e.preventDefault();
             e.stopPropagation();
             timelineEl.classList.remove('week-cal-drop-hover');
+            this.clearAllTimelineDropPreviews();
             const id = e.dataTransfer.getData('application/x-habitus-task-id');
             if (!id) return;
             const sourceYmd = this.readSourceYmd(e);
@@ -479,6 +536,7 @@ const WeekCalendarManager = {
                 e.preventDefault();
                 e.stopPropagation();
                 timelineEl.classList.remove('week-cal-drop-hover');
+                this.clearAllTimelineDropPreviews();
                 const id = e.dataTransfer.getData('application/x-habitus-task-id');
                 if (!id) return;
                 const sourceYmd = this.readSourceYmd(e);

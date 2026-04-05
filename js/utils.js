@@ -67,7 +67,9 @@ const Utils = {
         if (!m) return null;
         let h = parseInt(m[1], 10);
         let min = parseInt(m[2], 10);
-        if (h < 0 || h > 23 || min < 0 || min > 59) return null;
+        if (min < 0 || min > 59) return null;
+        if (h === 24 && min === 0) return '24:00';
+        if (h < 0 || h > 23) return null;
         return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
     },
 
@@ -80,9 +82,12 @@ const Utils = {
         if (!hhmm) return null;
         const n = Utils.normalizeDueTime(hhmm);
         if (!n) return null;
-        const m = n.match(/^(\d{2}):(\d{2})$/);
+        const m = n.match(/^(\d{1,2}):(\d{2})$/);
         if (!m) return null;
-        return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+        const hh = parseInt(m[1], 10);
+        const mi = parseInt(m[2], 10);
+        if (hh === 24 && mi === 0) return 24 * 60;
+        return hh * 60 + mi;
     },
     
     // Linkify URLs in text
