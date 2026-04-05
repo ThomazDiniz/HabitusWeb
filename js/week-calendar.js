@@ -573,16 +573,10 @@ const WeekCalendarManager = {
         const dragHint = this.escapeAttr(t('weekCalendarDragHandle'));
         const editLabel = this.escapeAttr(t('edit'));
         const completeLabel = this.escapeAttr(t('complete'));
-        const pickTimeLabel = this.escapeAttr(t('weekCalendarPickTime'));
         const tipTitle = this.escapeAttr(task.title || '');
-        const hasTime = !!(task.due_time && Utils.normalizeDueTime(task.due_time));
-        const timeInput = !hasTime
-            ? `<input type="time" class="week-cal-chip-time-input" data-task-id="${task.id}" step="1800" aria-label="${pickTimeLabel}" title="${pickTimeLabel}" />`
-            : '';
         return `<div class="week-cal-chip ${typeClass} ${done ? 'is-done' : ''}" data-task-id="${task.id}" title="${tipTitle}">
             <span class="week-cal-drag-handle" draggable="true" title="${dragHint}">⋮</span>
             <span class="week-cal-chip-title">${this.escapeHtml(task.title)}</span>
-            ${timeInput}
             <button type="button" class="week-cal-done-btn${done ? ' is-active' : ''}" data-task-id="${task.id}" draggable="false" aria-label="${completeLabel}">${this.checkIcon()}</button>
             <button type="button" class="week-cal-edit-btn" data-task-id="${task.id}" draggable="false" aria-label="${editLabel}">${this.pencilIcon()}</button>
         </div>`;
@@ -716,22 +710,6 @@ const WeekCalendarManager = {
             const row = el.closest('[data-task-id]');
             const id = row && row.getAttribute('data-task-id');
             if (id) this.bindInlineTitle(el, id);
-        });
-
-        root.querySelectorAll('.week-cal-chip-time-input').forEach((input) => {
-            input.addEventListener('click', (e) => e.stopPropagation());
-            input.addEventListener('keydown', (e) => e.stopPropagation());
-            input.addEventListener('change', () => {
-                const id = parseFloat(input.getAttribute('data-task-id'), 10);
-                if (!id) return;
-                const v = input.value;
-                const normalized = v ? Utils.normalizeDueTime(v) : null;
-                if (v && !normalized) return;
-                TasksManager.updateTask(id, { due_time: normalized || null });
-                if (typeof RenderManager !== 'undefined') {
-                    RenderManager.renderAll();
-                }
-            });
         });
 
         root.querySelectorAll('.week-cal-block-title').forEach((el) => {

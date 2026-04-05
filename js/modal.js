@@ -82,7 +82,6 @@ const ModalManager = {
             (taskType === 'daily' ? t('newDaily') : t('newTask'));
         
         const dueTimeGroup = document.getElementById('task-due-time-group');
-        if (dueTimeGroup) dueTimeGroup.style.display = 'block';
 
         if (task) {
             titleInput.value = task.title;
@@ -139,6 +138,9 @@ const ModalManager = {
             
             if (subtasksList) subtasksList.innerHTML = '';
         }
+
+        const isDailyModal = task ? task.task_type === 'daily' : taskType === 'daily';
+        if (dueTimeGroup) dueTimeGroup.style.display = isDailyModal ? 'none' : 'block';
         
         modal.style.display = 'flex';
     },
@@ -177,24 +179,24 @@ const ModalManager = {
         
         const taskType = this.currentEditingTask ? this.currentEditingTask.task_type : 
             (daysOfWeekGroup.style.display === 'none' ? 'todo' : 'daily');
-        
-        const due_time =
-            dueTimeInput && dueTimeInput.value
-                ? Utils.normalizeDueTime(dueTimeInput.value)
-                : null;
 
         const taskData = {
             title,
             status: statusSelect.value,
             priority: taskType === 'todo' && prioritySelect ? (prioritySelect.value || null) : null,
             due_date: taskType === 'todo' && dueDateInput ? (dueDateInput.value || null) : null,
-            due_time,
             tags,
             days_of_week: taskType === 'daily' ? daysOfWeek : [],
             duration_minutes: durationInputEl
                 ? Utils.normalizeDurationMinutes(durationInputEl.value)
                 : Utils.DURATION_MINUTES_DEFAULT
         };
+        if (taskType === 'todo') {
+            taskData.due_time =
+                dueTimeInput && dueTimeInput.value
+                    ? Utils.normalizeDueTime(dueTimeInput.value)
+                    : null;
+        }
         
         if (this.currentEditingTask) {
             TasksManager.updateTask(this.currentEditingTask.id, taskData);
