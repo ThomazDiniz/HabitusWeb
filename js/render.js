@@ -305,6 +305,9 @@ const RenderManager = {
                         `}
                         <div class="task-actions">
                             <button class="task-btn pomodoro" data-task-id="${task.id}">🍅 ${t('pomodoro')}</button>
+                            ${task.task_type === 'todo' && task.status !== 'done'
+                                ? `<button type="button" class="task-btn task-btn-today" data-task-id="${task.id}">${t('setForToday')}</button>`
+                                : ''}
                             <button class="task-btn edit" data-task-id="${task.id}">${t('edit')}</button>
                             <button class="task-btn delete" data-task-id="${task.id}">${t('delete')}</button>
                         </div>
@@ -434,6 +437,20 @@ const RenderManager = {
         card.querySelector('.pomodoro').addEventListener('click', () => {
             PomodoroManager.openModal(task);
         });
+
+        const todayBtn = card.querySelector('.task-btn-today');
+        if (todayBtn) {
+            todayBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const hhmm = Utils.getLocalDueTimeNow();
+                TasksManager.updateTask(task.id, {
+                    due_date: Utils.dateToYMD(new Date()),
+                    due_time: hhmm
+                });
+                Utils.showToast(t('setForTodayDone'));
+                this.renderAll();
+            });
+        }
         
         card.querySelector('.edit').addEventListener('click', (e) => {
             e.stopPropagation();

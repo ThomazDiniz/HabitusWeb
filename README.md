@@ -13,15 +13,16 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 | **Stack** | HTML5, CSS3, JavaScript (ES6+), sem frameworks |
 | **Persistência** | `localStorage` (chave principal `habitus_data`) |
 | **i18n** | 9 idiomas; preferência em `habitus_language` |
-| **UI** | Duas grandes áreas: **listas** (Diárias + Tasks) e **calendário semanal** (abaixo, com scroll na página) |
+| **UI** | Duas grandes áreas: **listas** (**Hábitos** + **Atividades**, em pt-BR) e **calendário semanal** (abaixo, com scroll na página). No código mantêm-se `task_type`: `daily` / `todo`. |
 
 ---
 
 ## Funcionalidades (catálogo)
 
-### Tasks (todos)
+### Atividades (tasks, `task_type: "todo"`)
 
-- Criar, editar e eliminar tasks
+- Na interface (pt-BR e i18n alinhado), a coluna chama-se **Atividades**; abaixo usa-se “task” no sentido técnico.
+- Criar, editar e eliminar atividades
 - Estados: pendente, em progresso, concluída
 - Prioridade: nenhuma, baixa, média, alta
 - **Data de vencimento** (`due_date`, formato `YYYY-MM-DD`)
@@ -29,24 +30,26 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - Tags múltiplas
 - Subtasks com progresso
 - Reordenação por **drag and drop** nas listas
-- Limite de **200** tasks ativas
+- **Definir para hoje** (botão no card, só atividades não concluídas): define `due_date` para o dia **calendário local** atual (`Utils.dateToYMD`) e `due_time` para a **hora atual** (`Utils.getLocalDueTimeNow()`). Toast de confirmação; a pessoa pode depois alterar data/hora (lista, modal ou calendário).
+- Limite de **200** atividades (todos) ativas
 - Secção de concluídas (oculta por defeito) com eliminar todas as concluídas
 - Criação rápida pelo campo `+` e teclado (ver atalhos)
 - Edição inline de título e dias da semana (quando aplicável) nas listas
 
-### Dailies (diárias)
+### Hábitos (dailies, `task_type: "daily"`)
 
-- Criar, editar e eliminar diárias
+- Na interface (pt-BR e i18n alinhado), a coluna chama-se **Hábitos**; o modelo de dados continua a usar “daily” / diária no código.
+- Criar, editar e eliminar hábitos (diárias)
 - **Streak** e **max streak**
 - **Dias da semana** em que a diária conta (meta `days_of_week`); no cartão, o seletor inline permite marcar **vários dias** de seguida — **OK** ou clique **fora** grava; **Esc** descarta
 - Reset lógico diário (estado “hoje” / conclusão)
-- Limite de **20** diárias ativas
+- Limite de **20** hábitos (diárias) ativos
 - Secções: ativas, concluídas, agendadas (quando aplicável à UI)
 - Integração com o mesmo modelo de dados que tasks (`task_type: "daily"`)
 
 ### Tags e filtros
 
-- Adicionar/remover tags em tasks e dailies
+- Adicionar/remover tags em atividades e hábitos
 - Filtro por tags com lógica **OR**
 - Destaque visual das tags selecionadas
 - Clicar numa tag num card aplica o filtro
@@ -79,7 +82,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 ### Teclado (listas)
 
 - **Setas ↑↓**: mover seleção entre cards na coluna ativa
-- **Setas ←→**: alternar coluna Diárias / Tasks
+- **Setas ←→**: alternar coluna Hábitos / Atividades (labels conforme idioma)
 - **Enter** (com card selecionado): alternar conclusão (checkbox)
 - Nos campos de adicionar: **↓** para o primeiro card; **←→** para mudar de coluna de adição
 - Ignorado quando modais estão abertos, em inputs, ou durante edição inline específica
@@ -90,13 +93,14 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - Iniciar, pausar, continuar, reiniciar
 - Barra de progresso
 - Notificação e som ao terminar
-- Associado a uma task específica
+- Associado a uma atividade (task) específica
 
 ### Internacionalização (i18n)
 
 - Idiomas: EN, ES, ZH, JA, DE, IT, PT-BR, PT, FR
 - Deteção pelo idioma do sistema
 - `updateUI` estendido na app para títulos de botões export/import, secções de concluídas, **toggle de vista**, etc.
+- Chaves de rótulos principais: `dailies` / `tasks` (ex.: pt-BR **Hábitos** / **Atividades**); ações do card: `setForToday`, `setForTodayDone`.
 
 ### Exportação / importação
 
@@ -115,7 +119,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 ## Como usar (rápido)
 
 1. Clonar ou descarregar o repositório e abrir `index.html` num navegador moderno.
-2. **Tasks / Diárias**: usar `+` ou os campos de texto e Enter.
+2. **Atividades / Hábitos**: usar `+` ou os campos de texto e Enter; nas atividades pendentes, **Definir para hoje** agenda para hoje à hora corrente.
 3. **Calendário**: navegar a semana, arrastar itens, editar título inline ou abrir o modal com o lápis para hora e outros campos.
 4. **Alternar vista**: botão no topo para saltar entre listas e calendário.
 
@@ -133,7 +137,7 @@ HabitusWeb/
 ├── LICENSE
 └── js/
     ├── data.js          # Persistência, limites MAX_TASKS / MAX_DAILIES
-    ├── utils.js         # Datas (incl. getMondayOfWeek, dateToYMD, due_time)
+    ├── utils.js         # Datas (incl. getMondayOfWeek, dateToYMD, due_time, getLocalDueTimeNow)
     ├── tasks.js         # CRUD e regras de tasks/dailies
     ├── subtasks.js
     ├── filters.js
@@ -143,7 +147,7 @@ HabitusWeb/
     ├── inline-edit.js   # Criação rápida e edição inline nas listas
     ├── keyboard-nav.js  # Navegação por teclado nas listas
     ├── week-calendar.js # Vista semanal, DnD, edição inline, hora
-    ├── render.js        # RenderManager.renderAll()
+    ├── render.js        # RenderManager.renderAll(); botão «Definir para hoje» em atividades
     ├── modal.js         # Modal de task/daily e Pomodoro (referência)
     └── README.md        # Notas técnicas dos módulos
 ```

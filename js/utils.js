@@ -6,6 +6,14 @@ const Utils = {
     getTodayDate() {
         return new Date().toISOString().split('T')[0];
     },
+
+    /** Hora local atual no formato HH:MM (para due_time). */
+    getLocalDueTimeNow(d = new Date()) {
+        const x = d instanceof Date && !isNaN(d.getTime()) ? d : new Date();
+        const hh = String(x.getHours()).padStart(2, '0');
+        const mm = String(x.getMinutes()).padStart(2, '0');
+        return this.normalizeDueTime(`${hh}:${mm}`);
+    },
     
     isToday(dateString) {
         return dateString === this.getTodayDate();

@@ -839,6 +839,7 @@ body {
 
 .task-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 4px;
     flex-shrink: 0;
 }
