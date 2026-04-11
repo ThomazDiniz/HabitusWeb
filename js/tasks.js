@@ -180,6 +180,50 @@ const TasksManager = {
         }
     },
     
+    /** Bucket da lista onde o card da diária aparece (igual a `renderDailies`). */
+    dailyListBucket(task) {
+        if (task.task_type !== 'daily') return null;
+        const isCompletedToday =
+            task.status === 'done' && Utils.isToday(task.last_completed_date);
+        if (isCompletedToday) return 'completed';
+        const scheduledToday = this.isDailyScheduledForToday(task);
+        const editing =
+            typeof InlineEditManager !== 'undefined' &&
+            InlineEditManager.editingDaysOfWeekTaskId === task.id;
+        if (!scheduledToday && !editing) return 'scheduled';
+        return 'active';
+    },
+
+    /** Tarefas do mesmo tipo, mesmo filtro de tags e mesma sublista (ativa / concluídas / agendadas). */
+    getOrderedPeersForList(task) {
+        const filtered = FiltersManager.getFilteredTasks(task.task_type);
+        if (task.task_type === 'todo') {
+            const done = task.status === 'done';
+            return filtered.filter((t) => (t.status === 'done') === done);
+        }
+        const b = this.dailyListBucket(task);
+        return filtered.filter((t) => this.dailyListBucket(t) === b);
+    },
+
+    /** Ordenação: maior `order_index` primeiro (topo). */
+    moveTaskToTop(id) {
+        const task = DataManager.findTask(id);
+        if (!task || task.is_deleted) return;
+        const peers = this.getOrderedPeersForList(task);
+        if (peers.length === 0) return;
+        const maxOrder = Math.max(...peers.map((t) => t.order_index || 0));
+        this.updateTask(id, { order_index: maxOrder + 1 });
+    },
+
+    moveTaskToBottom(id) {
+        const task = DataManager.findTask(id);
+        if (!task || task.is_deleted) return;
+        const peers = this.getOrderedPeersForList(task);
+        if (peers.length === 0) return;
+        const minOrder = Math.min(...peers.map((t) => t.order_index || 0));
+        this.updateTask(id, { order_index: minOrder - 1 });
+    },
+
     // Delete completed tasks
     deleteCompletedTasks(taskType) {
         const completed = DataManager.appData.tasks.filter(t => 

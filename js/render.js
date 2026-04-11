@@ -304,6 +304,8 @@ const RenderManager = {
                             </div>
                         `}
                         <div class="task-actions">
+                            <button type="button" class="task-btn task-order-top" data-task-id="${task.id}" title="${t('sendToTop')}" aria-label="${t('sendToTop')}">↑</button>
+                            <button type="button" class="task-btn task-order-bottom" data-task-id="${task.id}" title="${t('sendToBottom')}" aria-label="${t('sendToBottom')}">↓</button>
                             <button class="task-btn pomodoro" data-task-id="${task.id}">🍅 ${t('pomodoro')}</button>
                             ${task.task_type === 'todo' && task.status !== 'done'
                                 ? `<button type="button" class="task-btn task-btn-today" data-task-id="${task.id}">${t('setForToday')}</button>`
@@ -434,6 +436,17 @@ const RenderManager = {
             });
         });
         
+        card.querySelector('.task-order-top').addEventListener('click', (e) => {
+            e.stopPropagation();
+            TasksManager.moveTaskToTop(task.id);
+            this.renderAll();
+        });
+        card.querySelector('.task-order-bottom').addEventListener('click', (e) => {
+            e.stopPropagation();
+            TasksManager.moveTaskToBottom(task.id);
+            this.renderAll();
+        });
+
         card.querySelector('.pomodoro').addEventListener('click', () => {
             PomodoroManager.openModal(task);
         });

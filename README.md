@@ -29,7 +29,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - **Hora opcional** (`due_time`, formato `HH:MM`; na grelha do calendário o arrasto alinha a **30 em 30 minutos**)
 - Tags múltiplas
 - Subtasks com progresso
-- Reordenação por **drag and drop** nas listas
+- Reordenação por **drag and drop** nas listas; botões **↑ / ↓** (**Para o topo** / **Para o fim**) na mesma sublista (ativas vs concluídas; em hábitos também secção agendada quando aplicável), ajustando `order_index`
 - **Definir para hoje** (botão no card, só atividades não concluídas): define `due_date` para o dia **calendário local** atual (`Utils.dateToYMD`) e `due_time` para a **hora atual** (`Utils.getLocalDueTimeNow()`). Toast de confirmação; a pessoa pode depois alterar data/hora (lista, modal ou calendário).
 - Limite de **200** atividades (todos) ativas
 - Secção de concluídas (oculta por defeito) com eliminar todas as concluídas

@@ -99,7 +99,9 @@ const translations = {
         taskDurationIncrease: "Longer by 15 minutes",
         weekCalendarResizeDuration: "Drag to resize time block",
         setForToday: "Set for today",
-        setForTodayDone: "Activity set for today."
+        setForTodayDone: "Activity set for today.",
+        sendToTop: "Move to top",
+        sendToBottom: "Move to bottom"
     },
     es: {
         appTitle: "Habitus",
@@ -199,7 +201,9 @@ const translations = {
         taskDurationIncrease: "15 minutos más",
         weekCalendarResizeDuration: "Arrastra para cambiar la duración",
         setForToday: "Para hoy",
-        setForTodayDone: "Actividad definida para hoy."
+        setForTodayDone: "Actividad definida para hoy.",
+        sendToTop: "Arriba",
+        sendToBottom: "Abajo"
     },
     zh: {
         appTitle: "Habitus",
@@ -299,7 +303,9 @@ const translations = {
         taskDurationIncrease: "延长 15 分钟",
         weekCalendarResizeDuration: "拖动调整时长",
         setForToday: "设为今天",
-        setForTodayDone: "已设为今天的活动。"
+        setForTodayDone: "已设为今天的活动。",
+        sendToTop: "置顶",
+        sendToBottom: "置底"
     },
     ja: {
         appTitle: "Habitus",
@@ -399,7 +405,9 @@ const translations = {
         taskDurationIncrease: "15分長く",
         weekCalendarResizeDuration: "ドラッグで長さを変更",
         setForToday: "今日に設定",
-        setForTodayDone: "今日の活動として設定しました。"
+        setForTodayDone: "今日の活動として設定しました。",
+        sendToTop: "先頭へ",
+        sendToBottom: "末尾へ"
     },
     de: {
         appTitle: "Habitus",
@@ -499,7 +507,9 @@ const translations = {
         taskDurationIncrease: "15 Minuten länger",
         weekCalendarResizeDuration: "Ziehen, um die Dauer zu ändern",
         setForToday: "Für heute",
-        setForTodayDone: "Als heutige Aktivität gespeichert."
+        setForTodayDone: "Als heutige Aktivität gespeichert.",
+        sendToTop: "Nach oben",
+        sendToBottom: "Nach unten"
     },
     it: {
         appTitle: "Habitus",
@@ -599,7 +609,9 @@ const translations = {
         taskDurationIncrease: "Più 15 minuti",
         weekCalendarResizeDuration: "Trascina per ridimensionare",
         setForToday: "Per oggi",
-        setForTodayDone: "Attività impostata per oggi."
+        setForTodayDone: "Attività impostata per oggi.",
+        sendToTop: "In cima",
+        sendToBottom: "In fondo"
     },
     pt_BR: {
         appTitle: "Habitus",
@@ -699,7 +711,9 @@ const translations = {
         taskDurationIncrease: "Mais 15 minutos",
         weekCalendarResizeDuration: "Arraste para redimensionar o bloco",
         setForToday: "Definir para hoje",
-        setForTodayDone: "Atividade definida para hoje."
+        setForTodayDone: "Atividade definida para hoje.",
+        sendToTop: "Para o topo",
+        sendToBottom: "Para o fim"
     },
     pt: {
         appTitle: "Habitus",
@@ -799,7 +813,9 @@ const translations = {
         taskDurationIncrease: "Mais 15 minutos",
         weekCalendarResizeDuration: "Arraste para redimensionar o bloco",
         setForToday: "Definir para hoje",
-        setForTodayDone: "Atividade definida para hoje."
+        setForTodayDone: "Atividade definida para hoje.",
+        sendToTop: "Para o topo",
+        sendToBottom: "Para o fim"
     },
     fr: {
         appTitle: "Habitus",
@@ -899,7 +915,9 @@ const translations = {
         taskDurationIncrease: "15 minutes de plus",
         weekCalendarResizeDuration: "Glisser pour redimensionner",
         setForToday: "Pour aujourd'hui",
-        setForTodayDone: "Activité définie pour aujourd'hui."
+        setForTodayDone: "Activité définie pour aujourd'hui.",
+        sendToTop: "En haut",
+        sendToBottom: "En bas"
     }
 };
 
