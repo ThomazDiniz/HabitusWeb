@@ -582,6 +582,17 @@ body {
     border: 1px solid var(--border-color);
 }
 
+.edit-delete-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+    background: transparent;
+}
+
 .edit-save-btn {
     background: var(--blue-gradient);
     color: white;
@@ -961,6 +972,36 @@ body {
 .task-btn.delete:hover {
     background: rgba(239, 68, 68, 0.2);
     border-color: var(--error);
+    color: var(--error);
+}
+
+/* Delete destacado e fixo no canto superior direito do card */
+.task-btn.delete {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border-color: rgba(239, 68, 68, 0.35);
+    color: rgba(239, 68, 68, 0.95);
+    background: rgba(239, 68, 68, 0.08);
+}
+
+.task-btn.delete:hover {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.7);
+    color: var(--error);
+}
+
+/* Delete no modal e no editor expandido */
+#delete-task-btn,
+.edit-delete-btn {
+    border-color: rgba(239, 68, 68, 0.35);
+    color: rgba(239, 68, 68, 0.95);
+}
+
+#delete-task-btn:hover,
+.edit-delete-btn:hover {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.7);
     color: var(--error);
 }
 
@@ -2102,33 +2143,6 @@ body {
     overflow: visible;
     text-overflow: clip;
     word-break: break-word;
-}
-
-.week-cal-edit-btn {
-    flex-shrink: 0;
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: rgba(15, 17, 23, 0.6);
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.week-cal-edit-btn:hover {
-    border-color: var(--blue-primary);
-    color: var(--blue-primary);
-    background: var(--blue-hover);
-}
-
-.week-cal-edit-icon {
-    display: block;
-    pointer-events: none;
 }
 
 .week-cal-done-btn {

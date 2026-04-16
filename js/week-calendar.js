@@ -524,7 +524,7 @@ const WeekCalendarManager = {
         timelineEl.addEventListener('drop', onDrop);
 
         timelineEl.addEventListener('dblclick', (e) => {
-            if (e.target.closest('.week-cal-block, .week-cal-edit-btn, .week-cal-done-btn')) return;
+            if (e.target.closest('.week-cal-block, .week-cal-done-btn')) return;
             e.preventDefault();
             const hhmm = this.timeFromTimelineClientY(timelineEl, e.clientY);
             if (typeof ModalManager !== 'undefined') {
@@ -571,14 +571,12 @@ const WeekCalendarManager = {
         const done = task.status === 'done';
         const typeClass = task.task_type === 'daily' ? 'is-daily' : 'is-todo';
         const dragHint = this.escapeAttr(t('weekCalendarDragHandle'));
-        const editLabel = this.escapeAttr(t('edit'));
         const completeLabel = this.escapeAttr(t('complete'));
         const tipTitle = this.escapeAttr(task.title || '');
         return `<div class="week-cal-chip ${typeClass} ${done ? 'is-done' : ''}" data-task-id="${task.id}" title="${tipTitle}">
             <span class="week-cal-drag-handle" draggable="true" title="${dragHint}">⋮</span>
             <span class="week-cal-chip-title">${this.escapeHtml(task.title)}</span>
             <button type="button" class="week-cal-done-btn${done ? ' is-active' : ''}" data-task-id="${task.id}" draggable="false" aria-label="${completeLabel}">${this.checkIcon()}</button>
-            <button type="button" class="week-cal-edit-btn" data-task-id="${task.id}" draggable="false" aria-label="${editLabel}">${this.pencilIcon()}</button>
         </div>`;
     },
 
@@ -588,7 +586,6 @@ const WeekCalendarManager = {
         const done = task.status === 'done';
         const typeClass = task.task_type === 'daily' ? 'is-daily' : 'is-todo';
         const dragHint = this.escapeAttr(t('weekCalendarDragHandle'));
-        const editLabel = this.escapeAttr(t('edit'));
         const completeLabel = this.escapeAttr(t('complete'));
         const tipTitle = this.escapeAttr(task.title || '');
         const resizeTip = this.escapeAttr(t('weekCalendarResizeDuration'));
@@ -597,7 +594,6 @@ const WeekCalendarManager = {
                 <span class="week-cal-drag-handle" draggable="true" title="${dragHint}">⋮</span>
                 <span class="week-cal-block-title" title="${tipTitle}">${this.escapeHtml(task.title)}</span>
                 <button type="button" class="week-cal-done-btn${done ? ' is-active' : ''}" data-task-id="${task.id}" draggable="false" aria-label="${completeLabel}">${this.checkIcon()}</button>
-                <button type="button" class="week-cal-edit-btn" data-task-id="${task.id}" draggable="false" aria-label="${editLabel}">${this.pencilIcon()}</button>
             </div>
             <div class="week-cal-resize-handle" title="${resizeTip}" aria-label="${resizeTip}" role="separator" aria-orientation="horizontal"></div>
         </div>`;
@@ -709,7 +705,7 @@ const WeekCalendarManager = {
         // Clique em chip/bloco abre editor (exceto controles, drag/resize ou edição inline do título)
         root.querySelectorAll('.week-cal-chip, .week-cal-block').forEach((card) => {
             card.addEventListener('click', (e) => {
-                if (e.target.closest('.week-cal-drag-handle, .week-cal-edit-btn, .week-cal-done-btn, .week-cal-resize-handle')) return;
+                if (e.target.closest('.week-cal-drag-handle, .week-cal-done-btn, .week-cal-resize-handle')) return;
                 if (e.target.closest('.week-cal-chip-title[contenteditable="true"], .week-cal-block-title[contenteditable="true"]')) return;
                 const id = parseFloat(card.getAttribute('data-task-id'), 10);
                 if (!id) return;
@@ -730,18 +726,6 @@ const WeekCalendarManager = {
             const row = el.closest('[data-task-id]');
             const id = row && row.getAttribute('data-task-id');
             if (id) this.bindInlineTitle(el, id);
-        });
-
-        root.querySelectorAll('.week-cal-edit-btn').forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                const id = parseFloat(btn.getAttribute('data-task-id'), 10);
-                const task = DataManager.findTask(id);
-                if (task && typeof ModalManager !== 'undefined') {
-                    ModalManager.openTaskModal(task);
-                }
-            });
         });
 
         root.querySelectorAll('.week-cal-done-btn').forEach((btn) => {

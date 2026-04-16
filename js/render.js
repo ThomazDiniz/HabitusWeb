@@ -373,7 +373,6 @@ const RenderManager = {
                             ${task.task_type === 'todo' && task.status !== 'done'
                                 ? `<button type="button" class="task-btn task-btn-today" data-task-id="${task.id}">${t('setForToday')}</button>`
                                 : ''}
-                            <button class="task-btn edit" data-task-id="${task.id}" title="${t('edit')}" aria-label="${t('edit')}">✏</button>
                             <button class="task-btn delete" data-task-id="${task.id}" title="${t('delete')}" aria-label="${t('delete')}">🗑</button>
                         </div>
                     </div>
@@ -544,11 +543,6 @@ const RenderManager = {
                 this.renderAll();
             });
         }
-        
-        card.querySelector('.edit').addEventListener('click', (e) => {
-            e.stopPropagation();
-            InlineEditManager.startEditing(task.id, 'full');
-        });
         
         // Make task title clickable to edit (if not done)
         const titleEl = card.querySelector('.task-title');

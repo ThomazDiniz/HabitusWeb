@@ -189,6 +189,7 @@ const InlineEditManager = {
             <div class="edit-form-actions">
                 <button class="edit-save-btn">${t('save')}</button>
                 <button class="edit-cancel-btn">${t('cancel')}</button>
+                <button class="edit-delete-btn">${t('delete')}</button>
             </div>
         `;
         
@@ -213,6 +214,15 @@ const InlineEditManager = {
         const cancelBtn = editForm.querySelector('.edit-cancel-btn');
         cancelBtn.addEventListener('click', () => {
             this.cancelFullEdit(card, taskContent, currentHTML);
+        });
+
+        const deleteBtn = editForm.querySelector('.edit-delete-btn');
+        deleteBtn.addEventListener('click', () => {
+            if (confirm(t('confirmDelete'))) {
+                TasksManager.deleteTask(task.id);
+                this.editingTaskId = null;
+                RenderManager.renderAll();
+            }
         });
         
         // Enter key on title saves

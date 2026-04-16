@@ -40,6 +40,8 @@ const ModalManager = {
         document.getElementById('add-subtask-btn').textContent = `+ ${t('addSubtask')}`;
         document.getElementById('cancel-task-btn').textContent = t('cancel');
         document.getElementById('save-task-btn').textContent = t('save');
+        const deleteBtn = document.getElementById('delete-task-btn');
+        if (deleteBtn) deleteBtn.textContent = t('delete');
         
         // Update status options
         statusSelect.innerHTML = `
@@ -137,6 +139,11 @@ const ModalManager = {
             }
             
             if (subtasksList) subtasksList.innerHTML = '';
+        }
+
+        // Delete button only when editing an existing task/daily
+        if (deleteBtn) {
+            deleteBtn.style.display = task ? 'inline-flex' : 'none';
         }
 
         const isDailyModal = task ? task.task_type === 'daily' : taskType === 'daily';
@@ -266,6 +273,19 @@ const ModalManager = {
         document.getElementById('save-task-btn').addEventListener('click', () => this.saveTaskFromModal());
         document.getElementById('cancel-task-btn').addEventListener('click', () => this.closeTaskModal());
         document.getElementById('close-task-modal').addEventListener('click', () => this.closeTaskModal());
+        const deleteBtn = document.getElementById('delete-task-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', () => {
+                if (!this.currentEditingTask) return;
+                if (confirm(t('confirmDelete'))) {
+                    TasksManager.deleteTask(this.currentEditingTask.id);
+                    this.closeTaskModal();
+                    if (typeof RenderManager !== 'undefined') {
+                        RenderManager.renderAll();
+                    }
+                }
+            });
+        }
         
         // Add subtask button
         document.getElementById('add-subtask-btn').addEventListener('click', () => {
