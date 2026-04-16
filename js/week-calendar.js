@@ -706,6 +706,20 @@ const WeekCalendarManager = {
             if (ymd) this.bindCalendarItemDrag(handle, ymd);
         });
 
+        // Clique em chip/bloco abre editor (exceto controles, drag/resize ou edição inline do título)
+        root.querySelectorAll('.week-cal-chip, .week-cal-block').forEach((card) => {
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.week-cal-drag-handle, .week-cal-edit-btn, .week-cal-done-btn, .week-cal-resize-handle')) return;
+                if (e.target.closest('.week-cal-chip-title[contenteditable="true"], .week-cal-block-title[contenteditable="true"]')) return;
+                const id = parseFloat(card.getAttribute('data-task-id'), 10);
+                if (!id) return;
+                const task = DataManager.findTask(id);
+                if (task && typeof ModalManager !== 'undefined') {
+                    ModalManager.openTaskModal(task);
+                }
+            });
+        });
+
         root.querySelectorAll('.week-cal-chip-title').forEach((el) => {
             const row = el.closest('[data-task-id]');
             const id = row && row.getAttribute('data-task-id');

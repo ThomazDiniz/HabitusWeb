@@ -274,6 +274,15 @@ const RenderManager = {
         card.className = `task-card ${task.status === 'done' ? 'completed' : ''}`;
         card.draggable = true;
         card.dataset.taskId = task.id;
+
+        // Click no card abre o editor completo (exceto em controles/edições inline)
+        card.addEventListener('click', (e) => {
+            const interactive = e.target.closest(
+                'button, a, input, select, textarea, .task-tags-inline, .task-tag, .tag-remove, .task-inline-time-input, .task-duration-stepper, [contenteditable="true"]'
+            );
+            if (interactive) return;
+            InlineEditManager.startEditing(task.id, 'full');
+        });
         
         const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'done';
         const progress = SubtasksManager.getSubtasksProgress(task);
