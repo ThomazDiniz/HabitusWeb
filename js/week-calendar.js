@@ -12,6 +12,8 @@ const WeekCalendarManager = {
     /** Task em arrasto (listas ou calendário); `getData` em dragover nem sempre existe no Chrome. */
     _calendarDragTaskId: null,
     _CAL_VIEW_STORAGE_KEY: 'habitus-week-cal-today-only',
+    _TODAY_OVERLAY_STORAGE_KEY: 'habitus-today-overlay-open',
+    _todayOverlayUserScrolled: false,
 
     ensureWeekStart() {
         if (
@@ -58,6 +60,7 @@ const WeekCalendarManager = {
         if (overlayToggle) overlayToggle.addEventListener('click', () => this.toggleTodayOverlay());
         if (overlayClose) overlayClose.addEventListener('click', () => this.hideTodayOverlay());
         this.startLiveClock();
+        this.loadTodayOverlayOpenState();
     },
 
     clearAllTimelineDropPreviews() {
@@ -235,7 +238,9 @@ const WeekCalendarManager = {
         if (!el) return;
         el.style.display = 'block';
         document.body.classList.add('has-today-overlay');
+        this.saveTodayOverlayOpenState(true);
         this.syncTodayOverlayUI();
+        this._todayOverlayUserScrolled = false;
         this.renderTodayOverlay();
         this.updateNowLine();
     },
@@ -245,11 +250,31 @@ const WeekCalendarManager = {
         if (!el) return;
         el.style.display = 'none';
         document.body.classList.remove('has-today-overlay');
+        this.saveTodayOverlayOpenState(false);
     },
 
     toggleTodayOverlay() {
         if (this.isTodayOverlayVisible()) this.hideTodayOverlay();
         else this.showTodayOverlay();
+    },
+
+    saveTodayOverlayOpenState(isOpen) {
+        try {
+            localStorage.setItem(this._TODAY_OVERLAY_STORAGE_KEY, isOpen ? '1' : '0');
+        } catch (e) {
+            /* ignore */
+        }
+    },
+
+    loadTodayOverlayOpenState() {
+        try {
+            const v = localStorage.getItem(this._TODAY_OVERLAY_STORAGE_KEY);
+            if (v === '1') {
+                this.showTodayOverlay();
+            }
+        } catch (e) {
+            /* ignore */
+        }
     },
 
     renderTodayOverlay() {
@@ -360,6 +385,38 @@ const WeekCalendarManager = {
             this.bindTimelineDrop(timeline, ymd);
         });
         this.bindCalendarCardUI(root);
+
+        // Auto-focus no horário atual ao abrir (centralizado). Se o utilizador rolar, não forçar mais.
+        if (!this._todayOverlayUserScrolled) {
+            this.scrollTodayOverlayToNow({ behavior: 'auto' });
+        }
+
+        // Detectar scroll manual
+        root.addEventListener(
+            'scroll',
+            () => {
+                this._todayOverlayUserScrolled = true;
+            },
+            { passive: true, once: true }
+        );
+    },
+
+    scrollTodayOverlayToNow({ behavior = 'auto' } = {}) {
+        const root = document.getElementById('today-overlay-root');
+        if (!root) return;
+        const todayYmd = Utils.getTodayDate();
+        const tl = root.querySelector(`.week-cal-timeline.is-today[data-date="${todayYmd}"]`);
+        if (!tl) return;
+        const topPct = this.nowLineTopPct();
+        const y = (topPct / 100) * tl.offsetHeight;
+        const desired = tl.offsetTop + y - root.clientHeight / 2;
+        const max = Math.max(0, root.scrollHeight - root.clientHeight);
+        const clamped = Math.max(0, Math.min(max, desired));
+        try {
+            root.scrollTo({ top: clamped, behavior });
+        } catch (e) {
+            root.scrollTop = clamped;
+        }
     },
 
     startLiveClock() {
