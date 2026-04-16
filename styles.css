@@ -358,17 +358,57 @@ body {
     text-decoration: line-through;
 }
 
-/* Completing animation - strikethrough + green before moving to completed list */
-.task-card.completing {
-    border-color: var(--success);
-    background: rgba(74, 222, 128, 0.08);
-    transition: border-color 0.3s ease, background 0.3s ease;
+/* Ações rápidas (toasts empilháveis) */
+.action-toast-stack {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    z-index: 3200;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(420px, calc(100vw - 48px));
+    pointer-events: none;
 }
 
-.task-card.completing .task-title {
-    text-decoration: line-through;
-    color: var(--success);
-    transition: color 0.3s ease, text-decoration 0.3s ease;
+.action-toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(74, 222, 128, 0.45);
+    background: rgba(74, 222, 128, 0.12);
+    color: var(--text-primary);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(6px);
+}
+
+.action-toast-message {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.action-toast-action {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(15, 17, 23, 0.55);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.action-toast-action:hover {
+    border-color: rgba(74, 222, 128, 0.8);
+    background: rgba(74, 222, 128, 0.14);
 }
 
 .task-card.editing-full {
@@ -588,6 +628,37 @@ body {
     gap: 12px;
     margin-top: 4px;
     flex-wrap: wrap;
+}
+
+.tasks-date-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0 10px;
+}
+
+.tasks-date-filter-btn {
+    border: 1px solid var(--border-color);
+    background: rgba(15, 17, 23, 0.35);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.tasks-date-filter-btn:hover {
+    border-color: var(--blue-primary);
+    background: var(--blue-hover);
+    color: var(--text-primary);
+}
+
+.tasks-date-filter-btn.is-active {
+    border-color: rgba(124, 158, 255, 0.6);
+    background: rgba(124, 158, 255, 0.18);
+    color: var(--text-primary);
 }
 
 @media (max-width: 768px) {

@@ -2,6 +2,57 @@
 // Handles all UI rendering functionality
 
 const RenderManager = {
+    todoDateFilter: 'all', // all | today | no_date | future
+    _tasksDateFilterBound: false,
+
+    bindTasksDateFilterUI() {
+        if (this._tasksDateFilterBound) return;
+        const row = document.getElementById('tasks-date-filter-row');
+        if (!row) return;
+        this._tasksDateFilterBound = true;
+
+        row.addEventListener('click', (e) => {
+            const btn = e.target.closest('.tasks-date-filter-btn');
+            if (!btn) return;
+            e.preventDefault();
+            const f = btn.getAttribute('data-filter') || 'all';
+            this.todoDateFilter = f;
+            this.renderAll();
+        });
+    },
+
+    syncTasksDateFilterUI() {
+        const allBtn = document.getElementById('tasks-date-filter-all');
+        const todayBtn = document.getElementById('tasks-date-filter-today');
+        const noDateBtn = document.getElementById('tasks-date-filter-no-date');
+        const futureBtn = document.getElementById('tasks-date-filter-future');
+        if (!allBtn || !todayBtn || !noDateBtn || !futureBtn) return;
+
+        allBtn.textContent = t('tasksDateFilterAll');
+        todayBtn.textContent = t('tasksDateFilterToday');
+        noDateBtn.textContent = t('tasksDateFilterNoDate');
+        futureBtn.textContent = t('tasksDateFilterFuture');
+
+        [allBtn, todayBtn, noDateBtn, futureBtn].forEach((b) => b.classList.remove('is-active'));
+        if (this.todoDateFilter === 'today') todayBtn.classList.add('is-active');
+        else if (this.todoDateFilter === 'no_date') noDateBtn.classList.add('is-active');
+        else if (this.todoDateFilter === 'future') futureBtn.classList.add('is-active');
+        else allBtn.classList.add('is-active');
+    },
+
+    applyTodoDateFilter(list) {
+        const f = this.todoDateFilter || 'all';
+        if (f === 'all') return list;
+        const today = Utils.dateToYMD(new Date());
+        return (list || []).filter((task) => {
+            const d = task && task.due_date ? String(task.due_date) : '';
+            if (!d) return f === 'no_date';
+            if (f === 'future') return d > today;
+            if (f === 'today') return d <= today; // inclui atrasadas + hoje
+            return true;
+        });
+    },
+
     // Render everything
     renderAll() {
         this.renderDailies();
@@ -150,8 +201,11 @@ const RenderManager = {
         
         // Update title
         document.getElementById('tasks-title').innerHTML = `${t('tasks')} <span class="count" id="tasks-count">(0)</span>`;
+
+        this.bindTasksDateFilterUI();
+        this.syncTasksDateFilterUI();
         
-        const allTasks = FiltersManager.getFilteredTasks('todo');
+        const allTasks = this.applyTodoDateFilter(FiltersManager.getFilteredTasks('todo'));
         
         const activeTasks = allTasks.filter(t => t.status !== 'done');
         const completedTasks = allTasks.filter(t => t.status === 'done');
@@ -322,16 +376,33 @@ const RenderManager = {
         // Event listeners
         card.querySelector('.task-checkbox').addEventListener('change', (e) => {
             const isMarkingDone = e.target.checked;
+            const before = DataManager.findTask(task.id);
+            const snapshot = before
+                ? {
+                      status: before.status,
+                      completed_at: before.completed_at,
+                      last_completed_date: before.last_completed_date,
+                      streak_count: before.streak_count,
+                      max_streak: before.max_streak
+                  }
+                : null;
+
             TasksManager.toggleTaskStatus(task.id);
-            
-            if (isMarkingDone) {
-                // Animation: strikethrough + green for 2 seconds, then move to completed
-                card.classList.add('completing');
-                setTimeout(() => {
-                    this.renderAll();
-                }, 2000);
-            } else {
-                this.renderAll();
+            this.renderAll();
+
+            if (isMarkingDone && task.task_type === 'todo' && snapshot) {
+                Utils.showActionToast({
+                    message: `${t('activityFinished')}: ${task.title || ''}`.trim(),
+                    actionLabel: t('undo'),
+                    timeoutMs: 2000,
+                    tone: 'success',
+                    onAction: () => {
+                        TasksManager.updateTask(task.id, snapshot);
+                        if (typeof RenderManager !== 'undefined') {
+                            RenderManager.renderAll();
+                        }
+                    }
+                });
             }
         });
         

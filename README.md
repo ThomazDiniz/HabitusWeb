@@ -30,7 +30,9 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - Tags múltiplas
 - Subtasks com progresso
 - Reordenação por **drag and drop** nas listas; botões **↑ / ↓** (**Para o topo** / **Para o fim**) na mesma sublista (ativas vs concluídas; em hábitos também secção agendada quando aplicável), ajustando `order_index`
+- Filtro rápido acima da lista de atividades: **Todas / Hoje / Sem data / Futuras** (combina com o filtro de tags) para reduzir o volume de itens visíveis no dia.
 - **Definir para hoje** (botão no card, só atividades não concluídas): define `due_date` para o dia **calendário local** atual (`Utils.dateToYMD`) e `due_time` para a **hora atual** (`Utils.getLocalDueTimeNow()`). Toast de confirmação; a pessoa pode depois alterar data/hora (lista, modal ou calendário).
+- **Finalização sem animação**: ao concluir uma **atividade**, ela vai imediatamente para concluídas e aparece um tooltip empilhável no canto superior direito: **“Atividade finalizada: <nome>”** (verde) por **2s**, com botão **Desfazer**. Se várias forem concluídas, empilham para baixo e vão desaparecendo (estilo “console”).
 - Limite de **200** atividades (todos) ativas
 - Secção de concluídas (oculta por defeito) com eliminar todas as concluídas
 - Criação rápida pelo campo `+` e teclado (ver atalhos)

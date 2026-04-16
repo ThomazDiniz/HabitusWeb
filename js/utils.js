@@ -138,6 +138,52 @@ const Utils = {
             toast.classList.remove('show');
         }, 3000);
     },
+
+    /**
+     * Notificação empilhável (canto superior direito) com ação (ex.: desfazer).
+     * Várias notificações empilham para baixo e desaparecem automaticamente.
+     */
+    showActionToast({ message, actionLabel, onAction, timeoutMs = 2000, tone = 'success' }) {
+        const stack = document.getElementById('action-toast-stack');
+        if (!stack) return;
+
+        const row = document.createElement('div');
+        row.className = `action-toast ${tone}`;
+
+        const msg = document.createElement('div');
+        msg.className = 'action-toast-message';
+        msg.textContent = message || '';
+
+        row.appendChild(msg);
+
+        let acted = false;
+        if (actionLabel && typeof onAction === 'function') {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'action-toast-action';
+            btn.textContent = actionLabel;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (acted) return;
+                acted = true;
+                try {
+                    onAction();
+                } finally {
+                    row.remove();
+                }
+            });
+            row.appendChild(btn);
+        }
+
+        stack.appendChild(row);
+
+        const t = setTimeout(() => {
+            row.remove();
+        }, Math.max(250, timeoutMs || 0));
+
+        // Se o elemento sair antes (ex.: ação), limpar timeout.
+        row.addEventListener('DOMNodeRemoved', () => clearTimeout(t), { once: true });
+    },
     
     // Play beep sound
     playBeep() {

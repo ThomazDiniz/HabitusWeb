@@ -101,7 +101,13 @@ const translations = {
         setForToday: "Set for today",
         setForTodayDone: "Activity set for today.",
         sendToTop: "Move to top",
-        sendToBottom: "Move to bottom"
+        sendToBottom: "Move to bottom",
+        activityFinished: "Activity finished",
+        undo: "Undo",
+        tasksDateFilterAll: "All",
+        tasksDateFilterToday: "Today",
+        tasksDateFilterNoDate: "No date",
+        tasksDateFilterFuture: "Future"
     },
     es: {
         appTitle: "Habitus",
@@ -203,7 +209,13 @@ const translations = {
         setForToday: "Para hoy",
         setForTodayDone: "Actividad definida para hoy.",
         sendToTop: "Arriba",
-        sendToBottom: "Abajo"
+        sendToBottom: "Abajo",
+        activityFinished: "Actividad finalizada",
+        undo: "Deshacer",
+        tasksDateFilterAll: "Todas",
+        tasksDateFilterToday: "Hoy",
+        tasksDateFilterNoDate: "Sin fecha",
+        tasksDateFilterFuture: "Futuras"
     },
     zh: {
         appTitle: "Habitus",
@@ -305,7 +317,13 @@ const translations = {
         setForToday: "设为今天",
         setForTodayDone: "已设为今天的活动。",
         sendToTop: "置顶",
-        sendToBottom: "置底"
+        sendToBottom: "置底",
+        activityFinished: "活动已完成",
+        undo: "撤销",
+        tasksDateFilterAll: "全部",
+        tasksDateFilterToday: "今天",
+        tasksDateFilterNoDate: "无日期",
+        tasksDateFilterFuture: "未来"
     },
     ja: {
         appTitle: "Habitus",
@@ -407,7 +425,13 @@ const translations = {
         setForToday: "今日に設定",
         setForTodayDone: "今日の活動として設定しました。",
         sendToTop: "先頭へ",
-        sendToBottom: "末尾へ"
+        sendToBottom: "末尾へ",
+        activityFinished: "活動完了",
+        undo: "元に戻す",
+        tasksDateFilterAll: "すべて",
+        tasksDateFilterToday: "今日",
+        tasksDateFilterNoDate: "日付なし",
+        tasksDateFilterFuture: "今後"
     },
     de: {
         appTitle: "Habitus",
@@ -509,7 +533,13 @@ const translations = {
         setForToday: "Für heute",
         setForTodayDone: "Als heutige Aktivität gespeichert.",
         sendToTop: "Nach oben",
-        sendToBottom: "Nach unten"
+        sendToBottom: "Nach unten",
+        activityFinished: "Aktivität abgeschlossen",
+        undo: "Rückgängig",
+        tasksDateFilterAll: "Alle",
+        tasksDateFilterToday: "Heute",
+        tasksDateFilterNoDate: "Ohne Datum",
+        tasksDateFilterFuture: "Zukünftig"
     },
     it: {
         appTitle: "Habitus",
@@ -611,7 +641,13 @@ const translations = {
         setForToday: "Per oggi",
         setForTodayDone: "Attività impostata per oggi.",
         sendToTop: "In cima",
-        sendToBottom: "In fondo"
+        sendToBottom: "In fondo",
+        activityFinished: "Attività completata",
+        undo: "Annulla",
+        tasksDateFilterAll: "Tutte",
+        tasksDateFilterToday: "Oggi",
+        tasksDateFilterNoDate: "Senza data",
+        tasksDateFilterFuture: "Future"
     },
     pt_BR: {
         appTitle: "Habitus",
@@ -713,7 +749,13 @@ const translations = {
         setForToday: "Definir para hoje",
         setForTodayDone: "Atividade definida para hoje.",
         sendToTop: "Para o topo",
-        sendToBottom: "Para o fim"
+        sendToBottom: "Para o fim",
+        activityFinished: "Atividade finalizada",
+        undo: "Desfazer",
+        tasksDateFilterAll: "Todas",
+        tasksDateFilterToday: "Hoje",
+        tasksDateFilterNoDate: "Sem data",
+        tasksDateFilterFuture: "Futuras"
     },
     pt: {
         appTitle: "Habitus",
@@ -815,7 +857,13 @@ const translations = {
         setForToday: "Definir para hoje",
         setForTodayDone: "Atividade definida para hoje.",
         sendToTop: "Para o topo",
-        sendToBottom: "Para o fim"
+        sendToBottom: "Para o fim",
+        activityFinished: "Atividade finalizada",
+        undo: "Desfazer",
+        tasksDateFilterAll: "Todas",
+        tasksDateFilterToday: "Hoje",
+        tasksDateFilterNoDate: "Sem data",
+        tasksDateFilterFuture: "Futuras"
     },
     fr: {
         appTitle: "Habitus",
@@ -917,7 +965,13 @@ const translations = {
         setForToday: "Pour aujourd'hui",
         setForTodayDone: "Activité définie pour aujourd'hui.",
         sendToTop: "En haut",
-        sendToBottom: "En bas"
+        sendToBottom: "En bas",
+        activityFinished: "Activité terminée",
+        undo: "Annuler",
+        tasksDateFilterAll: "Toutes",
+        tasksDateFilterToday: "Aujourd'hui",
+        tasksDateFilterNoDate: "Sans date",
+        tasksDateFilterFuture: "Futures"
     }
 };
 
