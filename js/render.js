@@ -360,12 +360,12 @@ const RenderManager = {
                         <div class="task-actions">
                             <button type="button" class="task-btn task-order-top" data-task-id="${task.id}" title="${t('sendToTop')}" aria-label="${t('sendToTop')}">↑</button>
                             <button type="button" class="task-btn task-order-bottom" data-task-id="${task.id}" title="${t('sendToBottom')}" aria-label="${t('sendToBottom')}">↓</button>
-                            <button class="task-btn pomodoro" data-task-id="${task.id}">🍅 ${t('pomodoro')}</button>
+                            <button class="task-btn pomodoro" data-task-id="${task.id}" title="${t('pomodoro')}" aria-label="${t('pomodoro')}">🍅</button>
                             ${task.task_type === 'todo' && task.status !== 'done'
                                 ? `<button type="button" class="task-btn task-btn-today" data-task-id="${task.id}">${t('setForToday')}</button>`
                                 : ''}
-                            <button class="task-btn edit" data-task-id="${task.id}">${t('edit')}</button>
-                            <button class="task-btn delete" data-task-id="${task.id}">${t('delete')}</button>
+                            <button class="task-btn edit" data-task-id="${task.id}" title="${t('edit')}" aria-label="${t('edit')}">✏</button>
+                            <button class="task-btn delete" data-task-id="${task.id}" title="${t('delete')}" aria-label="${t('delete')}">🗑</button>
                         </div>
                     </div>
                     ${task.subtasks?.length > 0 ? this.createSubtasksHTML(task, progress) : ''}

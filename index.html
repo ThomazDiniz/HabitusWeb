@@ -43,6 +43,7 @@
             <div class="tasks-column">
                 <div class="column-header">
                     <h2 id="dailies-title">Dailies <span class="count" id="dailies-count">(0)</span></h2>
+                    <div class="column-header-right"></div>
                 </div>
                 <div class="tag-filters" id="dailies-tag-filters"></div>
                 <div class="add-input-row">
@@ -73,14 +74,16 @@
             <div class="tasks-column">
                 <div class="column-header">
                     <h2 id="tasks-title">Tasks <span class="count" id="tasks-count">(0)</span></h2>
+                    <div class="column-header-right">
+                        <div class="tasks-date-filter-row" id="tasks-date-filter-row" aria-label="Tasks date filter">
+                            <button type="button" class="tasks-date-filter-btn is-active" data-filter="all" id="tasks-date-filter-all"></button>
+                            <button type="button" class="tasks-date-filter-btn" data-filter="today" id="tasks-date-filter-today"></button>
+                            <button type="button" class="tasks-date-filter-btn" data-filter="no_date" id="tasks-date-filter-no-date"></button>
+                            <button type="button" class="tasks-date-filter-btn" data-filter="future" id="tasks-date-filter-future"></button>
+                        </div>
+                    </div>
                 </div>
                 <div class="tag-filters" id="tasks-tag-filters"></div>
-                <div class="tasks-date-filter-row" id="tasks-date-filter-row" aria-label="Tasks date filter">
-                    <button type="button" class="tasks-date-filter-btn is-active" data-filter="all" id="tasks-date-filter-all"></button>
-                    <button type="button" class="tasks-date-filter-btn" data-filter="today" id="tasks-date-filter-today"></button>
-                    <button type="button" class="tasks-date-filter-btn" data-filter="no_date" id="tasks-date-filter-no-date"></button>
-                    <button type="button" class="tasks-date-filter-btn" data-filter="future" id="tasks-date-filter-future"></button>
-                </div>
                 <div class="add-input-row">
                     <input type="text" class="add-input" id="add-task-input" data-i18n-placeholder="addTask" placeholder="Adicionar Tarefa">
                     <button class="add-btn" id="add-task-btn">+</button>
