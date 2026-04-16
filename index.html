@@ -38,8 +38,17 @@
     </div>
 
     <div class="container">
-        <div class="tasks-container main-view-scroll-anchor" id="main-lists-view">
-            <!-- Dailies Column -->
+        <div class="top-layout main-view-scroll-anchor" id="main-lists-view">
+            <!-- Today-only calendar grid -->
+            <section class="today-calendar-section">
+                <div class="column-header">
+                    <h2 id="today-calendar-title">Hoje</h2>
+                    <div class="column-header-right"></div>
+                </div>
+                <div class="week-calendar-scroll today-calendar-scroll" id="today-calendar-root" aria-label="Today calendar"></div>
+            </section>
+
+            <!-- Habits Column -->
             <div class="tasks-column">
                 <div class="column-header">
                     <h2 id="dailies-title">Dailies <span class="count" id="dailies-count">(0)</span></h2>
@@ -70,7 +79,7 @@
                 </div>
             </div>
 
-            <!-- Tasks Column -->
+            <!-- Activities Column -->
             <div class="tasks-column">
                 <div class="column-header">
                     <h2 id="tasks-title">Tasks <span class="count" id="tasks-count">(0)</span></h2>

@@ -185,22 +185,28 @@ body {
     scroll-margin-top: 88px;
 }
 
-.tasks-container {
+.top-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(340px, 1.2fr) 1fr 1fr;
     gap: 24px;
     position: relative;
 }
 
-.tasks-container::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: var(--border-color);
-    transform: translateX(-50%);
+.today-calendar-section {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.today-calendar-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Today-only calendar: allow it to shrink inside grid */
+.today-calendar-scroll .week-cal-layout,
+.today-calendar-scroll .week-cal-layout.is-today-only {
+    min-width: 0;
 }
 
 .tasks-column {
@@ -1473,12 +1479,8 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .tasks-container {
+    .top-layout {
         grid-template-columns: 1fr;
-    }
-    
-    .tasks-container::before {
-        display: none;
     }
     
     .header {

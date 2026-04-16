@@ -178,32 +178,36 @@ const WeekCalendarManager = {
     },
 
     updateNowLine() {
-        const root = document.getElementById('week-calendar-root');
-        if (!root) return;
-        root.querySelectorAll('.week-cal-now-line, .week-cal-now-line-gutter').forEach((n) => n.remove());
-        const gutter = root.querySelector('.week-cal-time-gutter');
+        const roots = [
+            document.getElementById('week-calendar-root'),
+            document.getElementById('today-calendar-root')
+        ].filter(Boolean);
+        if (roots.length === 0) return;
+
         const top = this.nowLineTopPct();
         const n = new Date();
         const hhmm = `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
         const tip = typeof t === 'function' ? `${t('weekCalendarNowLine')} (${hhmm})` : hhmm;
-
-        if (gutter && this.isTodayInVisibleGrid()) {
-            const g = document.createElement('div');
-            g.className = 'week-cal-now-line-gutter';
-            g.style.top = `${top}%`;
-            g.title = tip;
-            gutter.appendChild(g);
-        }
-
-        if (!this.isTodayInVisibleGrid()) return;
         const todayYmd = Utils.getTodayDate();
-        const tl = root.querySelector(`.week-cal-timeline.is-today[data-date="${todayYmd}"]`);
-        if (!tl) return;
-        const line = document.createElement('div');
-        line.className = 'week-cal-now-line';
-        line.title = tip;
-        line.style.top = `${top}%`;
-        tl.appendChild(line);
+
+        roots.forEach((root) => {
+            root.querySelectorAll('.week-cal-now-line, .week-cal-now-line-gutter').forEach((x) => x.remove());
+            const gutter = root.querySelector('.week-cal-time-gutter');
+            if (gutter) {
+                const g = document.createElement('div');
+                g.className = 'week-cal-now-line-gutter';
+                g.style.top = `${top}%`;
+                g.title = tip;
+                gutter.appendChild(g);
+            }
+            const tl = root.querySelector(`.week-cal-timeline.is-today[data-date="${todayYmd}"]`);
+            if (!tl) return;
+            const line = document.createElement('div');
+            line.className = 'week-cal-now-line';
+            line.title = tip;
+            line.style.top = `${top}%`;
+            tl.appendChild(line);
+        });
     },
 
     startLiveClock() {
@@ -758,22 +762,17 @@ const WeekCalendarManager = {
         });
     },
 
-    render() {
-        this.ensureWeekStart();
-        const root = document.getElementById('week-calendar-root');
+    renderInto(root, dates, { withRange = false } = {}) {
         if (!root) return;
-
-        const dates = this.getVisibleDates();
         const lang = typeof currentLanguage !== 'undefined' ? currentLanguage.replace('_', '-') : 'pt-BR';
         const rangeSpan = document.getElementById('week-calendar-range');
-        if (rangeSpan) {
+        if (withRange && rangeSpan) {
             if (dates.length === 1) {
                 rangeSpan.textContent = Utils.formatDate(Utils.dateToYMD(dates[0]));
             } else {
                 rangeSpan.textContent = `${Utils.formatDate(Utils.dateToYMD(dates[0]))} – ${Utils.formatDate(Utils.dateToYMD(dates[dates.length - 1]))}`;
             }
         }
-        this.syncToolbar();
 
         const hours = [];
         for (let h = this.START_HOUR; h < this.END_HOUR; h++) {
@@ -910,6 +909,23 @@ const WeekCalendarManager = {
         this.bindCalendarCardUI(root);
         this.updateNowClockDisplay();
         this.updateNowLine();
+    },
+
+    renderTodayOnlyTopGrid() {
+        const root = document.getElementById('today-calendar-root');
+        if (!root) return;
+        const dates = [this.getTodayOnlyDate()];
+        this.renderInto(root, dates, { withRange: false });
+    },
+
+    render() {
+        this.ensureWeekStart();
+        const root = document.getElementById('week-calendar-root');
+        if (!root) return;
+        const dates = this.getVisibleDates();
+        this.syncToolbar();
+        this.renderInto(root, dates, { withRange: true });
+        this.renderTodayOnlyTopGrid();
     },
 
     escapeHtml(s) {
