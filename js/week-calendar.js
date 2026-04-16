@@ -30,6 +30,8 @@ const WeekCalendarManager = {
         const next = document.getElementById('week-cal-next');
         const todayBtn = document.getElementById('week-cal-today');
         const viewToggle = document.getElementById('week-cal-view-toggle');
+        const overlayToggle = document.getElementById('today-overlay-toggle-btn');
+        const overlayClose = document.getElementById('today-overlay-close');
         if (prev) prev.addEventListener('click', () => this.shiftWeek(-7));
         if (next) next.addEventListener('click', () => this.shiftWeek(7));
         if (todayBtn) {
@@ -53,6 +55,8 @@ const WeekCalendarManager = {
             },
             true
         );
+        if (overlayToggle) overlayToggle.addEventListener('click', () => this.toggleTodayOverlay());
+        if (overlayClose) overlayClose.addEventListener('click', () => this.hideTodayOverlay());
         this.startLiveClock();
     },
 
@@ -178,32 +182,184 @@ const WeekCalendarManager = {
     },
 
     updateNowLine() {
-        const root = document.getElementById('week-calendar-root');
-        if (!root) return;
-        root.querySelectorAll('.week-cal-now-line, .week-cal-now-line-gutter').forEach((n) => n.remove());
-        const gutter = root.querySelector('.week-cal-time-gutter');
+        const roots = [
+            document.getElementById('week-calendar-root'),
+            document.getElementById('today-overlay-root')
+        ].filter(Boolean);
+        if (roots.length === 0) return;
+
         const top = this.nowLineTopPct();
         const n = new Date();
         const hhmm = `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`;
         const tip = typeof t === 'function' ? `${t('weekCalendarNowLine')} (${hhmm})` : hhmm;
 
-        if (gutter && this.isTodayInVisibleGrid()) {
-            const g = document.createElement('div');
-            g.className = 'week-cal-now-line-gutter';
-            g.style.top = `${top}%`;
-            g.title = tip;
-            gutter.appendChild(g);
+        const todayYmd = Utils.getTodayDate();
+        roots.forEach((root) => {
+            root.querySelectorAll('.week-cal-now-line, .week-cal-now-line-gutter').forEach((x) => x.remove());
+            const gutter = root.querySelector('.week-cal-time-gutter');
+            if (gutter) {
+                const g = document.createElement('div');
+                g.className = 'week-cal-now-line-gutter';
+                g.style.top = `${top}%`;
+                g.title = tip;
+                gutter.appendChild(g);
+            }
+            const tl = root.querySelector(`.week-cal-timeline.is-today[data-date="${todayYmd}"]`);
+            if (!tl) return;
+            const line = document.createElement('div');
+            line.className = 'week-cal-now-line';
+            line.title = tip;
+            line.style.top = `${top}%`;
+            tl.appendChild(line);
+        });
+    },
+
+    syncTodayOverlayUI() {
+        const btn = document.getElementById('today-overlay-toggle-btn');
+        const title = document.getElementById('today-overlay-title');
+        const label = typeof t === 'function' ? t('weekCalendarTitleToday') : 'Hoje';
+        if (title) title.textContent = label;
+        if (btn) {
+            btn.title = label;
+            btn.setAttribute('aria-label', label);
+        }
+    },
+
+    isTodayOverlayVisible() {
+        const el = document.getElementById('today-overlay');
+        return !!(el && el.style.display !== 'none');
+    },
+
+    showTodayOverlay() {
+        const el = document.getElementById('today-overlay');
+        if (!el) return;
+        el.style.display = 'block';
+        document.body.classList.add('has-today-overlay');
+        this.syncTodayOverlayUI();
+        this.renderTodayOverlay();
+        this.updateNowLine();
+    },
+
+    hideTodayOverlay() {
+        const el = document.getElementById('today-overlay');
+        if (!el) return;
+        el.style.display = 'none';
+        document.body.classList.remove('has-today-overlay');
+    },
+
+    toggleTodayOverlay() {
+        if (this.isTodayOverlayVisible()) this.hideTodayOverlay();
+        else this.showTodayOverlay();
+    },
+
+    renderTodayOverlay() {
+        const root = document.getElementById('today-overlay-root');
+        if (!root) return;
+        const dates = [this.getTodayOnlyDate()];
+        const lang = typeof currentLanguage !== 'undefined' ? currentLanguage.replace('_', '-') : 'pt-BR';
+
+        const hours = [];
+        for (let h = this.START_HOUR; h < this.END_HOUR; h++) {
+            hours.push(h);
         }
 
-        if (!this.isTodayInVisibleGrid()) return;
-        const todayYmd = Utils.getTodayDate();
-        const tl = root.querySelector(`.week-cal-timeline.is-today[data-date="${todayYmd}"]`);
-        if (!tl) return;
-        const line = document.createElement('div');
-        line.className = 'week-cal-now-line';
-        line.title = tip;
-        line.style.top = `${top}%`;
-        tl.appendChild(line);
+        let html = '<div class="week-cal-outer">';
+        html += `<div class="week-cal-layout is-today-only">`;
+        html += '<div class="week-cal-corner"></div>';
+        html += '<div class="week-cal-day-headers">';
+        dates.forEach((d) => {
+            const ymd = Utils.dateToYMD(d);
+            const isToday = Utils.isToday(ymd);
+            const weekday = d.toLocaleDateString(lang, { weekday: 'short' });
+            const fullDate = d.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const dow = Utils.ymdToDayOfWeek(ymd);
+            html += `<div class="week-cal-day-header ${isToday ? 'is-today' : ''}" data-date="${ymd}">
+                <span class="week-cal-dow">${weekday}</span>
+                <span class="week-cal-date-full">${fullDate}</span>
+                ${isToday ? `<span class="week-cal-today-pill">${this.escapeHtml(t('weekCalendarToday'))}</span>` : ''}
+                <div class="week-cal-header-actions">
+                    <button type="button" class="week-cal-mini-btn week-cal-add-task-btn" data-date="${ymd}" title="${this.escapeAttr(t('weekCalendarAddTask'))}">+</button>
+                    <button type="button" class="week-cal-mini-btn week-cal-add-daily-btn" data-dow="${dow}" title="${this.escapeAttr(t('weekCalendarAddDaily'))}">☀</button>
+                </div>
+            </div>`;
+        });
+        html += '</div>';
+
+        html += '<div class="week-cal-untimed-spacer"></div>';
+        dates.forEach((d) => {
+            const ymd = Utils.dateToYMD(d);
+            const isToday = Utils.isToday(ymd);
+            const items = this.itemsForDay(ymd);
+            const untimed = [];
+            items.forEach((task) => {
+                if (task.status === 'done' && task.task_type === 'daily') return;
+                const nt = task.due_time ? Utils.normalizeDueTime(task.due_time) : null;
+                if (!nt) untimed.push(task);
+            });
+            html += `<div class="week-cal-untimed${isToday ? ' is-today' : ''}" data-date="${ymd}" style="grid-column:2;grid-row:2">`;
+            untimed.forEach((task) => {
+                html += this.renderChipHtml(task);
+            });
+            html += '</div>';
+        });
+
+        html += '<div class="week-cal-time-gutter">';
+        hours.forEach((h, idx) => {
+            const hh = String(h).padStart(2, '0');
+            const isLast = idx === hours.length - 1;
+            if (isLast) {
+                const endHh = String(this.END_HOUR).padStart(2, '0');
+                html += `<div class="week-cal-hour-label week-cal-hour-label-split"><span class="week-cal-hour-start">${hh}:00</span><span class="week-cal-hour-end-mark">${endHh}:00</span></div>`;
+            } else {
+                html += `<div class="week-cal-hour-label">${hh}:00</div>`;
+            }
+        });
+        html += '</div>';
+
+        dates.forEach((d) => {
+            const ymd = Utils.dateToYMD(d);
+            const isToday = Utils.isToday(ymd);
+            const items = this.itemsForDay(ymd);
+            const timed = [];
+            items.forEach((task) => {
+                if (task.status === 'done' && task.task_type === 'daily') return;
+                const nt = task.due_time ? Utils.normalizeDueTime(task.due_time) : null;
+                if (nt) timed.push(task);
+            });
+            timed.sort((a, b) => (Utils.dueTimeToMinutes(a.due_time) || 0) - (Utils.dueTimeToMinutes(b.due_time) || 0));
+            html += `<div class="week-cal-timeline${isToday ? ' is-today' : ''}" data-date="${ymd}" style="grid-column:2;grid-row:3;--week-cal-hours:${hours.length}">`;
+            timed.forEach((task) => (html += this.renderBlockHtml(task)));
+            html += '</div>';
+        });
+
+        html += '</div></div>';
+        root.innerHTML = html;
+
+        root.querySelectorAll('.week-cal-add-task-btn').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const ymd = btn.getAttribute('data-date');
+                if (typeof ModalManager !== 'undefined') {
+                    ModalManager.openTaskModal(null, 'todo', { prefillDueDate: ymd });
+                }
+            });
+        });
+        root.querySelectorAll('.week-cal-add-daily-btn').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const dow = btn.getAttribute('data-dow');
+                if (typeof ModalManager !== 'undefined') {
+                    ModalManager.openTaskModal(null, 'daily', { prefillDailyDay: dow });
+                }
+            });
+        });
+        root.querySelectorAll('.week-cal-timeline[data-date]').forEach((timeline) => {
+            const ymd = timeline.getAttribute('data-date');
+            const untimed = root.querySelector(`.week-cal-untimed[data-date="${ymd}"]`);
+            if (untimed) this.bindUntimedDrop(untimed, ymd);
+            this.bindTimelineDrop(timeline, ymd);
+        });
+        this.bindCalendarCardUI(root);
     },
 
     startLiveClock() {
@@ -758,6 +914,7 @@ const WeekCalendarManager = {
             }
         }
         this.syncToolbar();
+        this.syncTodayOverlayUI();
 
         const hours = [];
         for (let h = this.START_HOUR; h < this.END_HOUR; h++) {
@@ -894,6 +1051,10 @@ const WeekCalendarManager = {
         this.bindCalendarCardUI(root);
         this.updateNowClockDisplay();
         this.updateNowLine();
+        if (this.isTodayOverlayVisible()) {
+            this.renderTodayOverlay();
+            this.updateNowLine();
+        }
     },
 
     escapeHtml(s) {
