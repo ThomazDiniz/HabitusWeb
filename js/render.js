@@ -404,7 +404,7 @@ const RenderManager = {
                 Utils.showActionToast({
                     message: `${t('activityFinished')}: ${task.title || ''}`.trim(),
                     actionLabel: t('undo'),
-                    timeoutMs: 2000,
+                    timeoutMs: 5000,
                     tone: 'success',
                     onAction: () => {
                         TasksManager.updateTask(task.id, snapshot);

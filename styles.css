@@ -476,8 +476,8 @@ body.has-today-overlay .container {
     gap: 10px;
     padding: 10px 12px;
     border-radius: 10px;
-    border: 1px solid rgba(74, 222, 128, 0.45);
-    background: rgba(74, 222, 128, 0.12);
+    border: 1px solid rgba(74, 222, 128, 0.65);
+    background: rgba(22, 163, 74, 0.34);
     color: var(--text-primary);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
     backdrop-filter: blur(6px);
