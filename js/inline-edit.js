@@ -401,7 +401,7 @@ const InlineEditManager = {
     
     // Add tag inline
     addTagInline(card, task) {
-        const tagsContainer = card.querySelector('.task-tags');
+        const tagsContainer = card.querySelector('.task-tags-inline, .task-tags');
         if (!tagsContainer) return;
         
         const addTagBtn = tagsContainer.querySelector('.add-tag');

@@ -413,10 +413,12 @@ body.has-today-overlay .container {
 }
 
 .task-card {
+    --task-card-pad-y: 12px;
+    --task-card-pad-x: 14px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 12px 14px;
+    padding: var(--task-card-pad-y) var(--task-card-pad-x);
     cursor: move;
     transition: all 0.2s ease;
     position: relative;
@@ -1028,8 +1030,8 @@ body.has-today-overlay .container {
 
 .task-corner-actions {
     position: absolute;
-    right: 10px;
-    bottom: 10px;
+    right: calc(10px - var(--task-card-pad-x));
+    bottom: calc(10px - var(--task-card-pad-y));
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -1077,8 +1079,8 @@ body.has-today-overlay .container {
 /* Delete destacado e fixo no canto superior direito do card */
 .task-btn.delete {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: calc(10px - var(--task-card-pad-y));
+    right: calc(10px - var(--task-card-pad-x));
     border-color: rgba(239, 68, 68, 0.35);
     color: rgba(239, 68, 68, 0.95);
     background: rgba(239, 68, 68, 0.08);
@@ -1086,7 +1088,7 @@ body.has-today-overlay .container {
 
 .task-btn.task-btn-today {
     position: absolute;
-    right: 10px;
+    right: calc(10px - var(--task-card-pad-x));
     top: 50%;
     transform: translateY(-50%);
 }
