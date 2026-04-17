@@ -219,9 +219,7 @@ const WeekCalendarManager = {
 
     syncTodayOverlayUI() {
         const btn = document.getElementById('today-overlay-toggle-btn');
-        const title = document.getElementById('today-overlay-title');
         const label = typeof t === 'function' ? t('weekCalendarTitleToday') : 'Hoje';
-        if (title) title.textContent = label;
         if (btn) {
             btn.title = label;
             btn.setAttribute('aria-label', label);

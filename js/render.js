@@ -366,15 +366,17 @@ const RenderManager = {
                                 </div>
                             </div>
                         `}
-                        <div class="task-actions">
-                            <button type="button" class="task-btn task-order-top" data-task-id="${task.id}" title="${t('sendToTop')}" aria-label="${t('sendToTop')}">↑</button>
-                            <button type="button" class="task-btn task-order-bottom" data-task-id="${task.id}" title="${t('sendToBottom')}" aria-label="${t('sendToBottom')}">↓</button>
-                            <button class="task-btn pomodoro" data-task-id="${task.id}" title="${t('pomodoro')}" aria-label="${t('pomodoro')}">🍅</button>
+                        <div class="task-actions-inline">
                             ${task.task_type === 'todo' && task.status !== 'done'
                                 ? `<button type="button" class="task-btn task-btn-today" data-task-id="${task.id}">${t('setForToday')}</button>`
                                 : ''}
                             <button class="task-btn delete" data-task-id="${task.id}" title="${t('delete')}" aria-label="${t('delete')}">🗑</button>
                         </div>
+                    </div>
+                    <div class="task-corner-actions">
+                        <button type="button" class="task-btn task-order-top" data-task-id="${task.id}" title="${t('sendToTop')}" aria-label="${t('sendToTop')}">↑</button>
+                        <button type="button" class="task-btn task-order-bottom" data-task-id="${task.id}" title="${t('sendToBottom')}" aria-label="${t('sendToBottom')}">↓</button>
+                        <button class="task-btn pomodoro" data-task-id="${task.id}" title="${t('pomodoro')}" aria-label="${t('pomodoro')}">🍅</button>
                     </div>
                     ${task.subtasks?.length > 0 ? this.createSubtasksHTML(task, progress) : ''}
                 </div>
@@ -443,7 +445,7 @@ const RenderManager = {
             daysOfWeekEl.style.cursor = 'pointer';
             daysOfWeekEl.addEventListener('click', (e) => {
                 e.stopPropagation();
-                InlineEditManager.editDaysOfWeekInline(card, task);
+                InlineEditManager.startEditing(task.id, 'full');
             });
         }
         
@@ -551,7 +553,10 @@ const RenderManager = {
             titleEl.title = t('edit');
             titleEl.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (!InlineEditManager.isEditing(task.id)) {
+                if (InlineEditManager.isEditing(task.id)) return;
+                if (task.task_type === 'daily') {
+                    InlineEditManager.startEditing(task.id, 'full');
+                } else {
                     InlineEditManager.startEditing(task.id, 'title');
                 }
             });

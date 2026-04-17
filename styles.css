@@ -80,18 +80,10 @@ body.has-today-overlay .container {
 .today-overlay-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 10px;
-    padding: 10px 12px;
+    padding: 6px 8px;
     border-bottom: 1px solid var(--border-color);
-}
-
-.today-overlay-title {
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    color: var(--text-secondary);
-    text-transform: uppercase;
 }
 
 .today-overlay-close {
@@ -112,7 +104,7 @@ body.has-today-overlay .container {
 }
 
 .today-overlay-body {
-    height: calc(var(--today-overlay-h) - 52px);
+    height: calc(var(--today-overlay-h) - 40px);
     overflow: hidden;
 }
 
@@ -726,6 +718,9 @@ body.has-today-overlay .container {
 
 .task-content {
     flex: 1;
+    position: relative;
+    padding-right: 6px;
+    padding-bottom: 40px;
 }
 
 .task-title {
@@ -784,7 +779,7 @@ body.has-today-overlay .container {
         gap: 8px;
     }
     
-    .task-actions {
+    .task-actions-inline {
         align-self: flex-end;
     }
 }
@@ -1024,11 +1019,24 @@ body.has-today-overlay .container {
     transform: scale(1.2);
 }
 
-.task-actions {
+.task-actions-inline {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
     flex-shrink: 0;
+}
+
+.task-corner-actions {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 8px;
+    background: rgba(15, 17, 23, 0.45);
+    border: 1px solid var(--border-color);
 }
 
 .task-btn {
