@@ -1021,22 +1021,19 @@ body.has-today-overlay .container {
 
 .task-actions-inline {
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+    align-items: center;
+    gap: 8px;
     flex-shrink: 0;
 }
 
 .task-corner-actions {
     position: absolute;
-    right: 8px;
-    bottom: 8px;
+    right: 10px;
+    bottom: 10px;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px;
-    border-radius: 8px;
-    background: rgba(15, 17, 23, 0.45);
-    border: 1px solid var(--border-color);
+    gap: 8px;
+    padding: 0;
 }
 
 .task-btn {
@@ -1085,6 +1082,13 @@ body.has-today-overlay .container {
     border-color: rgba(239, 68, 68, 0.35);
     color: rgba(239, 68, 68, 0.95);
     background: rgba(239, 68, 68, 0.08);
+}
+
+.task-btn.task-btn-today {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .task-btn.delete:hover {
