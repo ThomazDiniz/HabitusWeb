@@ -400,7 +400,7 @@ const RenderManager = {
             TasksManager.toggleTaskStatus(task.id);
             this.renderAll();
 
-            if (isMarkingDone && task.task_type === 'todo' && snapshot) {
+            if (isMarkingDone && snapshot) {
                 Utils.showActionToast({
                     message: `${t('activityFinished')}: ${task.title || ''}`.trim(),
                     actionLabel: t('undo'),
