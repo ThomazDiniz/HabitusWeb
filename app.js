@@ -16,6 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('WeekCalendarManager.init failed:', err);
         }
     }
+
+    if (typeof MobileViewsManager !== 'undefined') {
+        try {
+            MobileViewsManager.init();
+        } catch (err) {
+            console.error('MobileViewsManager.init failed:', err);
+        }
+    }
     
     // Check daily resets
     TasksManager.checkDailyResets();
@@ -28,6 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (typeof RemindersManager !== 'undefined') {
         RemindersManager.init();
+    }
+    if (typeof RenderManager !== 'undefined' && RenderManager.setupGlobalImagePaste) {
+        RenderManager.setupGlobalImagePaste();
     }
 });
 
@@ -209,5 +220,8 @@ window.updateUI = function() {
     if (deleteDailiesCompleted) deleteDailiesCompleted.textContent = t('deleteCompleted');
     
     updateViewToggleButton();
+    if (typeof MobileViewsManager !== 'undefined') {
+        MobileViewsManager.updateTabLabels();
+    }
     RenderManager.renderAll();
 };

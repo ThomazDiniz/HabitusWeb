@@ -28,7 +28,8 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - **Data de vencimento** (`due_date`, formato `YYYY-MM-DD`)
 - **Hora opcional** (`due_time`, formato `HH:MM`; na grelha do calendário o arrasto alinha a **30 em 30 minutos**)
 - Tags múltiplas
-- Subtasks com progresso
+- Subtasks com progresso; no cartão, **+ Adicionar subtarefa** (ou equivalente i18n) abre um campo inline — Enter ou clique fora grava; Esc cancela
+- **Imagens coladas (Ctrl+V)**: com o cartão **focado** (clique antes), colar uma imagem da área de transferência acrescenta uma miniatura **abaixo** do conteúdo principal; até **8** imagens por tarefa; guardadas em `meta.pasted_images` como data URLs (consumo de `localStorage`); não cola quando o foco está num campo de texto ou com um modal aberto
 - Reordenação por **drag and drop** nas listas; botões **↑ / ↓** (**Para o topo** / **Para o fim**) na mesma sublista (ativas vs concluídas; em hábitos também secção agendada quando aplicável), ajustando `order_index`
 - Filtro rápido acima da lista de atividades: **Todas / Hoje / Sem data / Futuras** (combina com o filtro de tags) para reduzir o volume de itens visíveis no dia.
 - **Definir para hoje** (botão no card, só atividades não concluídas): define `due_date` para o dia **calendário local** atual (`Utils.dateToYMD`) e `due_time` para a **hora atual** (`Utils.getLocalDueTimeNow()`). Toast de confirmação; a pessoa pode depois alterar data/hora (lista, modal ou calendário).
@@ -64,6 +65,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 
 ### Calendário semanal
 
+- Em **largura ≤640px**, a grelha do calendário na página principal mostra **apenas o dia de hoje** (equivalente a “só hoje”; botão de alternar semana/só hoje oculto). Em ecrãs maiores mantém-se a semana **segunda a domingo** e o toggle **Só hoje** / semana completa.
 - Vista **segunda a domingo** para a semana corrente (navegação ‹ / Hoje / ›)
 - **Todos com `due_date`** no dia aparecem nesse dia; **dailies** aparecem nos dias em que estão agendadas (`days_of_week`). Diárias **para todos os dias** (`days_of_week` vazio ou os 7 dias) aparecem **só na coluna do dia de hoje** (data real), para não repetir em toda a semana
 - **Faixa superior (sem hora)**: itens **sem** `due_time` — **sem scroll interno**; a grelha de horas começa **só depois** de toda essa faixa (altura uniforme entre colunas via CSS Grid)
@@ -85,6 +87,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 
 - **Header fixo**: além do título e do botão de alternar vista, mostra a etiqueta **Hoje** (traduzida), a **data corrente** por extenso no idioma ativo e o **relógio** local `HH:MM:SS` (atualizado a cada segundo por `WeekCalendarManager`); **barra de pesquisa global** centrada (`globalSearchPlaceholder` / `globalSearchAriaLabel` em `i18n.js`)
 - Botão no header alterna **scroll suave** entre as **listas** e o **calendário semanal**; ao lado, **lembretes** (🔔), pesquisa global, export/import, etc.
+- **Ecrãs estreitos (≤640px)**: barra de **três separadores** (Hábitos / Atividades / **Hoje** — o terceiro é o calendário focado no dia atual) e **gesto de deslizar** horizontalmente (swipe) para mudar de vista; o separador ativo e o índice são memorizados em `sessionStorage` (`habitus-mobile-tab`). O botão de alternar listas/calendário no header fica oculto neste modo (redundante).
 - `scroll-margin-top` nas âncoras para compensar o header fixo
 
 ### Teclado (listas)
@@ -175,13 +178,14 @@ HabitusWeb/
     ├── stats.js         # Secção de estatísticas (semana, Pomodoro)
     ├── inline-edit.js   # Criação rápida e edição inline nas listas
     ├── keyboard-nav.js  # Navegação por teclado nas listas
+    ├── mobile-views.js  # ≤640px: tabs + swipe entre hábitos, atividades e calendário (hoje)
     ├── week-calendar.js # Vista semanal, DnD, edição inline, hora
     ├── render.js        # RenderManager.renderAll(); botão «Definir para hoje» em atividades
     ├── modal.js         # Modal de task/daily e Pomodoro (referência)
     └── README.md        # Notas técnicas dos módulos
 ```
 
-Ordem de scripts em `index.html`: i18n e dados primeiro; `week-calendar.js` antes de `render.js`; `app.js` por último.
+Ordem de scripts em `index.html`: i18n e dados primeiro; `mobile-views.js` antes de `week-calendar.js`; `week-calendar.js` antes de `render.js`; `app.js` por último.
 
 ---
 

@@ -65,9 +65,14 @@
     </div>
 
     <div class="container">
+        <nav class="mobile-view-tabs" id="mobile-view-tabs" role="tablist" hidden aria-label="">
+            <button type="button" class="mobile-view-tab" role="tab" id="mobile-tab-dailies" data-mobile-tab="0" aria-selected="true"></button>
+            <button type="button" class="mobile-view-tab" role="tab" id="mobile-tab-tasks" data-mobile-tab="1" aria-selected="false"></button>
+            <button type="button" class="mobile-view-tab" role="tab" id="mobile-tab-calendar" data-mobile-tab="2" aria-selected="false"></button>
+        </nav>
         <div class="tasks-container main-view-scroll-anchor" id="main-lists-view">
             <!-- Dailies Column -->
-            <div class="tasks-column">
+            <div class="tasks-column" id="mobile-panel-dailies">
                 <div class="column-header">
                     <h2 id="dailies-title">Dailies <span class="count" id="dailies-count">(0)</span></h2>
                     <div class="column-header-right"></div>
@@ -98,7 +103,7 @@
             </div>
 
             <!-- Tasks Column -->
-            <div class="tasks-column">
+            <div class="tasks-column" id="mobile-panel-tasks">
                 <div class="column-header">
                     <h2 id="tasks-title">Tasks <span class="count" id="tasks-count">(0)</span></h2>
                     <div class="column-header-right">
@@ -276,6 +281,7 @@
     <!-- UI Modules -->
     <script src="js/inline-edit.js"></script>
     <script src="js/keyboard-nav.js"></script>
+    <script src="js/mobile-views.js"></script>
     <script src="js/week-calendar.js"></script>
     <script src="js/render.js"></script>
     <script src="js/modal.js"></script>

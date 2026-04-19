@@ -484,6 +484,53 @@ const InlineEditManager = {
             }
         });
     },
+
+    addSubtaskInline(card, task) {
+        const wrap = card.querySelector('.task-subtasks-wrap');
+        if (!wrap) return;
+        const btn = wrap.querySelector('.task-add-subtask-btn');
+        if (!btn) return;
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'inline-subtask-input';
+        input.placeholder = t('addSubtask');
+        input.setAttribute('aria-label', t('addSubtask'));
+
+        btn.replaceWith(input);
+        input.focus();
+
+        let finished = false;
+        const save = () => {
+            if (finished) return;
+            finished = true;
+            const title = input.value.trim();
+            if (title) {
+                SubtasksManager.addSubtask(task.id, title);
+            }
+            RenderManager.renderAll();
+        };
+
+        const cancel = () => {
+            if (finished) return;
+            finished = true;
+            RenderManager.renderAll();
+        };
+
+        input.addEventListener('blur', () => {
+            setTimeout(save, 150);
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                input.blur();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                cancel();
+            }
+        });
+    },
     
     // Remove tag
     removeTag(taskId, tagToRemove) {

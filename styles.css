@@ -1206,6 +1206,111 @@ body.has-today-overlay .container {
     font-weight: 500;
 }
 
+/* Pasted images on task cards (Ctrl+V) */
+.task-pasted-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    min-height: 0;
+}
+
+.task-pasted-images[aria-hidden="true"] {
+    display: none;
+}
+
+.task-pasted-thumb-wrap {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.15);
+    max-width: 100%;
+}
+
+.task-pasted-thumb {
+    display: block;
+    max-width: min(220px, 100%);
+    max-height: 160px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.task-pasted-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+}
+
+.task-pasted-remove:hover {
+    background: rgba(220, 38, 38, 0.85);
+}
+
+.task-paste-hint {
+    margin: 8px 0 0;
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--text-secondary);
+    opacity: 0.85;
+}
+
+.task-subtasks-wrap {
+    margin-top: 10px;
+}
+
+.task-add-subtask-btn {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 6px;
+    padding: 4px 0;
+    background: none;
+    border: none;
+    color: var(--blue-primary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: opacity 0.15s ease;
+}
+
+.task-add-subtask-btn:hover {
+    opacity: 0.85;
+    text-decoration: underline;
+}
+
+.inline-subtask-input {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.inline-subtask-input:focus {
+    outline: none;
+    border-color: var(--blue-primary);
+}
+
 /* Subtasks */
 .subtasks-container {
     margin-top: 12px;
@@ -2573,5 +2678,59 @@ body.has-today-overlay .container {
 
     .week-cal-completed-todos-aside {
         margin-left: 0;
+    }
+
+    /* Hábitos / Atividades / Calendário (hoje): tabs + swipe */
+    body.mobile-swipe-tabs .view-toggle-btn {
+        display: none !important;
+    }
+
+    .mobile-view-tabs {
+        display: none;
+        flex-direction: row;
+        width: 100%;
+        gap: 6px;
+        margin-bottom: 16px;
+        padding: 4px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+    }
+
+    body.mobile-swipe-tabs .mobile-view-tabs {
+        display: flex;
+    }
+
+    .mobile-view-tab {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 10px 6px;
+        font-size: 12px;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .mobile-view-tab.is-active {
+        background: rgba(91, 141, 239, 0.22);
+        color: var(--text-primary);
+    }
+
+    body.mobile-swipe-tabs[data-mobile-tab="0"] #mobile-panel-tasks,
+    body.mobile-swipe-tabs[data-mobile-tab="0"] #week-calendar-section {
+        display: none !important;
+    }
+
+    body.mobile-swipe-tabs[data-mobile-tab="1"] #mobile-panel-dailies,
+    body.mobile-swipe-tabs[data-mobile-tab="1"] #week-calendar-section {
+        display: none !important;
+    }
+
+    body.mobile-swipe-tabs[data-mobile-tab="2"] #main-lists-view {
+        display: none !important;
     }
 }

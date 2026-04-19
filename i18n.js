@@ -124,7 +124,13 @@ const translations = {
         statsHabitsDoneToday: "Habits completed today",
         statsBestStreak: "Best habit streak (record)",
         statsPomodoroMinutes: "Pomodoro minutes completed",
-        statsPomodoroSessions: "Pomodoro sessions completed"
+        statsPomodoroSessions: "Pomodoro sessions completed",
+        pasteImageHint: "Click the card, then Ctrl+V to attach an image below.",
+        pasteImageNoCard: "Click a task card first, then paste the image.",
+        pasteImageTooLarge: "Image is too large. Try a smaller screenshot.",
+        pasteImageTooMany: "Maximum 8 images per task.",
+        removeImageAria: "Remove image",
+        mobileTabBarAria: "Switch between habits, activities, and today’s calendar"
     },
     es: {
         appTitle: "Habitus",
@@ -249,7 +255,13 @@ const translations = {
         statsHabitsDoneToday: "Hábitos completados hoy",
         statsBestStreak: "Mejor racha de hábito (récord)",
         statsPomodoroMinutes: "Minutos Pomodoro completados",
-        statsPomodoroSessions: "Sesiones Pomodoro completadas"
+        statsPomodoroSessions: "Sesiones Pomodoro completadas",
+        pasteImageHint: "Haz clic en la tarjeta y luego Ctrl+V para pegar una imagen abajo.",
+        pasteImageNoCard: "Primero haz clic en una tarjeta y luego pega la imagen.",
+        pasteImageTooLarge: "La imagen es demasiado grande. Prueba una captura más pequeña.",
+        pasteImageTooMany: "Máximo 8 imágenes por actividad.",
+        removeImageAria: "Quitar imagen",
+        mobileTabBarAria: "Cambiar entre hábitos, actividades y el calendario de hoy"
     },
     zh: {
         appTitle: "Habitus",
@@ -374,7 +386,13 @@ const translations = {
         statsHabitsDoneToday: "今日已完成习惯",
         statsBestStreak: "习惯最长连续（纪录）",
         statsPomodoroMinutes: "番茄钟完成分钟数",
-        statsPomodoroSessions: "番茄钟完成次数"
+        statsPomodoroSessions: "番茄钟完成次数",
+        pasteImageHint: "点击卡片后按 Ctrl+V 将图片粘贴到下方。",
+        pasteImageNoCard: "请先点击任务卡片，再粘贴图片。",
+        pasteImageTooLarge: "图片过大，请使用较小的截图。",
+        pasteImageTooMany: "每个任务最多 8 张图片。",
+        removeImageAria: "移除图片",
+        mobileTabBarAria: "在习惯、活动与今日日历之间切换"
     },
     ja: {
         appTitle: "Habitus",
@@ -499,7 +517,13 @@ const translations = {
         statsHabitsDoneToday: "今日完了した習慣",
         statsBestStreak: "習慣の最長連続（記録）",
         statsPomodoroMinutes: "完了したポモドーロ（分）",
-        statsPomodoroSessions: "完了したポモドーロ回数"
+        statsPomodoroSessions: "完了したポモドーロ回数",
+        pasteImageHint: "カードをクリックしてから Ctrl+V で画像を貼り付けます。",
+        pasteImageNoCard: "先にタスクのカードをクリックしてから画像を貼り付けてください。",
+        pasteImageTooLarge: "画像が大きすぎます。小さめのスクリーンショットにしてください。",
+        pasteImageTooMany: "タスクに貼れる画像は最大8枚です。",
+        removeImageAria: "画像を削除",
+        mobileTabBarAria: "習慣・活動・今日のカレンダーを切り替え"
     },
     de: {
         appTitle: "Habitus",
@@ -624,7 +648,13 @@ const translations = {
         statsHabitsDoneToday: "Heute erledigte Gewohnheiten",
         statsBestStreak: "Beste Gewohnheiten-Serie (Rekord)",
         statsPomodoroMinutes: "Abgeschlossene Pomodoro-Minuten",
-        statsPomodoroSessions: "Abgeschlossene Pomodoro-Sessions"
+        statsPomodoroSessions: "Abgeschlossene Pomodoro-Sessions",
+        pasteImageHint: "Karte anklicken, dann Strg+V zum Einfügen eines Bildes darunter.",
+        pasteImageNoCard: "Zuerst eine Karte anklicken, dann das Bild einfügen.",
+        pasteImageTooLarge: "Bild zu groß. Bitte einen kleineren Screenshot verwenden.",
+        pasteImageTooMany: "Maximum 8 Bilder pro Aufgabe.",
+        removeImageAria: "Bild entfernen",
+        mobileTabBarAria: "Zwischen Gewohnheiten, Aufgaben und heutigem Kalender wechseln"
     },
     it: {
         appTitle: "Habitus",
@@ -749,7 +779,13 @@ const translations = {
         statsHabitsDoneToday: "Abitudini completate oggi",
         statsBestStreak: "Migliore serie di abitudini (record)",
         statsPomodoroMinutes: "Minuti Pomodoro completati",
-        statsPomodoroSessions: "Sessioni Pomodoro completate"
+        statsPomodoroSessions: "Sessioni Pomodoro completate",
+        pasteImageHint: "Clicca la scheda, poi Ctrl+V per incollare un’immagine sotto.",
+        pasteImageNoCard: "Prima clicca una scheda attività, poi incolla l’immagine.",
+        pasteImageTooLarge: "Immagine troppo grande. Prova uno screenshot più piccolo.",
+        pasteImageTooMany: "Massimo 8 immagini per attività.",
+        removeImageAria: "Rimuovi immagine",
+        mobileTabBarAria: "Passa tra abitudini, attività e calendario di oggi"
     },
     pt_BR: {
         appTitle: "Habitus",
@@ -874,7 +910,13 @@ const translations = {
         statsHabitsDoneToday: "Hábitos concluídos hoje",
         statsBestStreak: "Maior sequência de hábito (recorde)",
         statsPomodoroMinutes: "Minutos de Pomodoro concluídos",
-        statsPomodoroSessions: "Sessões de Pomodoro concluídas"
+        statsPomodoroSessions: "Sessões de Pomodoro concluídas",
+        pasteImageHint: "Clique no cartão e depois Ctrl+V para colar uma imagem abaixo.",
+        pasteImageNoCard: "Clique primeiro num cartão de tarefa e depois cole a imagem.",
+        pasteImageTooLarge: "Imagem grande demais. Tente um recorte menor.",
+        pasteImageTooMany: "No máximo 8 imagens por tarefa.",
+        removeImageAria: "Remover imagem",
+        mobileTabBarAria: "Alternar entre hábitos, atividades e o calendário de hoje"
     },
     pt: {
         appTitle: "Habitus",
@@ -999,7 +1041,13 @@ const translations = {
         statsHabitsDoneToday: "Hábitos concluídos hoje",
         statsBestStreak: "Melhor sequência de hábito (recorde)",
         statsPomodoroMinutes: "Minutos de Pomodoro concluídos",
-        statsPomodoroSessions: "Sessões de Pomodoro concluídas"
+        statsPomodoroSessions: "Sessões de Pomodoro concluídas",
+        pasteImageHint: "Clique no cartão e depois Ctrl+V para colar uma imagem abaixo.",
+        pasteImageNoCard: "Primeiro clique num cartão de tarefa e depois cole a imagem.",
+        pasteImageTooLarge: "Imagem demasiado grande. Tente um ecrã mais pequeno.",
+        pasteImageTooMany: "No máximo 8 imagens por tarefa.",
+        removeImageAria: "Remover imagem",
+        mobileTabBarAria: "Alternar entre hábitos, atividades e o calendário de hoje"
     },
     fr: {
         appTitle: "Habitus",
@@ -1124,7 +1172,13 @@ const translations = {
         statsHabitsDoneToday: "Habitudes terminées aujourd’hui",
         statsBestStreak: "Meilleure série d’habitude (record)",
         statsPomodoroMinutes: "Minutes Pomodoro terminées",
-        statsPomodoroSessions: "Sessions Pomodoro terminées"
+        statsPomodoroSessions: "Sessions Pomodoro terminées",
+        pasteImageHint: "Cliquez la carte, puis Ctrl+V pour coller une image en dessous.",
+        pasteImageNoCard: "Cliquez d’abord sur une carte de tâche, puis collez l’image.",
+        pasteImageTooLarge: "Image trop volumineuse. Essayez une capture plus petite.",
+        pasteImageTooMany: "Maximum 8 images par tâche.",
+        removeImageAria: "Supprimer l’image",
+        mobileTabBarAria: "Basculer entre habitudes, activités et calendrier du jour"
     }
 };
 

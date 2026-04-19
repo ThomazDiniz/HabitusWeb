@@ -14,7 +14,8 @@ Se implementares algo desta lista, atualiza também o `README.md` (fonte de verd
 
 ## 2. Notas longas / anexos
 
-- Descrição rica ou campo de notas por tarefa; anexos/ficheiros.
+- **Já no cartão:** imagens via **Ctrl+V** (miniaturas em `meta.pasted_images`; ver `README`).
+- Em aberto: descrição rica ou texto longo por tarefa; anexos de ficheiros genéricos.
 - Aumenta o escopo (armazenamento, tamanho do `localStorage`, privacidade).
 
 ## 3. Sincronização / multi-dispositivo

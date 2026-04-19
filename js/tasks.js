@@ -28,6 +28,7 @@ const TasksManager = {
             meta: {
                 tags: data.tags || [],
                 days_of_week: defaultDaysOfWeek,
+                pasted_images: Array.isArray(data.meta?.pasted_images) ? data.meta.pasted_images : [],
                 duration_minutes:
                     typeof Utils !== 'undefined'
                         ? Utils.normalizeDurationMinutes(
@@ -65,7 +66,7 @@ const TasksManager = {
         return DataManager.addTask(task);
     },
     
-    // Update task (merges meta; does not wipe tags/days on partial updates)
+    // Update task (merges meta; does not wipe tags/days/pasted_images em atualizações parciais)
     updateTask(id, updates) {
         const task = DataManager.findTask(id);
         if (!task) return null;
@@ -76,8 +77,18 @@ const TasksManager = {
             updates.duration_minutes !== undefined
                 ? Utils.normalizeDurationMinutes(updates.duration_minutes)
                 : Utils.normalizeDurationMinutes(prevMeta.duration_minutes);
-        const { tags: _tg, days_of_week: _dw, due_time: dueTimeRaw, duration_minutes: _dm, ...rest } = updates;
-        const taskData = { ...rest, meta: { tags, days_of_week, duration_minutes } };
+        const pasted_images =
+            updates.pasted_images !== undefined
+                ? updates.pasted_images
+                : Array.isArray(prevMeta.pasted_images)
+                  ? prevMeta.pasted_images
+                  : [];
+        const { tags: _tg, days_of_week: _dw, due_time: dueTimeRaw, duration_minutes: _dm, pasted_images: _pi, ...rest } =
+            updates;
+        const taskData = {
+            ...rest,
+            meta: { ...prevMeta, tags, days_of_week, duration_minutes, pasted_images }
+        };
         if ('due_time' in updates) {
             taskData.due_time =
                 dueTimeRaw === '' || dueTimeRaw == null

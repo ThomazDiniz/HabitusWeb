@@ -15,6 +15,14 @@ const WeekCalendarManager = {
     _TODAY_OVERLAY_STORAGE_KEY: 'habitus-today-overlay-open',
     _todayOverlayUserScrolled: false,
 
+    /** Narrow phone layout: calendar column is today-only (see mobile-views.js breakpoint). */
+    isMobileCalendarCompact() {
+        return (
+            typeof window.matchMedia !== 'undefined' &&
+            window.matchMedia('(max-width: 640px)').matches
+        );
+    },
+
     ensureWeekStart() {
         if (
             !this.weekStart ||
@@ -115,6 +123,9 @@ const WeekCalendarManager = {
 
     /** Dates shown as columns: full Mon–Sun week or single today. */
     getVisibleDates() {
+        if (this.isMobileCalendarCompact()) {
+            return [this.getTodayOnlyDate()];
+        }
         if (this.todayOnlyView) {
             return [this.getTodayOnlyDate()];
         }
@@ -127,17 +138,24 @@ const WeekCalendarManager = {
         const prev = document.getElementById('week-cal-prev');
         const next = document.getElementById('week-cal-next');
         if (typeof t !== 'function') return;
+        const mobile = this.isMobileCalendarCompact();
+        const todayOnly = mobile || this.todayOnlyView;
         if (titleEl) {
-            titleEl.textContent = this.todayOnlyView ? t('weekCalendarTitleToday') : t('weekCalendar');
+            titleEl.textContent = todayOnly ? t('weekCalendarTitleToday') : t('weekCalendar');
         }
         if (toggleBtn) {
-            toggleBtn.setAttribute('aria-pressed', this.todayOnlyView ? 'true' : 'false');
-            toggleBtn.textContent = this.todayOnlyView ? t('weekCalendarShowWeek') : t('weekCalendarShowTodayOnly');
-            toggleBtn.title = this.todayOnlyView ? t('weekCalendarShowWeekTitle') : t('weekCalendarShowTodayOnlyTitle');
-            toggleBtn.classList.toggle('is-active', this.todayOnlyView);
+            if (mobile) {
+                toggleBtn.style.display = 'none';
+            } else {
+                toggleBtn.style.display = '';
+                toggleBtn.setAttribute('aria-pressed', this.todayOnlyView ? 'true' : 'false');
+                toggleBtn.textContent = this.todayOnlyView ? t('weekCalendarShowWeek') : t('weekCalendarShowTodayOnly');
+                toggleBtn.title = this.todayOnlyView ? t('weekCalendarShowWeekTitle') : t('weekCalendarShowTodayOnlyTitle');
+                toggleBtn.classList.toggle('is-active', this.todayOnlyView);
+            }
         }
-        if (prev) prev.disabled = this.todayOnlyView;
-        if (next) next.disabled = this.todayOnlyView;
+        if (prev) prev.disabled = todayOnly;
+        if (next) next.disabled = todayOnly;
     },
 
     /** Minutes from midnight (local), fractional for sub-minute line position */

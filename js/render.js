@@ -1,6 +1,11 @@
 // Render Management Module
 // Handles all UI rendering functionality
 
+/** Último cartão com mousedown (para colar imagem com Ctrl+V). */
+const TaskCardPasteState = {
+    lastCard: null
+};
+
 const RenderManager = {
     todoDateFilter: 'all', // all | today | no_date | future
     _tasksDateFilterBound: false,
@@ -283,9 +288,13 @@ const RenderManager = {
         card.dataset.taskId = task.id;
 
         // Click no card abre o editor completo (exceto em controles/edições inline)
+        card.addEventListener('mousedown', () => {
+            TaskCardPasteState.lastCard = card;
+        });
+
         card.addEventListener('click', (e) => {
             const interactive = e.target.closest(
-                'button, a, input, select, textarea, .task-tags-inline, .task-tag, .tag-remove, .task-inline-time-input, .task-duration-stepper, [contenteditable="true"]'
+                'button, a, input, select, textarea, .task-tags-inline, .task-tag, .tag-remove, .task-inline-time-input, .task-duration-stepper, .task-pasted-images, .task-pasted-remove, .task-add-subtask-btn, .task-subtasks-wrap, .subtasks-container, .subtask-item, .task-paste-hint, [contenteditable="true"]'
             );
             if (interactive) return;
             InlineEditManager.startEditing(task.id, 'full');
@@ -385,7 +394,9 @@ const RenderManager = {
                         <button type="button" class="task-btn task-order-bottom" data-task-id="${task.id}" title="${t('sendToBottom')}" aria-label="${t('sendToBottom')}">↓</button>
                         <button class="task-btn pomodoro" data-task-id="${task.id}" title="${t('pomodoro')}" aria-label="${t('pomodoro')}">🍅</button>
                     </div>
-                    ${task.subtasks?.length > 0 ? this.createSubtasksHTML(task, progress) : ''}
+                    ${this.createPastedImagesHTML(task)}
+                    <p class="task-paste-hint">${t('pasteImageHint')}</p>
+                    ${this.createSubtasksBlock(task, progress)}
                 </div>
             </div>
         `;
@@ -507,6 +518,27 @@ const RenderManager = {
             });
         }
 
+        card.querySelectorAll('.task-pasted-remove').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.getAttribute('data-img-index'), 10);
+                const fresh = DataManager.findTask(task.id);
+                if (!fresh || Number.isNaN(idx)) return;
+                const arr = [...(fresh.meta?.pasted_images || [])];
+                arr.splice(idx, 1);
+                TasksManager.updateTask(task.id, { pasted_images: arr });
+                this.renderAll();
+            });
+        });
+
+        const addSubBtn = card.querySelector('.task-add-subtask-btn');
+        if (addSubBtn) {
+            addSubBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                InlineEditManager.addSubtaskInline(card, task);
+            });
+        }
+
         // Subtask event listeners
         card.querySelectorAll('.subtask-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', (e) => {
@@ -577,6 +609,91 @@ const RenderManager = {
         });
         
         return card;
+    },
+
+    setupGlobalImagePaste() {
+        if (this._globalImagePasteBound) return;
+        this._globalImagePasteBound = true;
+        document.addEventListener('paste', (e) => {
+            const el = e.target;
+            if (el && el.closest && el.closest('input, textarea, [contenteditable="true"]')) return;
+            if (el && el.id === 'global-search-input') return;
+            let modalOpen = false;
+            document.querySelectorAll('.modal-overlay').forEach((m) => {
+                if (m.style.display === 'flex') modalOpen = true;
+            });
+            if (modalOpen) return;
+
+            const items = e.clipboardData && e.clipboardData.items;
+            if (!items) return;
+            let imageBlob = null;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    imageBlob = items[i].getAsFile();
+                    break;
+                }
+            }
+            if (!imageBlob) return;
+
+            const card = TaskCardPasteState.lastCard;
+            if (!card || !document.body.contains(card)) {
+                Utils.showToast(t('pasteImageNoCard'), 'error');
+                return;
+            }
+
+            e.preventDefault();
+            const taskId = parseFloat(card.dataset.taskId, 10);
+            const reader = new FileReader();
+            reader.onload = () => {
+                const dataUrl = reader.result;
+                const fresh = DataManager.findTask(taskId);
+                if (!fresh) return;
+                const arr = [...(fresh.meta?.pasted_images || [])];
+                if (arr.length >= 8) {
+                    Utils.showToast(t('pasteImageTooMany'), 'error');
+                    return;
+                }
+                if (String(dataUrl).length > 1500000) {
+                    Utils.showToast(t('pasteImageTooLarge'), 'error');
+                    return;
+                }
+                arr.push(dataUrl);
+                TasksManager.updateTask(taskId, { pasted_images: arr });
+                this.renderAll();
+            };
+            reader.readAsDataURL(imageBlob);
+        });
+    },
+
+    createPastedImagesHTML(task) {
+        const imgs = task.meta?.pasted_images || [];
+        if (!imgs.length) {
+            return `<div class="task-pasted-images" data-task-id="${task.id}" aria-hidden="true"></div>`;
+        }
+        const removeLabel = String(t('removeImageAria')).replace(/"/g, '&quot;');
+        return `
+            <div class="task-pasted-images" data-task-id="${task.id}">
+                ${imgs
+                    .map(
+                        (url, i) => `
+                    <div class="task-pasted-thumb-wrap">
+                        <img src="${url}" alt="" class="task-pasted-thumb" loading="lazy" />
+                        <button type="button" class="task-pasted-remove" data-img-index="${i}" aria-label="${removeLabel}">×</button>
+                    </div>`
+                    )
+                    .join('')}
+            </div>`;
+    },
+
+    createSubtasksBlock(task, progress) {
+        const list =
+            task.subtasks && task.subtasks.length > 0 ? this.createSubtasksHTML(task, progress) : '';
+        return `
+            <div class="task-subtasks-wrap">
+                ${list}
+                <button type="button" class="task-add-subtask-btn">+ ${t('addSubtask')}</button>
+            </div>
+        `;
     },
     
     // Create subtasks HTML
