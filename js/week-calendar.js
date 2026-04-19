@@ -500,6 +500,7 @@ const WeekCalendarManager = {
         if (!Array.isArray(all)) return items;
         all.forEach((t) => {
             if (t.is_deleted) return;
+            if (typeof FiltersManager !== 'undefined' && !FiltersManager.matchesGlobalSearch(t)) return;
             if (t.task_type === 'todo' && t.due_date === ymd) {
                 items.push(t);
             } else if (t.task_type === 'daily' && TasksManager.isDailyScheduledOnDate(t, ymd)) {

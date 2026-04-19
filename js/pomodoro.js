@@ -206,6 +206,27 @@ const PomodoroManager = {
     // Complete Pomodoro
     complete() {
         this.stop();
+        const mins = Math.max(1, Math.round(this.totalTime / 60));
+        if (typeof DataManager !== 'undefined' && DataManager.appData) {
+            if (!DataManager.appData.stats || typeof DataManager.appData.stats !== 'object') {
+                DataManager.appData.stats = {
+                    pomodoroMinutesCompleted: 0,
+                    pomodoroSessionsCompleted: 0
+                };
+            }
+            DataManager.appData.stats.pomodoroMinutesCompleted =
+                (DataManager.appData.stats.pomodoroMinutesCompleted || 0) + mins;
+            DataManager.appData.stats.pomodoroSessionsCompleted =
+                (DataManager.appData.stats.pomodoroSessionsCompleted || 0) + 1;
+            DataManager.saveData();
+        }
+        if (typeof StatsManager !== 'undefined' && StatsManager.render) {
+            try {
+                StatsManager.render();
+            } catch (e) {
+                /* ignore */
+            }
+        }
         Utils.showToast(t('pomodoroComplete'), 'success');
         Utils.playBeep();
         this.updateDisplay();

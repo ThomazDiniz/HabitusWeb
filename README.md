@@ -13,7 +13,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 | **Stack** | HTML5, CSS3, JavaScript (ES6+), sem frameworks |
 | **Persistência** | `localStorage` (chave principal `habitus_data`) |
 | **i18n** | 9 idiomas; preferência em `habitus_language` |
-| **UI** | Duas grandes áreas: **listas** (**Hábitos** + **Atividades**, em pt-BR) e **calendário semanal** (abaixo, com scroll na página). No código mantêm-se `task_type`: `daily` / `todo`. |
+| **UI** | Duas grandes áreas: **listas** (**Hábitos** + **Atividades**, em pt-BR) e **calendário semanal** (abaixo, com scroll na página). No código mantêm-se `task_type`: `daily` / `todo`. **Pesquisa global** no header (campo central). |
 
 ---
 
@@ -38,11 +38,16 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - Criação rápida pelo campo `+` e teclado (ver atalhos)
 - Edição inline de título e dias da semana (quando aplicável) nas listas
 
+### Listas: editor completo no cartão (Hábitos e Atividades)
+
+- Com o **formulário completo** aberto no cartão (por exemplo clique no cartão ou, nos hábitos, no título — que abre este mesmo modo), **clicar em qualquer zona da página fora desse cartão** **guarda** as alterações, de forma equivalente ao botão **Guardar**. Se o título estiver vazio, o pedido é recusado (mensagem de erro) e o editor mantém-se aberto. O mesmo comportamento aplica-se a **atividades** (`todo`) e **hábitos** (`daily`), pois partilham o mesmo fluxo em `js/inline-edit.js` (`editFull`).
+- Isto é **independente** do seletor **inline de dias da semana** no cartão dos hábitos (OK / clique fora / Esc), que continua com as regras descritas na secção seguinte.
+
 ### Hábitos (dailies, `task_type: "daily"`)
 
 - Na interface (pt-BR e i18n alinhado), a coluna chama-se **Hábitos**; o modelo de dados continua a usar “daily” / diária no código.
 - Criar, editar e eliminar hábitos (diárias)
-- **Streak** e **max streak**
+- **Streak** (`streak_count`) e **max streak** (`max_streak`): ao concluir, a sequência incrementa se a última conclusão (`last_completed_date`) foi no **último dia civil anterior em que o hábito estava agendado** (`getPreviousScheduledYmdBefore` + `isScheduledCalendarDay` em `js/tasks.js`). Caso contrário, a sequência volta a **1**. Isto cobre hábitos só em alguns dias da semana (ex.: seg/qua) sem exigir conclusão em dias “em branco” entre elas.
 - **Dias da semana** em que a diária conta (meta `days_of_week`); no cartão, o seletor inline permite marcar **vários dias** de seguida — **OK** ou clique **fora** grava; **Esc** descarta
 - Reset lógico diário (estado “hoje” / conclusão)
 - Limite de **20** hábitos (diárias) ativos
@@ -55,6 +60,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - Filtro por tags com lógica **OR**
 - Destaque visual das tags selecionadas
 - Clicar numa tag num card aplica o filtro
+- **Pesquisa global** (`#global-search-input` no header, entre a área esquerda e os controlos à direita): filtra por **substring** no **título** ou em **qualquer tag** (sem distinção de maiúsculas/minúsculas). Combina com os filtros de tags e, nas atividades, com o filtro rápido de data (**Todas / Hoje / …**). Atualização com debounce (~200 ms) em `app.js`; estado em `FiltersManager.globalSearchQuery` / `matchesGlobalSearch` (`js/filters.js`). A mesma regra aplica-se ao **calendário semanal** e à vista derivada (itens por dia filtrados em `js/week-calendar.js`, `itemsForDay`).
 
 ### Calendário semanal
 
@@ -77,8 +83,8 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 
 ### Navegação na página
 
-- **Header fixo**: além do título e do botão de alternar vista, mostra a etiqueta **Hoje** (traduzida), a **data corrente** por extenso no idioma ativo e o **relógio** local `HH:MM:SS` (atualizado a cada segundo por `WeekCalendarManager`)
-- Botão no header alterna **scroll suave** entre as **listas** e o **calendário semanal**
+- **Header fixo**: além do título e do botão de alternar vista, mostra a etiqueta **Hoje** (traduzida), a **data corrente** por extenso no idioma ativo e o **relógio** local `HH:MM:SS` (atualizado a cada segundo por `WeekCalendarManager`); **barra de pesquisa global** centrada (`globalSearchPlaceholder` / `globalSearchAriaLabel` em `i18n.js`)
+- Botão no header alterna **scroll suave** entre as **listas** e o **calendário semanal**; ao lado, **lembretes** (🔔), pesquisa global, export/import, etc.
 - `scroll-margin-top` nas âncoras para compensar o header fixo
 
 ### Teclado (listas)
@@ -96,6 +102,23 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - Barra de progresso
 - Notificação e som ao terminar
 - Associado a uma atividade (task) específica
+- Cada conclusão do timer incrementa `appData.stats.pomodoroMinutesCompleted` (duração da sessão em minutos, mínimo 1) e `pomodoroSessionsCompleted` em `habitus_data`
+
+### Estatísticas (rodapé da vista principal)
+
+- Secção **no fim do `.container`**, abaixo do calendário semanal (`#stats-section`): grelha com totais da **semana civil segunda–domingo** (hora local), **hoje**, e agregados de **Pomodoro** (ver acima).
+- **Atividades concluídas (semana / hoje)**: contagens com base em `completed_at` (ISO) para `task_type === "todo"` e `status === "done"`.
+- **Hábitos concluídos hoje** e **melhor sequência (recorde)**: derivados dos hábitos ativos; o recorde usa o máximo entre `streak_count` e `max_streak` nos cartões.
+- Módulo: `js/stats.js` (`StatsManager.render`, chamado no final de `RenderManager.renderAll`).
+
+### Lembretes na hora (notificações do sistema)
+
+- Botão **🔕 / 🔔** no header (`#reminders-toggle-btn`, classe `reminders-toggle-btn`): liga ou desliga lembretes por **Notification API** quando o **minuto atual** coincide com `due_time` (hora definida na atividade ou hábito).
+- **Atividades (`todo`)**: só se `due_date` for **o dia de hoje** (calendário local), a tarefa **não** está concluída e existe `due_time`.
+- **Hábitos (`daily`)**: só se estiverem **agendados para hoje** (`isDailyScheduledForToday`), **não** concluídos hoje e tiverem `due_time`.
+- Uma notificação por combinação **tarefa + dia + hora** (evita repetições no mesmo minuto); estado em `localStorage` na chave `habitus_reminder_fired_v1`. A preferência **Lembretes ativos** guarda-se em `appData.settings.remindersEnabled` (ver `habitus_data`).
+- É necessária **permissão de notificações** no navegador; se estiver bloqueada, o utilizador vê um toast (`remindersPermissionDenied`). Com o separador em segundo plano, o intervalo de verificação (~30 s) pode ser **limitado** pelo navegador ou SO (comportamento típico das PWAs sem service worker dedicado a lembretes).
+- Módulo: `js/reminders.js` (`RemindersManager`).
 
 ### Internacionalização (i18n)
 
@@ -121,9 +144,11 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 ## Como usar (rápido)
 
 1. Clonar ou descarregar o repositório e abrir `index.html` num navegador moderno.
-2. **Atividades / Hábitos**: usar `+` ou os campos de texto e Enter; nas atividades pendentes, **Definir para hoje** agenda para hoje à hora corrente.
+2. **Atividades / Hábitos**: usar `+` ou os campos de texto e Enter; nas atividades pendentes, **Definir para hoje** agenda para hoje à hora corrente. Com o **editor completo** do cartão aberto (hábitos ou atividades), **clicar fora do cartão** guarda.
 3. **Calendário**: navegar a semana, arrastar itens, editar título inline ou abrir o modal com o lápis para hora e outros campos.
 4. **Alternar vista**: botão no topo para saltar entre listas e calendário.
+5. **Lembretes**: ativar o sininho no header (🔔), aceitar notificações; com `due_time` definido, o navegador pode avisar no minuto correspondente (atividades com data **hoje**; hábitos agendados para **hoje**).
+6. **Estatísticas**: no final da página, resumo da semana, conclusões de hoje e totais de Pomodoro (acumulados).
 
 ---
 
@@ -146,6 +171,8 @@ HabitusWeb/
     ├── drag-drop.js     # Reordenar nas listas; integração com dados
     ├── pomodoro.js
     ├── export-import.js
+    ├── reminders.js     # Lembretes por hora (Notification API, due_time)
+    ├── stats.js         # Secção de estatísticas (semana, Pomodoro)
     ├── inline-edit.js   # Criação rápida e edição inline nas listas
     ├── keyboard-nav.js  # Navegação por teclado nas listas
     ├── week-calendar.js # Vista semanal, DnD, edição inline, hora
@@ -192,6 +219,8 @@ Persistência na chave **`habitus_data`**. Exemplo simplificado de um item em `t
 - **`meta.days_of_week`**: nomes em inglês minúsculos (`monday` … `sunday`)
 
 Preferência de idioma: chave separada **`habitus_language`** (ex.: `pt_BR`).
+
+Definições de aplicação em `appData.settings` (ex.: `language`, `remindersEnabled`) e totais em `appData.stats` (ex.: `pomodoroMinutesCompleted`, `pomodoroSessionsCompleted`) persistem em **`habitus_data`** junto com `tasks`.
 
 ---
 

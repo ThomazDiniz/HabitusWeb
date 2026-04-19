@@ -109,8 +109,10 @@ const TasksManager = {
                 task.completed_at = new Date().toISOString();
                 if (task.task_type === 'daily') {
                     const today = Utils.getTodayDate();
-                    if (!Utils.isToday(task.last_completed_date)) {
-                        if (Utils.isToday(task.last_completed_date) || !task.last_completed_date) {
+                    const prev = task.last_completed_date;
+                    if (!Utils.isToday(prev)) {
+                        const prevSlot = this.getPreviousScheduledYmdBefore(task, today);
+                        if (prev && prevSlot && prev === prevSlot) {
                             task.streak_count = (task.streak_count || 0) + 1;
                         } else {
                             task.streak_count = 1;
@@ -158,6 +160,24 @@ const TasksManager = {
         const daysOfWeek = task.meta?.days_of_week || [];
         const dow = Utils.ymdToDayOfWeek(ymd);
         return daysOfWeek.includes(dow);
+    },
+
+    /** Se o hábito entra na agenda neste dia civil (para sequência / lógica). */
+    isScheduledCalendarDay(task, ymd) {
+        if (task.task_type !== 'daily' || !ymd) return false;
+        const days = task.meta?.days_of_week || [];
+        if (days.length === 0) return true;
+        const dow = Utils.ymdToDayOfWeek(ymd);
+        return days.includes(dow);
+    },
+
+    /** Último dia civil anterior a `todayYmd` em que o hábito estava agendado. */
+    getPreviousScheduledYmdBefore(task, todayYmd) {
+        for (let i = 1; i <= 400; i++) {
+            const d = Utils.ymdAddDays(todayYmd, -i);
+            if (this.isScheduledCalendarDay(task, d)) return d;
+        }
+        return null;
     },
     
     // Check and reset dailies

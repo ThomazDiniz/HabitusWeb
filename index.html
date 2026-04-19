@@ -19,6 +19,22 @@
                 </div>
             </div>
         </div>
+        <div class="header-center">
+            <div class="header-search" role="search">
+                <label class="header-search-inner" for="global-search-input">
+                    <span class="header-search-icon" aria-hidden="true">🔍</span>
+                    <input
+                        type="search"
+                        id="global-search-input"
+                        class="header-search-input"
+                        data-i18n-placeholder="globalSearchPlaceholder"
+                        data-i18n-aria-label="globalSearchAriaLabel"
+                        autocomplete="off"
+                        spellcheck="false"
+                    />
+                </label>
+            </div>
+        </div>
         <div class="header-right">
             <select id="language-selector" class="language-selector">
                 <option value="en">English</option>
@@ -32,6 +48,7 @@
                 <option value="fr">Français</option>
             </select>
             <button class="today-overlay-toggle-btn" id="today-overlay-toggle-btn" type="button" title="Hoje">🕒</button>
+            <button type="button" class="reminders-toggle-btn" id="reminders-toggle-btn" aria-pressed="false">🔕</button>
             <button class="export-btn" id="export-btn" title="Exportar">📋</button>
             <button class="import-btn" id="import-btn" title="Importar">📥</button>
             <input type="file" id="import-file" accept=".json" style="display: none;">
@@ -125,6 +142,12 @@
                 </div>
             </div>
             <div class="week-calendar-scroll" id="week-calendar-root"></div>
+        </section>
+
+        <section class="stats-section main-view-scroll-anchor" id="stats-section" aria-labelledby="stats-section-title">
+            <h2 class="stats-section-title" id="stats-section-title" data-i18n="statsSectionTitle">Statistics</h2>
+            <p class="stats-section-subtitle" id="stats-section-subtitle"></p>
+            <div class="stats-grid" id="stats-grid"></div>
         </section>
     </div>
 
@@ -247,6 +270,8 @@
     <script src="js/drag-drop.js"></script>
     <script src="js/pomodoro.js"></script>
     <script src="js/export-import.js"></script>
+    <script src="js/reminders.js"></script>
+    <script src="js/stats.js"></script>
     
     <!-- UI Modules -->
     <script src="js/inline-edit.js"></script>

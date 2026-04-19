@@ -127,6 +127,11 @@ const InlineEditManager = {
         if (this.editingTaskId === task.id && card.classList.contains('editing-full')) {
             return; // Already editing
         }
+
+        if (this._fullEditOutsideCleanup) {
+            this._fullEditOutsideCleanup();
+            this._fullEditOutsideCleanup = null;
+        }
         
         this.editingTaskId = task.id;
         card.classList.add('editing-full');
@@ -204,6 +209,23 @@ const InlineEditManager = {
             titleInput.select();
         }
         
+        // Mesmo fluxo para atividades (todo) e hábitos (daily): clique fora do cartão grava.
+        const outsideClickHandler = (e) => {
+            if (card.contains(e.target)) return;
+            this.saveFullEdit(card, task, editForm);
+        };
+
+        const cleanupFullEditOutside = () => {
+            document.removeEventListener('click', outsideClickHandler, true);
+            this._fullEditOutsideCleanup = null;
+        };
+
+        this._fullEditOutsideCleanup = cleanupFullEditOutside;
+
+        setTimeout(() => {
+            document.addEventListener('click', outsideClickHandler, true);
+        }, 100);
+
         // Save handler
         const saveBtn = editForm.querySelector('.edit-save-btn');
         saveBtn.addEventListener('click', () => {
@@ -219,6 +241,7 @@ const InlineEditManager = {
         const deleteBtn = editForm.querySelector('.edit-delete-btn');
         deleteBtn.addEventListener('click', () => {
             if (confirm(t('confirmDelete'))) {
+                cleanupFullEditOutside();
                 TasksManager.deleteTask(task.id);
                 this.editingTaskId = null;
                 RenderManager.renderAll();
@@ -236,7 +259,7 @@ const InlineEditManager = {
         }
     },
     
-    // Save full edit
+    // Save full edit (returns true if saved and UI closed)
     saveFullEdit(card, task, editForm) {
         const titleInput = editForm.querySelector('.edit-title-input');
         const statusSelect = editForm.querySelector('.edit-status-select');
@@ -249,7 +272,7 @@ const InlineEditManager = {
         if (!title) {
             Utils.showToast(t('titleRequired'), 'error');
             titleInput.focus();
-            return;
+            return false;
         }
         
         const tags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
@@ -280,11 +303,18 @@ const InlineEditManager = {
         
         TasksManager.updateTask(task.id, updates);
         this.editingTaskId = null;
+        if (this._fullEditOutsideCleanup) {
+            this._fullEditOutsideCleanup();
+        }
         RenderManager.renderAll();
+        return true;
     },
     
     // Cancel full edit
     cancelFullEdit(card, taskContent, originalHTML) {
+        if (this._fullEditOutsideCleanup) {
+            this._fullEditOutsideCleanup();
+        }
         card.classList.remove('editing-full');
         card.draggable = true;
         const editForm = card.querySelector('.task-edit-form');

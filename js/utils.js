@@ -47,6 +47,15 @@ const Utils = {
         return `${y}-${m}-${day}`;
     },
 
+    /** YYYY-MM-DD + delta dias no calendário local (para sequências / semanas). */
+    ymdAddDays(ymd, deltaDays) {
+        if (!ymd || typeof ymd !== 'string') return this.getTodayDate();
+        const d = new Date(ymd + 'T12:00:00');
+        if (isNaN(d.getTime())) return this.getTodayDate();
+        d.setDate(d.getDate() + deltaDays);
+        return this.dateToYMD(d);
+    },
+
     /** Monday 00:00 local of the week containing `date` */
     getMondayOfWeek(date) {
         const base =

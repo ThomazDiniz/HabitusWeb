@@ -9,7 +9,12 @@ const DataManager = {
     appData: {
         tasks: [],
         settings: {
-            language: 'pt_BR'
+            language: 'pt_BR',
+            remindersEnabled: false
+        },
+        stats: {
+            pomodoroMinutesCompleted: 0,
+            pomodoroSessionsCompleted: 0
         }
     },
     
@@ -42,6 +47,11 @@ const DataManager = {
                     ...parsed,
                     tasks: taskList
                 };
+                this.appData.settings = {
+                    language: 'pt_BR',
+                    remindersEnabled: false,
+                    ...(parsed.settings && typeof parsed.settings === 'object' ? parsed.settings : {})
+                };
                 // Migrate old data structure if needed
                 this.appData.tasks = this.appData.tasks.map((task) => {
                     const m = task.meta || {};
@@ -62,6 +72,20 @@ const DataManager = {
             if (!Array.isArray(this.appData.tasks)) {
                 this.appData.tasks = [];
             }
+            if (!this.appData.settings || typeof this.appData.settings !== 'object') {
+                this.appData.settings = { language: 'pt_BR', remindersEnabled: false };
+            } else {
+                this.appData.settings = {
+                    language: 'pt_BR',
+                    remindersEnabled: false,
+                    ...this.appData.settings
+                };
+            }
+            this.appData.stats = {
+                pomodoroMinutesCompleted: 0,
+                pomodoroSessionsCompleted: 0,
+                ...(this.appData.stats && typeof this.appData.stats === 'object' ? this.appData.stats : {})
+            };
         } catch (e) {
             console.error('Error loading data:', e);
             this.appData.tasks = [];

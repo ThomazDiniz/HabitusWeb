@@ -6,6 +6,30 @@ const FiltersManager = {
         todos: new Set(),
         dailies: new Set()
     },
+
+    /** Texto da pesquisa global (título e tags); vazio = sem filtro extra */
+    globalSearchQuery: '',
+
+    setGlobalSearchQuery(q) {
+        this.globalSearchQuery = (q || '').trim();
+    },
+
+    getGlobalSearchNormalized() {
+        return String(this.globalSearchQuery || '').toLowerCase();
+    },
+
+    /** Inclui tarefa na pesquisa global (título ou qualquer tag contém o texto) */
+    matchesGlobalSearch(task) {
+        const q = this.getGlobalSearchNormalized();
+        if (!q) return true;
+        const title = (task.title || '').toLowerCase();
+        if (title.includes(q)) return true;
+        const tags = task.meta?.tags || [];
+        for (let i = 0; i < tags.length; i++) {
+            if (String(tags[i]).toLowerCase().includes(q)) return true;
+        }
+        return false;
+    },
     
     // Toggle filter
     toggleFilter(taskType, tag) {
@@ -37,7 +61,9 @@ const FiltersManager = {
                 return Array.from(filters).some(filterTag => taskTags.includes(filterTag));
             });
         }
-        
+
+        tasks = tasks.filter((task) => this.matchesGlobalSearch(task));
+
         return tasks;
     },
     

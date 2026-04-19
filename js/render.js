@@ -73,6 +73,13 @@ const RenderManager = {
                 console.error('WeekCalendarManager.render failed:', err);
             }
         }
+        if (typeof StatsManager !== 'undefined' && StatsManager.render) {
+            try {
+                StatsManager.render();
+            } catch (err) {
+                console.error('StatsManager.render failed:', err);
+            }
+        }
     },
     
     // Update task counts

@@ -25,6 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initial render
     RenderManager.renderAll();
+
+    if (typeof RemindersManager !== 'undefined') {
+        RemindersManager.init();
+    }
 });
 
 // Setup all event listeners
@@ -97,6 +101,22 @@ function setupEventListeners() {
     ExportImportManager.setupEventListeners();
     KeyboardNavManager.init();
     setupViewToggle();
+
+    if (typeof RemindersManager !== 'undefined') {
+        RemindersManager.setupToggleButton();
+    }
+
+    const globalSearchInput = document.getElementById('global-search-input');
+    let globalSearchDebounce = null;
+    if (globalSearchInput) {
+        globalSearchInput.addEventListener('input', () => {
+            clearTimeout(globalSearchDebounce);
+            globalSearchDebounce = setTimeout(() => {
+                FiltersManager.setGlobalSearchQuery(globalSearchInput.value);
+                RenderManager.renderAll();
+            }, 200);
+        });
+    }
 }
 
 /** Next header toggle scroll target: true → week calendar, false → lists */
@@ -170,6 +190,10 @@ window.updateUI = function() {
     const importBtn = document.getElementById('import-btn');
     if (exportBtn) exportBtn.title = t('export');
     if (importBtn) importBtn.title = t('import');
+
+    if (typeof RemindersManager !== 'undefined') {
+        RemindersManager.syncToggleButton();
+    }
     
     // Update completed section buttons
     const toggleTasksText = document.getElementById('toggle-tasks-text');
