@@ -1166,8 +1166,7 @@ body.has-today-overlay .container {
 .task-btn.task-btn-today {
     position: absolute;
     right: calc(10px - var(--task-card-pad-x));
-    top: 50%;
-    transform: translateY(-50%);
+    top: calc(10px - var(--task-card-pad-y) + 34px);
 }
 
 .task-btn.delete:hover {
