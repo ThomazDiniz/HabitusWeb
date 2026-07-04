@@ -801,7 +801,15 @@ body.has-today-overlay .container {
     padding-right: 6px;
 }
 
+.task-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
 .task-title {
+    flex: 1;
+    min-width: 0;
     font-size: 15px;
     font-weight: 500;
     color: var(--text-primary);
@@ -855,10 +863,6 @@ body.has-today-overlay .container {
         flex-direction: column;
         align-items: flex-start;
         gap: 8px;
-    }
-    
-    .task-actions-inline {
-        align-self: flex-end;
     }
 }
 
@@ -1142,20 +1146,11 @@ body.has-today-overlay .container {
     color: var(--error);
 }
 
-/* Delete destacado e fixo no canto superior direito do card */
+/* Delete destacado, alinhado com os demais botões de ação */
 .task-btn.delete {
-    position: absolute;
-    top: calc(10px - var(--task-card-pad-y));
-    right: calc(10px - var(--task-card-pad-x));
     border-color: rgba(239, 68, 68, 0.35);
     color: rgba(239, 68, 68, 0.95);
     background: rgba(239, 68, 68, 0.08);
-}
-
-.task-btn.task-btn-today {
-    position: absolute;
-    right: calc(10px - var(--task-card-pad-x));
-    top: calc(10px - var(--task-card-pad-y) + 34px);
 }
 
 .task-btn.delete:hover {
