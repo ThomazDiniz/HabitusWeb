@@ -1244,7 +1244,7 @@ function updateUI() {
     });
     
     // Update title
-    document.title = `${t('tasks')} | Habitus`;
+    document.title = 'Tasks | Habitus';
     
     // Update placeholders
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
