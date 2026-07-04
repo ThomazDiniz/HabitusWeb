@@ -1114,16 +1114,6 @@ body.has-today-overlay .container {
     flex-shrink: 0;
 }
 
-.task-corner-actions {
-    position: absolute;
-    right: calc(10px - var(--task-card-pad-x));
-    bottom: calc(10px - var(--task-card-pad-y));
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0;
-}
-
 .task-btn {
     background: transparent;
     border: 1px solid var(--border-color);
@@ -1267,14 +1257,6 @@ body.has-today-overlay .container {
 
 .task-pasted-remove:hover {
     background: rgba(220, 38, 38, 0.85);
-}
-
-.task-paste-hint {
-    margin: 8px 0 0;
-    font-size: 11px;
-    line-height: 1.35;
-    color: var(--text-secondary);
-    opacity: 0.85;
 }
 
 .task-subtasks-wrap {

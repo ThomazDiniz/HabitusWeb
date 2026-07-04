@@ -294,7 +294,7 @@ const RenderManager = {
 
         card.addEventListener('click', (e) => {
             const interactive = e.target.closest(
-                'button, a, input, select, textarea, .task-tags-inline, .task-tag, .tag-remove, .task-inline-time-input, .task-duration-stepper, .task-pasted-images, .task-pasted-remove, .task-add-subtask-btn, .task-subtasks-wrap, .subtasks-container, .subtask-item, .task-paste-hint, [contenteditable="true"]'
+                'button, a, input, select, textarea, .task-tags-inline, .task-tag, .tag-remove, .task-inline-time-input, .task-duration-stepper, .task-pasted-images, .task-pasted-remove, .task-add-subtask-btn, .task-subtasks-wrap, .subtasks-container, .subtask-item, [contenteditable="true"]'
             );
             if (interactive) return;
             InlineEditManager.startEditing(task.id, 'full');
@@ -386,16 +386,13 @@ const RenderManager = {
                             ${task.task_type === 'todo' && task.status !== 'done'
                                 ? `<button type="button" class="task-btn task-btn-today" data-task-id="${task.id}">${t('setForToday')}</button>`
                                 : ''}
+                            <button type="button" class="task-btn task-order-top" data-task-id="${task.id}" title="${t('sendToTop')}" aria-label="${t('sendToTop')}">↑</button>
+                            <button type="button" class="task-btn task-order-bottom" data-task-id="${task.id}" title="${t('sendToBottom')}" aria-label="${t('sendToBottom')}">↓</button>
+                            <button class="task-btn pomodoro" data-task-id="${task.id}" title="${t('pomodoro')}" aria-label="${t('pomodoro')}">🍅</button>
                             <button class="task-btn delete" data-task-id="${task.id}" title="${t('delete')}" aria-label="${t('delete')}">🗑</button>
                         </div>
                     </div>
-                    <div class="task-corner-actions">
-                        <button type="button" class="task-btn task-order-top" data-task-id="${task.id}" title="${t('sendToTop')}" aria-label="${t('sendToTop')}">↑</button>
-                        <button type="button" class="task-btn task-order-bottom" data-task-id="${task.id}" title="${t('sendToBottom')}" aria-label="${t('sendToBottom')}">↓</button>
-                        <button class="task-btn pomodoro" data-task-id="${task.id}" title="${t('pomodoro')}" aria-label="${t('pomodoro')}">🍅</button>
-                    </div>
                     ${this.createPastedImagesHTML(task)}
-                    <p class="task-paste-hint">${t('pasteImageHint')}</p>
                     ${this.createSubtasksBlock(task, progress)}
                 </div>
             </div>
