@@ -1244,7 +1244,7 @@ function updateUI() {
     });
     
     // Update title
-    document.title = `${t('appTitle')} - ${t('tasks')}`;
+    document.title = `${t('tasks')} | Habitus`;
     
     // Update placeholders
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
