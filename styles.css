@@ -799,7 +799,6 @@ body.has-today-overlay .container {
     flex: 1;
     position: relative;
     padding-right: 6px;
-    padding-bottom: 40px;
 }
 
 .task-title {
@@ -816,7 +815,7 @@ body.has-today-overlay .container {
     align-items: center;
     gap: 12px;
     margin-top: 4px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .tasks-date-filter-row {
