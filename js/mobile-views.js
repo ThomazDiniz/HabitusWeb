@@ -111,7 +111,6 @@ const MobileViewsManager = {
             const m = target.closest('.modal-overlay');
             if (m && getComputedStyle(m).display === 'flex') return true;
         }
-        if (target.closest('.today-overlay')) return true;
         return false;
     },
 

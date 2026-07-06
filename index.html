@@ -49,20 +49,11 @@
                 <option value="pt">Português PT</option>
                 <option value="fr">Français</option>
             </select>
-            <button class="today-overlay-toggle-btn" id="today-overlay-toggle-btn" type="button" title="Hoje">🕒</button>
             <button type="button" class="reminders-toggle-btn" id="reminders-toggle-btn" aria-pressed="false">🔕</button>
             <button class="export-btn" id="export-btn" title="Exportar">📋</button>
             <button class="import-btn" id="import-btn" title="Importar">📥</button>
+            <button type="button" class="focus-toggle-btn" id="focus-toggle-btn" title="Modo foco" aria-pressed="false">F</button>
             <input type="file" id="import-file" accept=".json" style="display: none;">
-        </div>
-    </div>
-
-    <div class="today-overlay" id="today-overlay" style="display: none;" aria-label="Today timeline">
-        <div class="today-overlay-header">
-            <button type="button" class="today-overlay-close" id="today-overlay-close" aria-label="Close">×</button>
-        </div>
-        <div class="today-overlay-body">
-            <div class="week-calendar-scroll today-overlay-scroll" id="today-overlay-root"></div>
         </div>
     </div>
 

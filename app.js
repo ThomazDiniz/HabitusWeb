@@ -40,7 +40,42 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof RenderManager !== 'undefined' && RenderManager.setupGlobalImagePaste) {
         RenderManager.setupGlobalImagePaste();
     }
+
+    setupFocusMode();
 });
+
+// Focus mode: compact view showing only the task lists
+function setupFocusMode() {
+    const FOCUS_STORAGE_KEY = 'habitus-focus-mode';
+    const btn = document.getElementById('focus-toggle-btn');
+
+    const applyFocusMode = (on) => {
+        document.body.classList.toggle('focus-mode', on);
+        if (btn) {
+            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            btn.title = on ? 'Sair do modo foco' : 'Modo foco';
+        }
+        try {
+            localStorage.setItem(FOCUS_STORAGE_KEY, on ? '1' : '0');
+        } catch (e) {
+            /* ignore */
+        }
+    };
+
+    if (btn) {
+        btn.addEventListener('click', () => {
+            applyFocusMode(!document.body.classList.contains('focus-mode'));
+        });
+    }
+
+    try {
+        if (localStorage.getItem(FOCUS_STORAGE_KEY) === '1') {
+            applyFocusMode(true);
+        }
+    } catch (e) {
+        /* ignore */
+    }
+}
 
 // Setup all event listeners
 function setupEventListeners() {

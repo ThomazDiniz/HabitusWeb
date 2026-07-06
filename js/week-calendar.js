@@ -12,8 +12,6 @@ const WeekCalendarManager = {
     /** Task em arrasto (listas ou calendário); `getData` em dragover nem sempre existe no Chrome. */
     _calendarDragTaskId: null,
     _CAL_VIEW_STORAGE_KEY: 'habitus-week-cal-today-only',
-    _TODAY_OVERLAY_STORAGE_KEY: 'habitus-today-overlay-open',
-    _todayOverlayUserScrolled: false,
 
     /** Narrow phone layout: calendar column is today-only (see mobile-views.js breakpoint). */
     isMobileCalendarCompact() {
@@ -40,8 +38,6 @@ const WeekCalendarManager = {
         const next = document.getElementById('week-cal-next');
         const todayBtn = document.getElementById('week-cal-today');
         const viewToggle = document.getElementById('week-cal-view-toggle');
-        const overlayToggle = document.getElementById('today-overlay-toggle-btn');
-        const overlayClose = document.getElementById('today-overlay-close');
         if (prev) prev.addEventListener('click', () => this.shiftWeek(-7));
         if (next) next.addEventListener('click', () => this.shiftWeek(7));
         if (todayBtn) {
@@ -65,10 +61,7 @@ const WeekCalendarManager = {
             },
             true
         );
-        if (overlayToggle) overlayToggle.addEventListener('click', () => this.toggleTodayOverlay());
-        if (overlayClose) overlayClose.addEventListener('click', () => this.hideTodayOverlay());
         this.startLiveClock();
-        this.loadTodayOverlayOpenState();
     },
 
     clearAllTimelineDropPreviews() {
@@ -203,10 +196,7 @@ const WeekCalendarManager = {
     },
 
     updateNowLine() {
-        const roots = [
-            document.getElementById('week-calendar-root'),
-            document.getElementById('today-overlay-root')
-        ].filter(Boolean);
+        const roots = [document.getElementById('week-calendar-root')].filter(Boolean);
         if (roots.length === 0) return;
 
         const top = this.nowLineTopPct();
@@ -233,206 +223,6 @@ const WeekCalendarManager = {
             line.style.top = `${top}%`;
             tl.appendChild(line);
         });
-    },
-
-    syncTodayOverlayUI() {
-        const btn = document.getElementById('today-overlay-toggle-btn');
-        const label = typeof t === 'function' ? t('weekCalendarTitleToday') : 'Hoje';
-        if (btn) {
-            btn.title = label;
-            btn.setAttribute('aria-label', label);
-        }
-    },
-
-    isTodayOverlayVisible() {
-        const el = document.getElementById('today-overlay');
-        return !!(el && el.style.display !== 'none');
-    },
-
-    showTodayOverlay() {
-        const el = document.getElementById('today-overlay');
-        if (!el) return;
-        el.style.display = 'block';
-        document.body.classList.add('has-today-overlay');
-        this.saveTodayOverlayOpenState(true);
-        this.syncTodayOverlayUI();
-        this._todayOverlayUserScrolled = false;
-        this.renderTodayOverlay();
-        this.updateNowLine();
-    },
-
-    hideTodayOverlay() {
-        const el = document.getElementById('today-overlay');
-        if (!el) return;
-        el.style.display = 'none';
-        document.body.classList.remove('has-today-overlay');
-        this.saveTodayOverlayOpenState(false);
-    },
-
-    toggleTodayOverlay() {
-        if (this.isTodayOverlayVisible()) this.hideTodayOverlay();
-        else this.showTodayOverlay();
-    },
-
-    saveTodayOverlayOpenState(isOpen) {
-        try {
-            localStorage.setItem(this._TODAY_OVERLAY_STORAGE_KEY, isOpen ? '1' : '0');
-        } catch (e) {
-            /* ignore */
-        }
-    },
-
-    loadTodayOverlayOpenState() {
-        try {
-            const v = localStorage.getItem(this._TODAY_OVERLAY_STORAGE_KEY);
-            if (v === '1') {
-                this.showTodayOverlay();
-            }
-        } catch (e) {
-            /* ignore */
-        }
-    },
-
-    renderTodayOverlay() {
-        const root = document.getElementById('today-overlay-root');
-        if (!root) return;
-        const dates = [this.getTodayOnlyDate()];
-        const lang = typeof currentLanguage !== 'undefined' ? currentLanguage.replace('_', '-') : 'pt-BR';
-
-        const hours = [];
-        for (let h = this.START_HOUR; h < this.END_HOUR; h++) {
-            hours.push(h);
-        }
-
-        let html = '<div class="week-cal-outer">';
-        html += `<div class="week-cal-layout is-today-only">`;
-        html += '<div class="week-cal-corner"></div>';
-        html += '<div class="week-cal-day-headers">';
-        dates.forEach((d) => {
-            const ymd = Utils.dateToYMD(d);
-            const isToday = Utils.isToday(ymd);
-            const weekday = d.toLocaleDateString(lang, { weekday: 'short' });
-            const fullDate = d.toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const dow = Utils.ymdToDayOfWeek(ymd);
-            html += `<div class="week-cal-day-header ${isToday ? 'is-today' : ''}" data-date="${ymd}">
-                <span class="week-cal-dow">${weekday}</span>
-                <span class="week-cal-date-full">${fullDate}</span>
-                ${isToday ? `<span class="week-cal-today-pill">${this.escapeHtml(t('weekCalendarToday'))}</span>` : ''}
-                <div class="week-cal-header-actions">
-                    <button type="button" class="week-cal-mini-btn week-cal-add-task-btn" data-date="${ymd}" title="${this.escapeAttr(t('weekCalendarAddTask'))}">+</button>
-                    <button type="button" class="week-cal-mini-btn week-cal-add-daily-btn" data-dow="${dow}" title="${this.escapeAttr(t('weekCalendarAddDaily'))}">☀</button>
-                </div>
-            </div>`;
-        });
-        html += '</div>';
-
-        html += '<div class="week-cal-untimed-spacer"></div>';
-        dates.forEach((d) => {
-            const ymd = Utils.dateToYMD(d);
-            const isToday = Utils.isToday(ymd);
-            const items = this.itemsForDay(ymd);
-            const untimed = [];
-            items.forEach((task) => {
-                if (task.status === 'done' && task.task_type === 'daily') return;
-                const nt = task.due_time ? Utils.normalizeDueTime(task.due_time) : null;
-                if (!nt) untimed.push(task);
-            });
-            html += `<div class="week-cal-untimed${isToday ? ' is-today' : ''}" data-date="${ymd}" style="grid-column:2;grid-row:2">`;
-            untimed.forEach((task) => {
-                html += this.renderChipHtml(task);
-            });
-            html += '</div>';
-        });
-
-        html += '<div class="week-cal-time-gutter">';
-        hours.forEach((h, idx) => {
-            const hh = String(h).padStart(2, '0');
-            const isLast = idx === hours.length - 1;
-            if (isLast) {
-                const endHh = String(this.END_HOUR).padStart(2, '0');
-                html += `<div class="week-cal-hour-label week-cal-hour-label-split"><span class="week-cal-hour-start">${hh}:00</span><span class="week-cal-hour-end-mark">${endHh}:00</span></div>`;
-            } else {
-                html += `<div class="week-cal-hour-label">${hh}:00</div>`;
-            }
-        });
-        html += '</div>';
-
-        dates.forEach((d) => {
-            const ymd = Utils.dateToYMD(d);
-            const isToday = Utils.isToday(ymd);
-            const items = this.itemsForDay(ymd);
-            const timed = [];
-            items.forEach((task) => {
-                if (task.status === 'done' && task.task_type === 'daily') return;
-                const nt = task.due_time ? Utils.normalizeDueTime(task.due_time) : null;
-                if (nt) timed.push(task);
-            });
-            timed.sort((a, b) => (Utils.dueTimeToMinutes(a.due_time) || 0) - (Utils.dueTimeToMinutes(b.due_time) || 0));
-            html += `<div class="week-cal-timeline${isToday ? ' is-today' : ''}" data-date="${ymd}" style="grid-column:2;grid-row:3;--week-cal-hours:${hours.length}">`;
-            timed.forEach((task) => (html += this.renderBlockHtml(task)));
-            html += '</div>';
-        });
-
-        html += '</div></div>';
-        root.innerHTML = html;
-
-        root.querySelectorAll('.week-cal-add-task-btn').forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const ymd = btn.getAttribute('data-date');
-                if (typeof ModalManager !== 'undefined') {
-                    ModalManager.openTaskModal(null, 'todo', { prefillDueDate: ymd });
-                }
-            });
-        });
-        root.querySelectorAll('.week-cal-add-daily-btn').forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const dow = btn.getAttribute('data-dow');
-                if (typeof ModalManager !== 'undefined') {
-                    ModalManager.openTaskModal(null, 'daily', { prefillDailyDay: dow });
-                }
-            });
-        });
-        root.querySelectorAll('.week-cal-timeline[data-date]').forEach((timeline) => {
-            const ymd = timeline.getAttribute('data-date');
-            const untimed = root.querySelector(`.week-cal-untimed[data-date="${ymd}"]`);
-            if (untimed) this.bindUntimedDrop(untimed, ymd);
-            this.bindTimelineDrop(timeline, ymd);
-        });
-        this.bindCalendarCardUI(root);
-
-        // Auto-focus no horário atual ao abrir (centralizado). Se o utilizador rolar, não forçar mais.
-        if (!this._todayOverlayUserScrolled) {
-            this.scrollTodayOverlayToNow({ behavior: 'auto' });
-        }
-
-        // Detectar scroll manual
-        root.addEventListener(
-            'scroll',
-            () => {
-                this._todayOverlayUserScrolled = true;
-            },
-            { passive: true, once: true }
-        );
-    },
-
-    scrollTodayOverlayToNow({ behavior = 'auto' } = {}) {
-        const root = document.getElementById('today-overlay-root');
-        if (!root) return;
-        const todayYmd = Utils.getTodayDate();
-        const tl = root.querySelector(`.week-cal-timeline.is-today[data-date="${todayYmd}"]`);
-        if (!tl) return;
-        const topPct = this.nowLineTopPct();
-        const y = (topPct / 100) * tl.offsetHeight;
-        const desired = tl.offsetTop + y - root.clientHeight / 2;
-        const max = Math.max(0, root.scrollHeight - root.clientHeight);
-        const clamped = Math.max(0, Math.min(max, desired));
-        try {
-            root.scrollTo({ top: clamped, behavior });
-        } catch (e) {
-            root.scrollTop = clamped;
-        }
     },
 
     startLiveClock() {
@@ -988,7 +778,6 @@ const WeekCalendarManager = {
             }
         }
         this.syncToolbar();
-        this.syncTodayOverlayUI();
 
         const hours = [];
         for (let h = this.START_HOUR; h < this.END_HOUR; h++) {
@@ -1125,10 +914,6 @@ const WeekCalendarManager = {
         this.bindCalendarCardUI(root);
         this.updateNowClockDisplay();
         this.updateNowLine();
-        if (this.isTodayOverlayVisible()) {
-            this.renderTodayOverlay();
-            this.updateNowLine();
-        }
     },
 
     escapeHtml(s) {
