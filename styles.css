@@ -2635,13 +2635,24 @@ body {
 }
 
 body.focus-mode .focus-toggle-btn {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1200;
+    pointer-events: auto;
     background: var(--blue-gradient);
     border-color: transparent;
     color: #0f1117;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
 }
 
 body.focus-mode .header {
-    padding: 6px 12px;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+    pointer-events: none;
 }
 
 body.focus-mode .header-left,
@@ -2654,8 +2665,12 @@ body.focus-mode .import-btn {
 }
 
 body.focus-mode .container {
-    padding-top: 56px;
-    padding-bottom: 24px;
+    width: 100%;
+    padding: 8px 8px 16px;
+}
+
+body.focus-mode .tasks-container {
+    gap: 8px;
 }
 
 body.focus-mode .column-header,
