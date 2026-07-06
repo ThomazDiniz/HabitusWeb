@@ -68,6 +68,24 @@ function setupFocusMode() {
         });
     }
 
+    // Atalho de teclado: "F" alterna o modo foco (fora de campos de texto)
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'f' && e.key !== 'F') return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const el = e.target;
+        if (
+            el &&
+            (el.tagName === 'INPUT' ||
+                el.tagName === 'TEXTAREA' ||
+                el.tagName === 'SELECT' ||
+                el.isContentEditable)
+        ) {
+            return;
+        }
+        e.preventDefault();
+        applyFocusMode(!document.body.classList.contains('focus-mode'));
+    });
+
     try {
         if (localStorage.getItem(FOCUS_STORAGE_KEY) === '1') {
             applyFocusMode(true);
