@@ -2675,10 +2675,16 @@ body.focus-mode .tasks-container {
 
 body.focus-mode .column-header,
 body.focus-mode .tag-filters,
-body.focus-mode .week-calendar-section,
 body.focus-mode .stats-section,
 body.focus-mode .footer {
     display: none;
+}
+
+/* Ecras estreitos: no modo foco mantem-se so as listas (as abas moveis tratam do calendario) */
+@media (max-width: 640px) {
+    body.focus-mode .week-calendar-section {
+        display: none;
+    }
 }
 
 /* Modo foco: esconder os controlos de concluídas (mostrar / deletar concluídas) */
@@ -2768,3 +2774,110 @@ body.focus-mode .add-input {
     padding: 6px 10px;
     font-size: 13px;
 }
+
+/* ==========================================================================
+   Modo foco (ecras largos): metade de cima = Habitos + Atividades, cada
+   coluna com scroll vertical proprio; metade de baixo = grelha do calendario
+   (semana seg-dom, so a grelha de horas com a linha do agora).
+   ========================================================================== */
+@media (min-width: 641px) {
+    body.focus-mode {
+        overflow: hidden;
+    }
+
+    body.focus-mode .container {
+        height: 100vh;
+        height: 100dvh;
+        padding: 8px 8px 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        overflow: hidden;
+    }
+
+    /* Metade de cima: as duas listas */
+    body.focus-mode .tasks-container {
+        flex: 1 1 50%;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    body.focus-mode .tasks-column {
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 6px;
+        scrollbar-width: thin;
+    }
+
+    body.focus-mode .tasks-list,
+    body.focus-mode .completed-list,
+    body.focus-mode .scheduled-list {
+        min-height: 0;
+    }
+
+    /* Metade de baixo: o calendario */
+    body.focus-mode .week-calendar-section {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 50%;
+        min-height: 0;
+        margin-top: 0;
+        padding-top: 6px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    /* So a grelha: sem barra de navegacao, sem faixa de itens sem hora,
+       sem paineis de concluidas e sem botoes nos cabecalhos dos dias */
+    body.focus-mode .week-calendar-toolbar,
+    body.focus-mode .week-cal-completed-stack,
+    body.focus-mode .week-cal-untimed,
+    body.focus-mode .week-cal-untimed-spacer,
+    body.focus-mode .week-cal-header-actions,
+    body.focus-mode .week-cal-today-pill {
+        display: none;
+    }
+
+    body.focus-mode .week-calendar-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+        scrollbar-width: thin;
+    }
+
+    body.focus-mode .week-cal-outer {
+        gap: 0;
+    }
+
+    body.focus-mode .week-cal-layout {
+        --week-cal-hour-px: 46px;
+        grid-template-rows: auto 0 minmax(0, auto);
+        border-radius: 8px;
+        /* sticky dos cabecalhos exige que o container nao recorte o scroll */
+        overflow: visible;
+    }
+
+    /* Cabecalhos dos dias fixos ao topo enquanto se percorre as horas */
+    body.focus-mode .week-cal-day-headers,
+    body.focus-mode .week-cal-corner {
+        position: sticky;
+        top: 0;
+        z-index: 6;
+        background: #12141d;
+    }
+
+    body.focus-mode .week-cal-day-header {
+        padding: 4px 6px;
+        gap: 0;
+    }
+
+    body.focus-mode .week-cal-date-full {
+        font-size: 0.625rem;
+        opacity: 0.7;
+    }
+
+    body.focus-mode .week-cal-hour-label {
+        font-size: 0.625rem;
+    }
+}
+

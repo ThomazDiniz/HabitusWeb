@@ -44,7 +44,29 @@ document.addEventListener('DOMContentLoaded', () => {
     setupFocusMode();
 });
 
-// Focus mode: compact view showing only the task lists
+// Focus mode: compact view — listas em cima, grelha do calendario em baixo
+function scrollFocusCalendarToNow() {
+    const scroller = document.getElementById('week-calendar-root');
+    if (!scroller || typeof WeekCalendarManager === 'undefined') return;
+    const timeline = scroller.querySelector('.week-cal-timeline');
+    if (!timeline) return;
+    let pct = 0;
+    try {
+        pct = WeekCalendarManager.nowLineTopPct();
+    } catch (e) {
+        return;
+    }
+    if (typeof pct !== 'number' || isNaN(pct)) return;
+    // Posicao do "agora" relativa ao conteudo do scroller
+    const scrollerTop = scroller.getBoundingClientRect().top - scroller.scrollTop;
+    const tlRect = timeline.getBoundingClientRect();
+    const y = tlRect.top - scrollerTop + (tlRect.height * pct) / 100;
+    const headers = scroller.querySelector('.week-cal-day-headers');
+    const headerH = headers ? headers.getBoundingClientRect().height : 0;
+    const usable = Math.max(80, scroller.clientHeight - headerH);
+    scroller.scrollTop = Math.max(0, y - headerH - usable / 2);
+}
+
 function setupFocusMode() {
     const FOCUS_STORAGE_KEY = 'habitus-focus-mode';
     const btn = document.getElementById('focus-toggle-btn');
@@ -59,6 +81,10 @@ function setupFocusMode() {
             localStorage.setItem(FOCUS_STORAGE_KEY, on ? '1' : '0');
         } catch (e) {
             /* ignore */
+        }
+        if (on) {
+            // Depois do layout do modo foco, centrar a grelha na hora atual
+            requestAnimationFrame(() => requestAnimationFrame(scrollFocusCalendarToNow));
         }
     };
 

@@ -90,6 +90,16 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - **Ecrãs estreitos (≤640px)**: barra de **três separadores** (Hábitos / Atividades / **Hoje** — o terceiro é o calendário focado no dia atual) e **gesto de deslizar** horizontalmente (swipe) para mudar de vista; o separador ativo e o índice são memorizados em `sessionStorage` (`habitus-mobile-tab`). O botão de alternar listas/calendário no header fica oculto neste modo (redundante).
 - `scroll-margin-top` nas âncoras para compensar o header fixo
 
+### Modo foco
+
+- Botão **F** no header (`#focus-toggle-btn`, passa a canto inferior direito quando ativo) ou a tecla **F** (fora de campos de texto) alternam o modo foco. A preferência fica em `localStorage` na chave `habitus-focus-mode` e é reposta ao abrir a app.
+- **Sempre oculto no modo foco**: cabeçalhos das colunas (títulos, contadores e filtro rápido de datas), filtros de tags, controlos de concluídas (**Mostrar concluídas** e **Deletar concluídas**), estatísticas, rodapé e a maior parte do header (título, relógio, pesquisa global, idioma, lembretes, export/import). Nos cartões escondem-se também os botões de adicionar (prioridade, data, tags, dias), o seletor de hora inline, o stepper de duração, subtarefas e imagens coladas.
+- **Ecrãs > 640px — ecrã dividido**: a página deixa de ter scroll próprio (`100dvh`) e divide-se em duas metades:
+  - **Metade de cima**: **Hábitos** e **Atividades** lado a lado; **cada coluna tem scroll vertical independente**.
+  - **Metade de baixo**: o **calendário semanal** reduzido à **grelha de horas** (semana seg–dom, `--week-cal-hour-px: 46px`), com scroll vertical próprio e cabeçalhos dos dias **fixos** (sticky) ao topo. Ficam ocultos a barra de navegação (‹ Hoje ›), a faixa de itens sem hora, os painéis de concluídas e os botões **+** / **☀** nos dias.
+  - Ao **entrar** no modo foco, a grelha centra-se automaticamente na **hora atual** (`scrollFocusCalendarToNow` em `app.js`, usando `WeekCalendarManager.nowLineTopPct`).
+- **Ecrãs ≤640px**: o modo foco mantém o comportamento anterior — só as listas; o calendário continua acessível pelo separador **Hoje** das abas móveis.
+
 ### Teclado (listas)
 
 - **Setas ↑↓**: mover seleção entre cards na coluna ativa
