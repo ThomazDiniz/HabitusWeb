@@ -97,9 +97,21 @@ const DataManager = {
         }
     },
     
-    // Generate unique ID
+    /**
+     * ID unico. UUID (string) — o anterior era `Date.now() + Math.random()`,
+     * um float que podia colidir ao importar dados de outro dispositivo.
+     * Os IDs numericos antigos continuam validos: as comparacoes usam String().
+     */
     generateId() {
-        return Date.now() + Math.random();
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+            return crypto.randomUUID();
+        }
+        return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    },
+
+    /** Compara IDs sem depender do tipo (dados antigos = number, novos = string) */
+    sameId(a, b) {
+        return a != null && b != null && String(a) === String(b);
     },
     
     // Get all tasks
@@ -127,7 +139,7 @@ const DataManager = {
     
     // Find task by ID
     findTask(id) {
-        return this.appData.tasks.find(t => t.id === id);
+        return this.appData.tasks.find(t => this.sameId(t.id, id));
     },
     
     // Add task
@@ -152,7 +164,7 @@ const DataManager = {
     
     // Delete task
     deleteTask(id) {
-        const index = this.appData.tasks.findIndex(t => t.id === id);
+        const index = this.appData.tasks.findIndex(t => this.sameId(t.id, id));
         if (index !== -1) {
             this.appData.tasks.splice(index, 1);
             this.saveData();

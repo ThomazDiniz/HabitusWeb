@@ -237,13 +237,13 @@ const ModalManager = {
             `;
             
             item.querySelector('.subtask-checkbox').addEventListener('change', (e) => {
-                const subtaskId = parseFloat(e.target.dataset.subtaskId);
+                const subtaskId = e.target.dataset.subtaskId;
                 SubtasksManager.toggleSubtaskStatus(freshTask.id, subtaskId);
                 this.renderSubtasksInModal(freshTask);
             });
             
             item.querySelector('.subtask-title-input').addEventListener('blur', (e) => {
-                const subtaskId = parseFloat(e.target.dataset.subtaskId);
+                const subtaskId = e.target.dataset.subtaskId;
                 const title = e.target.value.trim();
                 if (title) {
                     SubtasksManager.updateSubtask(freshTask.id, subtaskId, { title });
@@ -258,7 +258,7 @@ const ModalManager = {
             });
             
             item.querySelector('.subtask-delete').addEventListener('click', (e) => {
-                const subtaskId = parseFloat(e.target.dataset.subtaskId);
+                const subtaskId = e.target.dataset.subtaskId;
                 SubtasksManager.deleteSubtask(freshTask.id, subtaskId);
                 this.renderSubtasksInModal(freshTask);
             });

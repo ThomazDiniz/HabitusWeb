@@ -72,7 +72,7 @@ const WeekCalendarManager = {
         this.clearAllTimelineDropPreviews();
         const id = this._calendarDragTaskId;
         if (!id) return;
-        const task = DataManager.findTask(parseFloat(id, 10));
+        const task = DataManager.findTask(id);
         if (!task || task.is_deleted) return;
         const hhmm = this.timeFromTimelineClientY(timelineEl, clientY);
         const pos = this.positionTimedEvent({ due_time: hhmm, meta: task.meta });
@@ -180,9 +180,12 @@ const WeekCalendarManager = {
         if (clockEl) {
             const h = String(n.getHours()).padStart(2, '0');
             const mi = String(n.getMinutes()).padStart(2, '0');
-            const s = String(n.getSeconds()).padStart(2, '0');
-            clockEl.textContent = `${h}:${mi}:${s}`;
-            clockEl.setAttribute('datetime', n.toISOString());
+            // HH:MM — os segundos forcavam um repaint do header a cada segundo
+            const next = `${h}:${mi}`;
+            if (clockEl.textContent !== next) {
+                clockEl.textContent = next;
+                clockEl.setAttribute('datetime', n.toISOString());
+            }
         }
         if (dateEl) {
             const lang = typeof currentLanguage !== 'undefined' ? currentLanguage.replace('_', '-') : 'pt-BR';
@@ -235,7 +238,9 @@ const WeekCalendarManager = {
             this.updateNowLine();
         };
         tick();
-        this._nowTimerId = setInterval(tick, 1000);
+        // 15s chega para o relogio (HH:MM) e para a linha do agora — a 1s
+        // reconstruia-se a linha e repintava-se o header 60x por minuto
+        this._nowTimerId = setInterval(tick, 15000);
     },
 
     shiftWeek(deltaDays) {
@@ -400,7 +405,7 @@ const WeekCalendarManager = {
      * sourceYmd: when dragging from another calendar column (chip/block), weekday may move for dailies.
      */
     applyDrop(taskId, targetYmd, dueTime, sourceYmd) {
-        const task = DataManager.findTask(parseFloat(taskId, 10));
+        const task = DataManager.findTask(taskId);
         if (!task || task.is_deleted) return;
 
         const targetDow = Utils.ymdToDayOfWeek(targetYmd);
@@ -436,45 +441,45 @@ const WeekCalendarManager = {
         }
     },
 
-    bindCalendarItemDrag(handleEl, sourceYmd) {
-        handleEl.setAttribute('draggable', 'true');
-        handleEl.addEventListener('dragstart', (e) => {
-            const card = handleEl.closest('.week-cal-chip, .week-cal-block');
-            const id = card && card.getAttribute('data-task-id');
-            if (!id) {
-                e.preventDefault();
-                return;
-            }
-            this._calendarDragTaskId = String(id);
-            e.dataTransfer.setData('application/x-habitus-task-id', String(id));
-            e.dataTransfer.setData('application/x-habitus-source-ymd', sourceYmd || '');
-            e.dataTransfer.effectAllowed = 'move';
-            if (card) {
-                card.classList.add('week-cal-dragging');
-                try {
-                    const ghost = card.cloneNode(true);
-                    ghost.classList.remove('week-cal-dragging');
-                    ghost.style.cssText =
-                        'position:fixed;left:-9999px;top:0;width:' +
-                        Math.min(card.offsetWidth, 280) +
-                        'px;opacity:0.42;pointer-events:none;z-index:10000;';
-                    document.body.appendChild(ghost);
-                    e.dataTransfer.setDragImage(ghost, Math.min(24, ghost.offsetWidth / 4), 12);
-                    document.addEventListener('dragend', () => ghost.remove(), { once: true });
-                } catch (err) {
-                    /* setDragImage opcional */
-                }
-            }
-        });
-        handleEl.addEventListener('dragend', () => {
-            const card = handleEl.closest('.week-cal-chip, .week-cal-block');
-            if (card) card.classList.remove('week-cal-dragging');
-            this._calendarDragTaskId = null;
-            this.clearAllTimelineDropPreviews();
-            document.querySelectorAll('.week-cal-timeline.week-cal-drop-hover, .week-cal-untimed.week-cal-drop-hover').forEach((x) => {
-                x.classList.remove('week-cal-drop-hover');
-            });
-        });
+    /** Inicio do arrasto a partir do identificador ⋮ (via delegacao) */
+    onCalendarDragStart(e, handle) {
+        const card = handle.closest('.week-cal-chip, .week-cal-block');
+        const host = handle.closest('[data-date]');
+        const sourceYmd = host ? host.getAttribute('data-date') : '';
+        const id = card && card.getAttribute('data-task-id');
+        if (!id) {
+            e.preventDefault();
+            return;
+        }
+        this._calendarDragTaskId = String(id);
+        e.dataTransfer.setData('application/x-habitus-task-id', String(id));
+        e.dataTransfer.setData('application/x-habitus-source-ymd', sourceYmd || '');
+        e.dataTransfer.effectAllowed = 'move';
+
+        card.classList.add('week-cal-dragging');
+        try {
+            const ghost = card.cloneNode(true);
+            ghost.classList.remove('week-cal-dragging');
+            ghost.style.cssText =
+                'position:fixed;left:-9999px;top:0;width:' +
+                Math.min(card.offsetWidth, 280) +
+                'px;opacity:0.42;pointer-events:none;z-index:10000;';
+            document.body.appendChild(ghost);
+            e.dataTransfer.setDragImage(ghost, Math.min(24, ghost.offsetWidth / 4), 12);
+            document.addEventListener('dragend', () => ghost.remove(), { once: true });
+        } catch (err) {
+            /* setDragImage opcional */
+        }
+    },
+
+    onCalendarDragEnd(e, handle) {
+        const card = handle.closest('.week-cal-chip, .week-cal-block');
+        if (card) card.classList.remove('week-cal-dragging');
+        this._calendarDragTaskId = null;
+        this.clearAllTimelineDropPreviews();
+        document
+            .querySelectorAll('.week-cal-timeline.week-cal-drop-hover, .week-cal-untimed.week-cal-drop-hover')
+            .forEach((x) => x.classList.remove('week-cal-drop-hover'));
     },
 
     readSourceYmd(e) {
@@ -485,94 +490,235 @@ const WeekCalendarManager = {
         }
     },
 
-    bindUntimedDrop(el, ymd) {
-        el.addEventListener('dragover', (e) => {
-            if (!this.hasCalendarDrag(e.dataTransfer.types)) return;
-            e.preventDefault();
-            e.stopPropagation();
-            e.dataTransfer.dropEffect = 'move';
-            el.classList.add('week-cal-drop-hover');
-        });
-        el.addEventListener('dragleave', (e) => {
-            if (!el.contains(e.relatedTarget)) {
-                el.classList.remove('week-cal-drop-hover');
+    /** Redimensionar um bloco pela aresta inferior (delegado) */
+    startBlockResize(e, handle) {
+        e.stopPropagation();
+        e.preventDefault();
+        const block = handle.closest('.week-cal-block');
+        const timelineEl = handle.closest('.week-cal-timeline');
+        if (!block || !timelineEl) return;
+        const id = block.getAttribute('data-task-id');
+        const task = DataManager.findTask(id);
+        if (!task) return;
+
+        const rect = timelineEl.getBoundingClientRect();
+        const totalMin = this.totalMinutes();
+        const pxPerMin = rect.height / totalMin;
+        const startY = e.clientY;
+        const startDur = Utils.getTaskDurationMinutes(task);
+        const startDueM = Utils.dueTimeToMinutes(task.due_time);
+        if (startDueM == null) return;
+        const endDayM = this.END_HOUR * 60;
+        const maxDur = Math.max(Utils.DURATION_MINUTES_MIN, endDayM - startDueM);
+
+        let workingDur = startDur;
+        block.classList.add('week-cal-resizing');
+
+        const onMove = (ev) => {
+            const deltaMin = Math.round((ev.clientY - startY) / pxPerMin / 15) * 15;
+            workingDur = Utils.normalizeDurationMinutes(startDur + deltaMin);
+            workingDur = Math.min(workingDur, maxDur);
+            workingDur = Math.max(workingDur, Utils.DURATION_MINUTES_MIN);
+            const hPct = Math.max(
+                (workingDur / totalMin) * 100,
+                (Utils.DURATION_MINUTES_MIN / totalMin) * 100,
+                2.5
+            );
+            block.style.height = `${hPct}%`;
+        };
+
+        const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            block.classList.remove('week-cal-resizing');
+            if (workingDur !== startDur) {
+                TasksManager.updateTask(id, { duration_minutes: workingDur });
             }
-        });
-        el.addEventListener('drop', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            el.classList.remove('week-cal-drop-hover');
-            const id = e.dataTransfer.getData('application/x-habitus-task-id');
-            if (!id) return;
-            const sourceYmd = this.readSourceYmd(e);
-            this.applyDrop(id, ymd, null, sourceYmd || null);
-        });
+            if (typeof RenderManager !== 'undefined') {
+                RenderManager.renderAll();
+            }
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
     },
 
-    bindTimelineDrop(timelineEl, ymd) {
-        const onDragOver = (e) => {
+    /** Edicao inline do titulo no calendario (delegada por focusout/keydown) */
+    startInlineTitleEdit(titleEl) {
+        if (titleEl.getAttribute('contenteditable') === 'true') return;
+        titleEl.contentEditable = 'true';
+        titleEl.focus();
+        const range = document.createRange();
+        range.selectNodeContents(titleEl);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    },
+
+    commitInlineTitle(titleEl) {
+        titleEl.contentEditable = 'false';
+        const row = titleEl.closest('[data-task-id]');
+        const id = row && row.getAttribute('data-task-id');
+        if (!id) return;
+        const text = titleEl.textContent.trim();
+        const task = DataManager.findTask(id);
+        if (task && text !== (task.title || '')) {
+            TasksManager.updateTask(id, { title: text });
+            if (typeof RenderManager !== 'undefined') {
+                RenderManager.renderAll();
+            }
+        } else if (task) {
+            titleEl.textContent = task.title || '';
+        }
+    },
+
+    /**
+     * TODOS os eventos do calendario vivem aqui, ligados UMA vez ao #week-calendar-root.
+     * Antes eram ~12 listeners por item, recriados a cada render (com 200 itens
+     * davam ~2.500 listeners por render).
+     */
+    bindRootDelegation(root) {
+        if (!root || root.dataset.delegated === '1') return;
+        root.dataset.delegated = '1';
+
+        const zoneOf = (e) => e.target.closest('.week-cal-timeline, .week-cal-untimed');
+
+        // ---- arrastar ----
+        root.addEventListener('dragstart', (e) => {
+            const handle = e.target.closest('.week-cal-drag-handle');
+            if (handle) this.onCalendarDragStart(e, handle);
+        });
+
+        root.addEventListener('dragend', (e) => {
+            const handle = e.target.closest('.week-cal-drag-handle');
+            if (handle) this.onCalendarDragEnd(e, handle);
+        });
+
+        root.addEventListener('dragover', (e) => {
+            const zone = zoneOf(e);
+            if (!zone) return;
             if (!this.hasCalendarDrag(e.dataTransfer.types)) return;
             e.preventDefault();
             e.stopPropagation();
             e.dataTransfer.dropEffect = 'move';
-            timelineEl.classList.add('week-cal-drop-hover');
-            this.updateTimelineDropPreview(timelineEl, e.clientY);
-        };
+            zone.classList.add('week-cal-drop-hover');
+            if (zone.classList.contains('week-cal-timeline')) {
+                this.updateTimelineDropPreview(zone, e.clientY);
+            }
+        });
 
-        const onDragLeave = (e) => {
-            if (!timelineEl.contains(e.relatedTarget)) {
-                timelineEl.classList.remove('week-cal-drop-hover');
+        root.addEventListener('dragleave', (e) => {
+            const zone = zoneOf(e);
+            if (!zone) return;
+            if (zone.contains(e.relatedTarget)) return;
+            zone.classList.remove('week-cal-drop-hover');
+            if (zone.classList.contains('week-cal-timeline')) {
                 this.clearAllTimelineDropPreviews();
             }
-        };
+        });
 
-        const onDrop = (e) => {
+        root.addEventListener('drop', (e) => {
+            const zone = zoneOf(e);
+            if (!zone) return;
             if (!this.hasCalendarDrag(e.dataTransfer.types)) return;
             e.preventDefault();
             e.stopPropagation();
-            timelineEl.classList.remove('week-cal-drop-hover');
+            zone.classList.remove('week-cal-drop-hover');
             this.clearAllTimelineDropPreviews();
+
             const id = e.dataTransfer.getData('application/x-habitus-task-id');
             if (!id) return;
+            const ymd = zone.getAttribute('data-date');
             const sourceYmd = this.readSourceYmd(e);
-            const hhmm = this.timeFromTimelineClientY(timelineEl, e.clientY);
+            const isTimeline = zone.classList.contains('week-cal-timeline');
+            const hhmm = isTimeline ? this.timeFromTimelineClientY(zone, e.clientY) : null;
             this.applyDrop(id, ymd, hhmm, sourceYmd || null);
-        };
+        });
 
-        timelineEl.addEventListener('dragover', onDragOver);
-        timelineEl.addEventListener('dragleave', onDragLeave);
-        timelineEl.addEventListener('drop', onDrop);
+        // ---- redimensionar ----
+        root.addEventListener('mousedown', (e) => {
+            const handle = e.target.closest('.week-cal-resize-handle');
+            if (handle) this.startBlockResize(e, handle);
+        });
 
-        timelineEl.addEventListener('dblclick', (e) => {
+        // ---- duplo clique em espaco vazio: nova tarefa com data e hora ----
+        root.addEventListener('dblclick', (e) => {
+            const timeline = e.target.closest('.week-cal-timeline');
+            if (!timeline) return;
             if (e.target.closest('.week-cal-block, .week-cal-done-btn')) return;
             e.preventDefault();
-            const hhmm = this.timeFromTimelineClientY(timelineEl, e.clientY);
+            const ymd = timeline.getAttribute('data-date');
+            const hhmm = this.timeFromTimelineClientY(timeline, e.clientY);
             if (typeof ModalManager !== 'undefined') {
-                ModalManager.openTaskModal(null, 'todo', {
-                    prefillDueDate: ymd,
-                    prefillDueTime: hhmm
-                });
+                ModalManager.openTaskModal(null, 'todo', { prefillDueDate: ymd, prefillDueTime: hhmm });
             }
         });
 
-        timelineEl.querySelectorAll('.week-cal-block').forEach((block) => {
-            block.addEventListener('dragover', onDragOver);
-            block.addEventListener('dragleave', onDragLeave);
-            block.addEventListener('drop', (e) => {
-                if (!this.hasCalendarDrag(e.dataTransfer.types)) return;
-                e.preventDefault();
+        // ---- cliques ----
+        root.addEventListener('click', (e) => {
+            const doneBtn = e.target.closest('.week-cal-done-btn');
+            if (doneBtn) {
                 e.stopPropagation();
-                timelineEl.classList.remove('week-cal-drop-hover');
-                this.clearAllTimelineDropPreviews();
-                const id = e.dataTransfer.getData('application/x-habitus-task-id');
+                e.preventDefault();
+                const id = doneBtn.getAttribute('data-task-id');
                 if (!id) return;
-                const sourceYmd = this.readSourceYmd(e);
-                const hhmm = this.timeFromTimelineClientY(timelineEl, e.clientY);
-                this.applyDrop(id, ymd, hhmm, sourceYmd || null);
-            });
+                TasksManager.toggleTaskStatus(id);
+                if (typeof RenderManager !== 'undefined') RenderManager.renderAll();
+                return;
+            }
+
+            const addTask = e.target.closest('.week-cal-add-task-btn');
+            if (addTask) {
+                e.stopPropagation();
+                if (typeof ModalManager !== 'undefined') {
+                    ModalManager.openTaskModal(null, 'todo', { prefillDueDate: addTask.getAttribute('data-date') });
+                }
+                return;
+            }
+
+            const addDaily = e.target.closest('.week-cal-add-daily-btn');
+            if (addDaily) {
+                e.stopPropagation();
+                if (typeof ModalManager !== 'undefined') {
+                    ModalManager.openTaskModal(null, 'daily', { prefillDailyDay: addDaily.getAttribute('data-dow') });
+                }
+                return;
+            }
+
+            const title = e.target.closest('.week-cal-chip-title, .week-cal-block-title');
+            if (title) {
+                e.stopPropagation();
+                this.startInlineTitleEdit(title);
+                return;
+            }
+
+            const card = e.target.closest('.week-cal-chip, .week-cal-block');
+            if (!card) return;
+            if (e.target.closest('.week-cal-drag-handle, .week-cal-resize-handle')) return;
+            const id = card.getAttribute('data-task-id');
+            if (!id) return;
+            const task = DataManager.findTask(id);
+            if (task && typeof ModalManager !== 'undefined') {
+                ModalManager.openTaskModal(task);
+            }
         });
 
-        this.bindBlockResizeHandles(timelineEl);
+        // ---- gravar o titulo inline (blur nao borbulha; focusout sim) ----
+        root.addEventListener('focusout', (e) => {
+            const title = e.target.closest && e.target.closest('.week-cal-chip-title, .week-cal-block-title');
+            if (title && title.getAttribute('contenteditable') === 'true') {
+                this.commitInlineTitle(title);
+            }
+        });
+
+        root.addEventListener('keydown', (e) => {
+            const title = e.target.closest && e.target.closest('.week-cal-chip-title, .week-cal-block-title');
+            if (!title || title.getAttribute('contenteditable') !== 'true') return;
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                title.blur();
+            }
+        });
     },
 
     pencilIcon() {
@@ -617,149 +763,6 @@ const WeekCalendarManager = {
             </div>
             <div class="week-cal-resize-handle" title="${resizeTip}" aria-label="${resizeTip}" role="separator" aria-orientation="horizontal"></div>
         </div>`;
-    },
-
-    bindBlockResizeHandles(timelineEl) {
-        timelineEl.querySelectorAll('.week-cal-resize-handle').forEach((handle) => {
-            handle.addEventListener('mousedown', (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                const block = handle.closest('.week-cal-block');
-                if (!block) return;
-                const id = parseFloat(block.getAttribute('data-task-id'), 10);
-                const task = DataManager.findTask(id);
-                if (!task) return;
-                const rect = timelineEl.getBoundingClientRect();
-                const totalMin = this.totalMinutes();
-                const pxPerMin = rect.height / totalMin;
-                const startY = e.clientY;
-                const startDur = Utils.getTaskDurationMinutes(task);
-                const startDueM = Utils.dueTimeToMinutes(task.due_time);
-                if (startDueM == null) return;
-                const endDayM = this.END_HOUR * 60;
-                const maxDur = Math.max(Utils.DURATION_MINUTES_MIN, endDayM - startDueM);
-
-                let workingDur = startDur;
-                block.classList.add('week-cal-resizing');
-
-                const onMove = (ev) => {
-                    const deltaY = ev.clientY - startY;
-                    const deltaMin = Math.round(deltaY / pxPerMin / 15) * 15;
-                    workingDur = Utils.normalizeDurationMinutes(startDur + deltaMin);
-                    workingDur = Math.min(workingDur, maxDur);
-                    workingDur = Math.max(workingDur, Utils.DURATION_MINUTES_MIN);
-                    const hPct = Math.max(
-                        (workingDur / totalMin) * 100,
-                        (Utils.DURATION_MINUTES_MIN / totalMin) * 100,
-                        2.5
-                    );
-                    block.style.height = `${hPct}%`;
-                };
-
-                const onUp = () => {
-                    document.removeEventListener('mousemove', onMove);
-                    document.removeEventListener('mouseup', onUp);
-                    block.classList.remove('week-cal-resizing');
-                    if (workingDur !== startDur) {
-                        TasksManager.updateTask(id, { duration_minutes: workingDur });
-                    }
-                    if (typeof RenderManager !== 'undefined') {
-                        RenderManager.renderAll();
-                    }
-                };
-
-                document.addEventListener('mousemove', onMove);
-                document.addEventListener('mouseup', onUp);
-            });
-        });
-    },
-
-    bindInlineTitle(titleEl, taskIdStr) {
-        const startEdit = (e) => {
-            if (e) e.stopPropagation();
-            if (titleEl.getAttribute('contenteditable') === 'true') return;
-            titleEl.contentEditable = 'true';
-            titleEl.focus();
-            const range = document.createRange();
-            range.selectNodeContents(titleEl);
-            const sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-        };
-
-        titleEl.addEventListener('click', (e) => {
-            e.stopPropagation();
-            startEdit(e);
-        });
-
-        titleEl.addEventListener('blur', () => {
-            titleEl.contentEditable = 'false';
-            const id = parseFloat(taskIdStr, 10);
-            const text = titleEl.textContent.trim();
-            const task = DataManager.findTask(id);
-            if (task && text !== (task.title || '')) {
-                TasksManager.updateTask(id, { title: text });
-                if (typeof RenderManager !== 'undefined') {
-                    RenderManager.renderAll();
-                }
-            } else if (task) {
-                titleEl.textContent = task.title || '';
-            }
-        });
-
-        titleEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                titleEl.blur();
-            }
-        });
-    },
-
-    bindCalendarCardUI(root) {
-        root.querySelectorAll('.week-cal-drag-handle').forEach((handle) => {
-            const host = handle.closest('[data-date]');
-            const ymd = host && host.getAttribute('data-date');
-            if (ymd) this.bindCalendarItemDrag(handle, ymd);
-        });
-
-        // Clique em chip/bloco abre editor (exceto controles, drag/resize ou edição inline do título)
-        root.querySelectorAll('.week-cal-chip, .week-cal-block').forEach((card) => {
-            card.addEventListener('click', (e) => {
-                if (e.target.closest('.week-cal-drag-handle, .week-cal-done-btn, .week-cal-resize-handle')) return;
-                if (e.target.closest('.week-cal-chip-title[contenteditable="true"], .week-cal-block-title[contenteditable="true"]')) return;
-                const id = parseFloat(card.getAttribute('data-task-id'), 10);
-                if (!id) return;
-                const task = DataManager.findTask(id);
-                if (task && typeof ModalManager !== 'undefined') {
-                    ModalManager.openTaskModal(task);
-                }
-            });
-        });
-
-        root.querySelectorAll('.week-cal-chip-title').forEach((el) => {
-            const row = el.closest('[data-task-id]');
-            const id = row && row.getAttribute('data-task-id');
-            if (id) this.bindInlineTitle(el, id);
-        });
-
-        root.querySelectorAll('.week-cal-block-title').forEach((el) => {
-            const row = el.closest('[data-task-id]');
-            const id = row && row.getAttribute('data-task-id');
-            if (id) this.bindInlineTitle(el, id);
-        });
-
-        root.querySelectorAll('.week-cal-done-btn').forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                const id = parseFloat(btn.getAttribute('data-task-id'), 10);
-                if (!id) return;
-                TasksManager.toggleTaskStatus(id);
-                if (typeof RenderManager !== 'undefined') {
-                    RenderManager.renderAll();
-                }
-            });
-        });
     },
 
     render() {
@@ -884,34 +887,8 @@ const WeekCalendarManager = {
 
         root.innerHTML = html;
 
-        root.querySelectorAll('.week-cal-add-task-btn').forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const ymd = btn.getAttribute('data-date');
-                if (typeof ModalManager !== 'undefined') {
-                    ModalManager.openTaskModal(null, 'todo', { prefillDueDate: ymd });
-                }
-            });
-        });
-
-        root.querySelectorAll('.week-cal-add-daily-btn').forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const dow = btn.getAttribute('data-dow');
-                if (typeof ModalManager !== 'undefined') {
-                    ModalManager.openTaskModal(null, 'daily', { prefillDailyDay: dow });
-                }
-            });
-        });
-
-        root.querySelectorAll('.week-cal-timeline[data-date]').forEach((timeline) => {
-            const ymd = timeline.getAttribute('data-date');
-            const untimed = root.querySelector(`.week-cal-untimed[data-date="${ymd}"]`);
-            if (untimed) this.bindUntimedDrop(untimed, ymd);
-            this.bindTimelineDrop(timeline, ymd);
-        });
-
-        this.bindCalendarCardUI(root);
+        // Um unico conjunto de listeners, ligado a primeira vez (ver bindRootDelegation)
+        this.bindRootDelegation(root);
         this.updateNowClockDisplay();
         this.updateNowLine();
     },

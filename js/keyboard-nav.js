@@ -108,7 +108,7 @@ const KeyboardNavManager = {
             }
             index = Math.max(0, Math.min(cards.length - 1, next));
         }
-        this.selectedTaskId = Number(cards[index].dataset.taskId);
+        this.selectedTaskId = cards[index].dataset.taskId;
         this.applyOutline();
     },
 
@@ -134,7 +134,7 @@ const KeyboardNavManager = {
         const input = document.activeElement;
         if (input && input.blur) input.blur();
         this.hasUserNavigated = true;
-        this.selectedTaskId = Number(cards[0].dataset.taskId);
+        this.selectedTaskId = cards[0].dataset.taskId;
         this.applyOutline();
     },
 
@@ -154,7 +154,7 @@ const KeyboardNavManager = {
             return;
         }
         const target = cards[Math.min(index, cards.length - 1)];
-        this.selectedTaskId = Number(target.dataset.taskId);
+        this.selectedTaskId = target.dataset.taskId;
         this.applyOutline();
     },
 
@@ -244,7 +244,7 @@ const KeyboardNavManager = {
         }
         const stillThere = cards.some((c) => String(c.dataset.taskId) === String(this.selectedTaskId));
         if (!stillThere) {
-            this.selectedTaskId = Number(cards[0].dataset.taskId);
+            this.selectedTaskId = cards[0].dataset.taskId;
         }
         this.applyOutline();
     }

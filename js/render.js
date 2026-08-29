@@ -410,7 +410,7 @@ const RenderManager = {
                         <div class="task-actions-inline">
                             ${
                                 task.task_type === 'todo' && task.status !== 'done'
-                                    ? `<button type="button" class="task-btn task-btn-today">${t('setForToday')}</button>`
+                                    ? `<button type="button" class="task-btn task-btn-today" title="${t('setForToday')}" aria-label="${t('setForToday')}">📌</button>`
                                     : ''
                             }
                             <button type="button" class="task-btn task-add-subtask-btn" title="${t('addSubtask')}" aria-label="${t('addSubtask')}">＋☰</button>
@@ -441,7 +441,7 @@ const RenderManager = {
     onListClick(e) {
         const card = e.target.closest('.task-card');
         if (!card) return;
-        const task = DataManager.findTask(Number(card.dataset.taskId));
+        const task = DataManager.findTask(card.dataset.taskId);
         if (!task) return;
 
         const hit = (sel) => e.target.closest(sel);
@@ -497,7 +497,7 @@ const RenderManager = {
         }
         if (hit('.subtask-delete')) {
             stop();
-            SubtasksManager.deleteSubtask(task.id, parseFloat(hit('.subtask-delete').dataset.subtaskId));
+            SubtasksManager.deleteSubtask(task.id, hit('.subtask-delete').dataset.subtaskId);
             return this.renderAll();
         }
         if (hit('.task-add-subtask-btn')) {
@@ -537,7 +537,7 @@ const RenderManager = {
     onListChange(e) {
         const card = e.target.closest('.task-card');
         if (!card) return;
-        const taskId = Number(card.dataset.taskId);
+        const taskId = card.dataset.taskId;
         const task = DataManager.findTask(taskId);
         if (!task) return;
 
@@ -545,7 +545,7 @@ const RenderManager = {
             return this.toggleWithUndo(task, e.target.checked);
         }
         if (e.target.classList.contains('subtask-checkbox')) {
-            SubtasksManager.toggleSubtaskStatus(taskId, parseFloat(e.target.dataset.subtaskId));
+            SubtasksManager.toggleSubtaskStatus(taskId, e.target.dataset.subtaskId);
             return this.renderAll();
         }
         if (e.target.classList.contains('task-inline-time-input')) {
@@ -589,7 +589,7 @@ const RenderManager = {
 
     /** Eliminar sem confirm(): apaga ja e oferece Desfazer no toast */
     deleteTaskWithUndo(task) {
-        const index = DataManager.appData.tasks.findIndex((x) => x.id === task.id);
+        const index = DataManager.appData.tasks.findIndex((x) => DataManager.sameId(x.id, task.id));
         const snapshot = DataManager.findTask(task.id);
         if (index === -1 || !snapshot) return;
 

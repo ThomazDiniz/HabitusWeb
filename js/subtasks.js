@@ -28,7 +28,7 @@ const SubtasksManager = {
     updateSubtask(taskId, subtaskId, updates) {
         const task = DataManager.findTask(taskId);
         if (task) {
-            const subtask = task.subtasks.find(s => s.id === subtaskId);
+            const subtask = task.subtasks.find(s => DataManager.sameId(s.id, subtaskId));
             if (subtask) {
                 Object.assign(subtask, updates, {
                     updated_at: new Date().toISOString()
@@ -45,7 +45,7 @@ const SubtasksManager = {
     deleteSubtask(taskId, subtaskId) {
         const task = DataManager.findTask(taskId);
         if (task) {
-            const index = task.subtasks.findIndex(s => s.id === subtaskId);
+            const index = task.subtasks.findIndex(s => DataManager.sameId(s.id, subtaskId));
             if (index !== -1) {
                 task.subtasks.splice(index, 1);
                 task.updated_at = new Date().toISOString();
@@ -60,7 +60,7 @@ const SubtasksManager = {
     toggleSubtaskStatus(taskId, subtaskId) {
         const task = DataManager.findTask(taskId);
         if (task) {
-            const subtask = task.subtasks.find(s => s.id === subtaskId);
+            const subtask = task.subtasks.find(s => DataManager.sameId(s.id, subtaskId));
             if (subtask) {
                 subtask.status = subtask.status === 'done' ? 'pending' : 'done';
                 subtask.completed_at = subtask.status === 'done' ? new Date().toISOString() : null;

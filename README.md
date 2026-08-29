@@ -31,7 +31,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - Tags múltiplas
 - Subtasks com progresso; no cartão o botão **＋☰** (barra de ações, visível no hover) abre um campo inline — Enter ou clique fora grava; Esc cancela. O contador **☰ feitas/total** ao lado do título expande e recolhe a lista
 - Reordenação por **drag and drop** nas listas; botões **↑ / ↓** (**Para o topo** / **Para o fim**) na mesma sublista (ativas vs concluídas; em hábitos também secção agendada quando aplicável), ajustando `order_index`
-- Filtro rápido acima da lista de atividades: **Todas / Hoje / Sem data / Futuras** (combina com o filtro de tags) para reduzir o volume de itens visíveis no dia.
+- Filtro rápido acima da lista de atividades: **Todas / Hoje / Sem data / Futuras** — abre **sempre em «Todas»**, por desenho (combina com o filtro de tags) para reduzir o volume de itens visíveis no dia.
 - **Definir para hoje** (botão no card, só atividades não concluídas): define `due_date` para o dia **calendário local** atual (`Utils.dateToYMD`) e `due_time` para a **hora atual** (`Utils.getLocalDueTimeNow()`). Toast de confirmação; a pessoa pode depois alterar data/hora (lista, modal ou calendário).
 - **Finalização sem animação**: ao concluir uma **atividade**, ela vai imediatamente para concluídas e aparece um tooltip empilhável no canto superior direito: **“Atividade finalizada: <nome>”** (verde) por **2s**, com botão **Desfazer**. Se várias forem concluídas, empilham para baixo e vão desaparecendo (estilo “console”).
 - Limite de **200** atividades (todos) ativas
@@ -58,24 +58,32 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 
 ### Densidade e cartão silencioso (visão padrão)
 
+> **Por desenho**: quando não há hábitos para hoje, a coluna **fica vazia** — é o sinal de que não há mais nada a fazer nesse dia e de que se pode focar nas atividades (e o espaço convida a acrescentar um hábito novo). Não colapsar a coluna é intencional.
+
+
 - **O cartão em repouso mostra só o que tem conteúdo.** As ações (**Definir para hoje**, **＋☰** subtarefa, ↑, ↓, 🍅, 🗑) vivem numa **barra sobreposta** (`position: absolute`), que aparece no **hover**, no **foco** ou quando o cartão está **selecionado pelo teclado** (`.keyboard-selected`). Como está fora do fluxo, não ocupa espaço nem desloca a lista.
 - **Marcadores de campos vazios** (`+ Prioridade`, `+ Data`, `+ Tags`, `+ Dias`, seletor de hora) têm a classe `is-hint` e seguem a mesma regra. A `.task-info-row` tem `min-height` para o hover não empurrar os cartões seguintes.
 - **Subtarefas colapsadas**: o cartão mostra um contador **☰ 2/3** ao lado do título (`.task-subtasks-badge`); a lista só entra no DOM quando é expandida (`RenderManager.expandedSubtasks`). Adicionar uma subtarefa abre automaticamente a lista desse cartão.
 - **O stepper de duração saiu das listas** — a duração define-se no **calendário** (arrastar a aresta do bloco) ou no **modal** (campo *Tempo no calendário*).
 - **Densidade** em `appData.settings.density`: **`compact`** (predefinição) ou `comfortable`, escolhida no menu **⋯** do header. Em compacta, e em ecrãs > 640px, a lista de tarefas ganha **scroll próprio** (`max-height: 58vh`) — o calendário fica logo abaixo em vez de exigir percorrer a página inteira.
-- Medido com 30 atividades: cartão de **105 px → 55 px**, **6 → 11** cartões visíveis no ecrã, e a página passou de **7.307 px → 3.001 px** de altura.
+- **Cartão numa linha** (compacta, > 640px): `.task-content` é um flex row — título à esquerda, badges à direita, com `padding-right` reservado para a barra de ações não os tapar. **Definir para hoje** passou a ser o ícone **📌** (tooltip mantido) para encurtar a barra.
+- Medido: cartão de **105 px → 38 px**, **6 → 15** cartões visíveis no ecrã, e a página de **7.307 px → ~3.000 px**.
 
 ### Menu **⋯** do header
 
 - O header fica com: título, alternar vista, **Hoje** + data + relógio, **pesquisa global**, **F** (modo foco) e **⋯**.
 - Dentro do **⋯**: **Densidade** (compacta / confortável), **Idioma**, **lembretes** (🔔), **exportar** (📋) e **importar** (📥). Fecha com clique fora ou **Esc**.
+- **No modo foco** o header perde `pointer-events`, por isso o **⋯** passa a botão flutuante no canto inferior direito, ao lado do **⇅** e do **F**, com o painel a abrir **para cima**.
 
 ### Render e eventos (desempenho)
 
-- **Delegação de eventos**: os cartões são criados sem nenhum `addEventListener`. Cada lista (`#dailies-list`, `#tasks-list`, listas de concluídas/agendadas) liga **um** par de listeners (`click` + `change`) uma única vez — `RenderManager.bindListDelegation` / `onListClick` / `onListChange`. O drag and drop segue o mesmo padrão em `DragDropManager.setup` (um listener por tipo, por container). Antes eram ~33 listeners por cartão, recriados a cada render.
+- **Delegação de eventos em todo o lado**: nem os cartões das listas nem os itens do calendário levam `addEventListener`.
+  - Listas: cada container (`#dailies-list`, `#tasks-list`, concluídas/agendadas) liga **um** par (`click` + `change`) uma vez — `RenderManager.bindListDelegation` / `onListClick` / `onListChange`; o drag and drop segue o mesmo padrão em `DragDropManager.setup`.
+  - Calendário: **tudo** vive em `WeekCalendarManager.bindRootDelegation(root)`, ligado uma vez ao `#week-calendar-root` — arrastar (`dragstart`/`dragend` pelo ⋮), zonas de largar (`dragover`/`dragleave`/`drop`, resolvidas por `closest('.week-cal-timeline, .week-cal-untimed')`), redimensionar (`mousedown` no `.week-cal-resize-handle`), duplo clique para nova tarefa, cliques (✓, títulos, ＋/☀, abrir modal) e a gravação do título inline por `focusout` (o `blur` não borbulha).
+  - Antes eram ~33 listeners por cartão e ~12 por item de calendário, recriados a cada render.
 - **Secções colapsáveis não geram DOM**: concluídas e agendadas só constroem cartões quando estão **abertas** (`RenderManager.sectionOpen` + `renderCollapsibleSection`). O rótulo do botão mostra a **contagem** (ex.: «Mostrar concluídas (12)») para não ser preciso abrir. O estado de aberto/fechado **sobrevive** aos re-renders (antes, qualquer ação voltava a fechar a secção).
 - **Cartão com um só caminho de template**: `infoRowHtml()` monta a linha de info para hábitos e atividades (antes eram dois blocos quase idênticos em `createTaskCard`).
-- Referência medida com 200 atividades + 20 hábitos: `renderAll()` passou de ~78 ms para ~46 ms e de ~3.600 para ~2.500 listeners por render (os que restam são todos do calendário semanal, que ainda liga listeners por item).
+- Referência medida com 200 atividades + 20 hábitos: `renderAll()` passou de **~78 ms para ~12 ms** e de **~3.600 listeners por render para 0** — nenhum listener é criado ao renderizar.
 
 ### Tags e filtros
 
@@ -169,6 +177,11 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - Exportar dados (JSON) e copiar para a área de transferência
 - Importar ficheiro JSON com validação
 - Botões no canto superior direito
+
+### Identificadores e relógio
+
+- **IDs**: `DataManager.generateId()` devolve **UUID** (`crypto.randomUUID()`, com fallback). O anterior era `Date.now() + Math.random()` — um float que podia colidir ao importar dados de outro dispositivo. Os IDs numéricos antigos continuam válidos: todas as comparações passam por `DataManager.sameId(a, b)` (`String(a) === String(b)`), e o mesmo vale para os IDs de subtarefas.
+- **Relógio do header**: `HH:MM` (sem segundos) e atualização a cada **15 s** — antes repintava o header e reconstruía a linha do «agora» 60 vezes por minuto.
 
 ### Robustez e dados
 

@@ -34,7 +34,7 @@ const DragDropManager = {
     
     handleDragStart(e, card) {
         this.draggedElement = card;
-        this.draggedTaskId = parseFloat(card.dataset.taskId);
+        this.draggedTaskId = card.dataset.taskId;
         card.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/html', card.innerHTML);
@@ -79,7 +79,7 @@ const DragDropManager = {
         }
         
         if (this.draggedElement !== card) {
-            const taskId = parseFloat(card.dataset.taskId);
+            const taskId = card.dataset.taskId;
             const draggedTask = DataManager.findTask(this.draggedTaskId);
             const targetTask = DataManager.findTask(taskId);
             

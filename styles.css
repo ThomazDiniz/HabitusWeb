@@ -2558,11 +2558,37 @@ body {
         align-items: center;
         justify-content: center;
         position: fixed;
-        right: 60px;
+        right: 62px;
         bottom: 16px;
         z-index: 1200;
         pointer-events: auto;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    }
+}
+
+/* No modo foco o header perde pointer-events: o menu ⋯ tem de ir para junto
+   dos botoes flutuantes (F e ⇅), com o painel a abrir para CIMA. */
+body.focus-mode .header-menu {
+    position: fixed;
+    right: 108px;
+    bottom: 16px;
+    z-index: 1200;
+    pointer-events: auto;
+}
+
+body.focus-mode .header-menu-btn {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+body.focus-mode .header-menu-panel {
+    top: auto;
+    bottom: calc(100% + 8px);
+}
+
+/* Em ecras estreitos o modo foco nao tem o ⇅: o menu encosta ao F */
+@media (max-width: 640px) {
+    body.focus-mode .header-menu {
+        right: 62px;
     }
 }
 
@@ -2587,12 +2613,10 @@ body.focus-mode .header {
     pointer-events: none;
 }
 
+/* Idioma, lembretes, exportar e importar ja NAO se escondem aqui: vivem dentro
+   do menu ⋯, que so aparece quando aberto. */
 body.focus-mode .header-left,
-body.focus-mode .header-center,
-body.focus-mode .language-selector,
-body.focus-mode .reminders-toggle-btn,
-body.focus-mode .export-btn,
-body.focus-mode .import-btn {
+body.focus-mode .header-center {
     display: none;
 }
 
@@ -3026,4 +3050,39 @@ body.density-compact:not(.focus-mode) .task-info-row {
 
 .header-menu-panel .language-selector {
     width: 100%;
+}
+
+
+/* --- Cartao numa linha (densidade compacta): titulo e badges lado a lado --- */
+@media (min-width: 641px) {
+    body.density-compact:not(.focus-mode) .task-content {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px 10px;
+        /* espaco reservado para a barra de acoes sobreposta nao tapar os badges */
+        padding-right: 132px;
+    }
+
+    body.density-compact:not(.focus-mode) .task-title-row {
+        flex: 1 1 180px;
+        min-width: 0;
+    }
+
+    body.density-compact:not(.focus-mode) .task-info-row {
+        flex: 0 1 auto;
+        margin-top: 0;
+        min-height: 0;
+        justify-content: flex-end;
+    }
+
+    body.density-compact:not(.focus-mode) .task-info-left {
+        justify-content: flex-end;
+    }
+
+    /* subtarefas expandidas ocupam a linha seguinte inteira */
+    body.density-compact:not(.focus-mode) .task-subtasks-wrap:not(:empty) {
+        flex: 1 0 100%;
+        margin-top: 4px;
+    }
 }
