@@ -7,11 +7,30 @@ const InlineEditManager = {
     
     // Create a new task directly (no modal)
     // title: optional - if provided, creates task with that title; otherwise creates empty and focuses for editing
+    /**
+     * Criacao rapida. O texto passa pelo interpretador de linguagem natural
+     * (Utils.parseQuickAdd): "Reuniao amanha 14h #trabalho !alta" cria a tarefa
+     * ja com data, hora, tag e prioridade — e o titulo fica so "Reuniao".
+     */
     createTaskDirectly(taskType, title = '') {
-        const task = TasksManager.addTask(taskType, {
-            title: (title || '').trim(),
-            status: 'pending'
-        });
+        const parsed =
+            typeof Utils !== 'undefined' && Utils.parseQuickAdd
+                ? Utils.parseQuickAdd(title)
+                : { title: (title || '').trim(), tags: [], days_of_week: [], due_date: null, due_time: null, priority: null };
+
+        const data = { title: parsed.title, status: 'pending' };
+        if (parsed.priority) data.priority = parsed.priority;
+        if (parsed.tags && parsed.tags.length) data.tags = parsed.tags;
+        if (parsed.due_time) data.due_time = parsed.due_time;
+        if (taskType === 'daily') {
+            if (parsed.days_of_week && parsed.days_of_week.length) {
+                data.days_of_week = parsed.days_of_week;
+            }
+        } else if (parsed.due_date) {
+            data.due_date = parsed.due_date;
+        }
+
+        const task = TasksManager.addTask(taskType, data);
         
         if (task) {
             if (!task.title) {

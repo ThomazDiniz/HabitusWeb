@@ -65,14 +65,15 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - **Marcadores de campos vazios** (`+ Prioridade`, `+ Data`, `+ Tags`, `+ Dias`, seletor de hora) têm a classe `is-hint` e seguem a mesma regra. A `.task-info-row` tem `min-height` para o hover não empurrar os cartões seguintes.
 - **Subtarefas colapsadas**: o cartão mostra um contador **☰ 2/3** ao lado do título (`.task-subtasks-badge`); a lista só entra no DOM quando é expandida (`RenderManager.expandedSubtasks`). Adicionar uma subtarefa abre automaticamente a lista desse cartão.
 - **O stepper de duração saiu das listas** — a duração define-se no **calendário** (arrastar a aresta do bloco) ou no **modal** (campo *Tempo no calendário*).
-- **Densidade** em `appData.settings.density`: **`compact`** (predefinição) ou `comfortable`, escolhida no menu **⋯**. A densidade compacta aplica-se **também no modo foco** — o cartão é o mesmo nos dois.
+- **Uma só densidade** (compacta). A escolha compacta/confortável foi removida: uma única maneira de ver tudo, igual no modo foco.
 - **Cartão numa linha** (compacta, > 640px): `.task-content` é um flex row — título à esquerda, badges à direita, com `padding-right` reservado para a barra de ações não os tapar. **Definir para hoje** passou a ser o ícone **📌** (tooltip mantido) para encurtar a barra.
 - Medido: cartão de **105 px → 38 px**, **6 → 15** cartões visíveis no ecrã, e a página de **7.307 px → ~3.000 px**.
 
 ### Menu **⋯** do header
 
 - O header fica com: título, alternar vista, **Hoje** + data + relógio, **pesquisa global**, **F** (modo foco) e **⋯**.
-- Dentro do **⋯**: **Densidade** (compacta / confortável), **Idioma**, **lembretes** (🔔), **exportar** (📋) e **importar** (📥). Fecha com clique fora ou **Esc**.
+- Dentro do **⋯**: **Ver** — alternar **Concluídas (n)** e **Hábitos agendados (n)**, e **apagar concluídas** (com Desfazer) —, **Idioma**, **lembretes** (🔔), **exportar** (📋) e **importar** (📥). Fecha com clique fora ou **Esc**.
+- Os botões **Mostrar concluídas** / **Deletar concluídas** **saíram das colunas**: ocupavam duas linhas por coluna para algo que não se usa todos os dias. As contagens vivem agora nos próprios botões do menu.
 - **No modo foco** o header perde `pointer-events`, por isso o **⋯** passa a botão flutuante no canto inferior direito, ao lado do **⇅** e do **F**, com o painel a abrir **para cima**.
 
 ### Render e eventos (desempenho)
@@ -142,7 +143,8 @@ Listas e calendário estão **sempre visíveis na mesma tela**. Não há altern�
 - **Hábitos ocupam só o que precisam** (até 42vh) e as **atividades ficam com o espaço restante**.
 - **Divisor arrastável** entre as duas colunas (`#workspace-divider`): define a proporção entre 24% e 62%, guardada em `localStorage` (`habitus-workspace-split`). Duplo clique repõe 42%; ←/→ ajustam pelo teclado. **Substitui a antiga escolha entre modos** por uma preferência contínua.
 - **⇅ troca os lados** (listas à esquerda ou à direita), guardado em `habitus-workspace-side`.
-- **Estatísticas** deixaram de ser uma secção no fundo da página: são uma **faixa fina** no rodapé da coluna das listas.
+- **Estatísticas**: faixa fina de uma linha **por baixo do calendário**, à direita.
+- **Coluna dos hábitos encolhe ao conteúdo** (até 34vh de lista): as atividades ficam com todo o espaço restante. As secções de concluídas/agendadas deixaram de reservar 48px cada.
 - O botão de **alternar listas/calendário** desapareceu — ambos estão à vista.
 - Abaixo de 1024px mantém-se o layout empilhado; abaixo de 640px continuam as **abas móveis**.
 
@@ -152,6 +154,40 @@ Listas e calendário estão **sempre visíveis na mesma tela**. Não há altern�
 - **O layout não muda** — muda o que se esconde: header (título, relógio, pesquisa), cabeçalhos das colunas, filtros de tags, controlos de concluídas, estatísticas e os marcadores de campos por preencher.
 - Os botões flutuantes no canto inferior direito são **⋯**, **⇅** e **F** (o header perde `pointer-events` no foco, por isso o menu tem de sair de lá; o painel abre para cima).
 - Com o cromo escondido, o calendário ganha ~75px de altura e a lista mostra mais 4 cartões.
+
+### Criação rápida com linguagem natural
+
+O texto dos campos **Adicionar atividade / hábito** passa por `Utils.parseQuickAdd()` antes de criar. O que é reconhecido sai do título:
+
+| Escrito | Resultado |
+|---|---|
+| `Reunião com o time amanhã 14h #trabalho !alta` | título «Reunião com o time», data de amanhã, 14:00, tag `trabalho`, prioridade alta |
+| `Pagar boleto dia 12/09` | título «Pagar boleto», 12/09 |
+| `Treino seg qua sex 07h` (hábito) | título «Treino», `days_of_week` seg/qua/sex, 07:00 |
+| `Standup seg a sex 9:15` | intervalo de dias, 09:15 |
+| `Ligar para a Ana hoje às 9` | hoje, 09:00 |
+
+- **Datas**: `hoje`, `amanhã`, `depois de amanhã`, `today`, `tomorrow`, dias da semana (`seg`, `segunda`, `monday`…), intervalos (`seg a sex`), `dd/mm` e `dd/mm/aaaa` (com `dia` opcional à frente).
+- **Horas**: `14h`, `14h30`, `14:30`, `às 9`.
+- **Tags**: `#tag` (várias). **Prioridade**: `!alta`, `!media`, `!baixa` (e `!high` / `!medium` / `!low`).
+- Num **hábito**, os dias da semana vão para `meta.days_of_week`; numa **atividade**, viram `due_date`.
+
+### Atalhos globais
+
+| Tecla | Ação |
+|---|---|
+| `/` | ir para a pesquisa |
+| `N` | novo campo de atividade |
+| `H` | novo campo de hábito |
+| `F` | modo foco |
+| `Ctrl/Cmd + Z` | desfazer a última ação (a mesma do aviso com **Desfazer**) |
+| `Esc` | limpar a pesquisa (no campo de pesquisa) |
+
+Ignorados dentro de campos de texto e com modais abertos (`setupShortcuts` em `app.js`).
+
+### Título da aba
+
+`document.title` mostra **`(n) Habitus`** com o que ainda falta hoje — atividades com `due_date` até hoje por concluir mais hábitos agendados para hoje ainda não feitos (`RenderManager.updateDocumentTitle`). Sem pendências, fica só `Habitus`.
 
 ### Teclado (listas)
 

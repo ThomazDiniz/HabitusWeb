@@ -45,11 +45,12 @@
                 <button type="button" class="header-menu-btn" id="header-menu-btn" aria-haspopup="true" aria-expanded="false" data-i18n-aria-label="menuMore" title="Mais opções">⋯</button>
                 <div class="header-menu-panel" id="header-menu-panel" hidden>
                     <div class="header-menu-group">
-                        <span class="header-menu-label" data-i18n="densityLabel">Densidade</span>
-                        <div class="header-menu-choices" id="density-choices">
-                            <button type="button" class="header-menu-choice" data-density="compact" data-i18n="densityCompact">Compacta</button>
-                            <button type="button" class="header-menu-choice" data-density="comfortable" data-i18n="densityComfortable">Confortável</button>
+                        <span class="header-menu-label" data-i18n="viewLabel">Ver</span>
+                        <div class="header-menu-choices">
+                            <button type="button" class="header-menu-choice" id="menu-toggle-completed" aria-pressed="false"></button>
+                            <button type="button" class="header-menu-choice" id="menu-toggle-scheduled" aria-pressed="false"></button>
                         </div>
+                        <button type="button" class="header-menu-danger" id="menu-delete-completed"></button>
                     </div>
                     <div class="header-menu-group">
                         <span class="header-menu-label" data-i18n="languageLabel">Idioma</span>
@@ -96,20 +97,9 @@
                 </div>
                 <div class="tasks-list" id="dailies-list"></div>
                 <div class="completed-section" id="dailies-completed-section" style="display: none;">
-                    <div class="completed-header">
-                        <button class="toggle-completed-btn" id="toggle-dailies-completed">
-                            <span id="toggle-dailies-text">Mostrar concluídas</span>
-                        </button>
-                        <button class="delete-completed-btn" id="delete-dailies-completed">Deletar Concluídas</button>
-                    </div>
                     <div class="completed-list" id="dailies-completed-list"></div>
                 </div>
                 <div class="scheduled-section" id="dailies-scheduled-section" style="display: none;">
-                    <div class="scheduled-header">
-                        <button class="toggle-scheduled-btn" id="toggle-dailies-scheduled">
-                            <span id="toggle-dailies-scheduled-text">Mostrar agendadas</span>
-                        </button>
-                    </div>
                     <div class="scheduled-list" id="dailies-scheduled-list"></div>
                 </div>
             </div>
@@ -134,12 +124,6 @@
                 </div>
                 <div class="tasks-list" id="tasks-list"></div>
                 <div class="completed-section" id="tasks-completed-section" style="display: none;">
-                    <div class="completed-header">
-                        <button class="toggle-completed-btn" id="toggle-tasks-completed">
-                            <span id="toggle-tasks-text">Mostrar concluídas</span>
-                        </button>
-                        <button class="delete-completed-btn" id="delete-tasks-completed">Deletar Concluídas</button>
-                    </div>
                     <div class="completed-list" id="tasks-completed-list"></div>
                 </div>
             </div>

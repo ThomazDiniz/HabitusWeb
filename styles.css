@@ -2627,13 +2627,6 @@ body.focus-mode .footer {
     display: none;
 }
 
-/* Modo foco: esconder os controlos de concluídas (mostrar / deletar concluídas) */
-body.focus-mode .completed-header,
-body.focus-mode .toggle-completed-btn,
-body.focus-mode .delete-completed-btn {
-    display: none;
-}
-
 body.focus-mode .task-info-row .add-priority,
 body.focus-mode .task-info-row .add-due-date,
 body.focus-mode .task-info-row .add-tag,
@@ -2777,31 +2770,31 @@ body.focus-mode .add-input {
 }
 
 /* --- Densidade compacta (predefinicao) --- */
-body.density-compact .task-card {
+body .task-card {
     --task-card-pad-y: 7px;
     --task-card-pad-x: 11px;
     border-radius: 9px;
 }
 
-body.density-compact .task-title {
+body .task-title {
     font-size: 13.5px;
     margin-bottom: 0;
 }
 
-body.density-compact .tasks-list,
-body.density-compact .completed-list,
-body.density-compact .scheduled-list {
+body .tasks-list,
+body .completed-list,
+body .scheduled-list {
     gap: 6px;
 }
 
-body.density-compact .task-info-row {
+body .task-info-row {
     margin-top: 2px;
 }
 
 /* Em ecra largo as listas ganham scroll proprio: o calendario fica a um passo,
    sem ter de percorrer a pagina toda */
 @media (min-width: 641px) {
-    body.density-compact:not(.focus-mode) .tasks-list {
+    body:not(.focus-mode) .tasks-list {
         max-height: 58vh;
         overflow-y: auto;
         overflow-x: hidden;
@@ -2899,6 +2892,29 @@ body.density-compact .task-info-row {
     color: var(--text-primary);
 }
 
+.header-menu-danger {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 6px 8px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.header-menu-danger:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.16);
+    border-color: var(--error);
+    color: var(--error);
+}
+
+.header-menu-choice:disabled,
+.header-menu-danger:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 .header-menu-actions {
     flex-direction: row;
     gap: 8px;
@@ -2911,7 +2927,7 @@ body.density-compact .task-info-row {
 
 /* --- Cartao numa linha (densidade compacta): titulo e badges lado a lado --- */
 @media (min-width: 641px) {
-    body.density-compact .task-content {
+    body .task-content {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
@@ -2920,24 +2936,24 @@ body.density-compact .task-info-row {
         padding-right: 132px;
     }
 
-    body.density-compact .task-title-row {
+    body .task-title-row {
         flex: 1 1 180px;
         min-width: 0;
     }
 
-    body.density-compact .task-info-row {
+    body .task-info-row {
         flex: 0 1 auto;
         margin-top: 0;
         min-height: 0;
         justify-content: flex-end;
     }
 
-    body.density-compact .task-info-left {
+    body .task-info-left {
         justify-content: flex-end;
     }
 
     /* subtarefas expandidas ocupam a linha seguinte inteira */
-    body.density-compact .task-subtasks-wrap:not(:empty) {
+    body .task-subtasks-wrap:not(:empty) {
         flex: 1 0 100%;
         margin-top: 4px;
     }
@@ -2975,17 +2991,52 @@ body.density-compact .task-info-row {
        ficam com todo o espaco restante --- */
     body.workspace .tasks-container {
         grid-column: 1;
+        grid-row: 1 / -1;
         display: grid;
         grid-template-columns: 1fr;
         grid-template-rows: minmax(0, auto) minmax(0, 1fr);
         gap: 10px;
-        grid-row: 1;
         min-height: 0;
         overflow: hidden;
     }
 
-    body.workspace #mobile-panel-dailies {
-        max-height: 42vh;
+    /* a coluna dos habitos encolhe ao conteudo — nao reserva altura a toa */
+    body.workspace #mobile-panel-dailies .tasks-list {
+        flex: 0 1 auto;
+        max-height: 34vh;
+    }
+
+    /* nada de altura minima reservada dentro do workspace */
+    body.workspace .tasks-list,
+    body.workspace .completed-list,
+    body.workspace .scheduled-list {
+        min-height: 0;
+    }
+
+    /* seccoes de concluidas/agendadas: 48px de respiro cada -> 8px */
+    body.workspace .completed-section,
+    body.workspace .scheduled-section {
+        margin-top: 8px;
+        padding-top: 8px;
+    }
+
+    /* filtros de tags: uma linha, sem altura reservada */
+    body.workspace .tag-filters {
+        min-height: 0;
+        margin-bottom: 8px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 6px;
+        padding-bottom: 2px;
+        scrollbar-width: thin;
+    }
+
+    body.workspace .tag-filter {
+        flex: 0 0 auto;
+    }
+
+    body.workspace .add-input-row {
+        margin-bottom: 8px;
     }
 
     /* linha de tags vazia nao deve ocupar espaco */
@@ -3059,7 +3110,7 @@ body.density-compact .task-info-row {
     /* --- coluna do calendario: altura toda --- */
     body.workspace .week-calendar-section {
         grid-column: 3;
-        grid-row: 1 / -1;
+        grid-row: 1;
         display: flex;
         flex-direction: column;
         min-height: 0;
@@ -3113,6 +3164,7 @@ body.density-compact .task-info-row {
 
     body.workspace.workspace-swapped .tasks-container {
         grid-column: 3;
+        grid-row: 1 / -1;
     }
 
     body.workspace.workspace-swapped .week-calendar-section {
@@ -3122,17 +3174,20 @@ body.density-compact .task-info-row {
     }
 
     /* --- estatisticas: faixa fina no fundo das listas, ja nao uma seccao --- */
+    /* estatisticas: faixa fina por baixo do calendario, do lado direito */
     body.workspace .stats-section {
-        grid-column: 1;
+        grid-column: 3;
         grid-row: 2;
         align-self: end;
         margin: 0;
-        padding: 6px 0 0;
+        padding: 6px 0 0 12px;
         border-top: 1px solid var(--border-color);
     }
 
     body.workspace.workspace-swapped .stats-section {
-        grid-column: 3;
+        grid-column: 1;
+        padding-left: 0;
+        padding-right: 12px;
     }
 
     body.workspace .stats-section-title,
@@ -3142,9 +3197,16 @@ body.density-compact .task-info-row {
 
     body.workspace .stats-grid {
         display: flex;
-        flex-wrap: wrap;
-        gap: 4px 14px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 12px;
         margin: 0;
+        padding-bottom: 2px;
+        scrollbar-width: thin;
+    }
+
+    body.workspace .stats-card {
+        white-space: nowrap;
     }
 
     body.workspace .stats-card {

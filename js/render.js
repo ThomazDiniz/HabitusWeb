@@ -73,6 +73,7 @@ const RenderManager = {
         this.renderDailies();
         this.renderTasks();
         this.updateCounts();
+        this.updateDocumentTitle();
         this.updateMotivationalMessage();
         if (typeof KeyboardNavManager !== 'undefined' && KeyboardNavManager.afterRender) {
             try {
@@ -88,6 +89,13 @@ const RenderManager = {
                 console.error('WeekCalendarManager.render failed:', err);
             }
         }
+        if (typeof updateMenuViewControls === 'function') {
+            try {
+                updateMenuViewControls();
+            } catch (err) {
+                console.error('updateMenuViewControls failed:', err);
+            }
+        }
         if (typeof StatsManager !== 'undefined' && StatsManager.render) {
             try {
                 StatsManager.render();
@@ -97,6 +105,22 @@ const RenderManager = {
         }
     },
     
+    /** Titulo da aba: "(3) Habitus" com o que ainda falta hoje */
+    updateDocumentTitle() {
+        const today = Utils.getTodayDate();
+        const tasks = (DataManager.getAllTasks() || []).filter((x) => !x.is_deleted);
+        let pending = 0;
+        tasks.forEach((task) => {
+            if (task.status === 'done') return;
+            if (task.task_type === 'todo') {
+                if (task.due_date && task.due_date <= today) pending += 1;
+            } else if (TasksManager.isDailyScheduledForToday(task)) {
+                if (!Utils.isToday(task.last_completed_date)) pending += 1;
+            }
+        });
+        document.title = pending > 0 ? `(${pending}) Habitus` : 'Habitus';
+    },
+
     // Update task counts
     updateCounts() {
         const dailiesCount = DataManager.getActiveTasksCount('daily');
@@ -183,21 +207,15 @@ const RenderManager = {
         this.renderCollapsibleSection({
             sectionId: 'dailies-completed-section',
             listId: 'dailies-completed-list',
-            toggleTextId: 'toggle-dailies-text',
             openKey: 'dailyCompleted',
-            tasks: completedDailies,
-            showKey: 'showCompleted',
-            hideKey: 'hideCompleted'
+            tasks: completedDailies
         });
 
         this.renderCollapsibleSection({
             sectionId: 'dailies-scheduled-section',
             listId: 'dailies-scheduled-list',
-            toggleTextId: 'toggle-dailies-scheduled-text',
             openKey: 'dailyScheduled',
-            tasks: scheduledDailies,
-            showKey: 'showScheduled',
-            hideKey: 'hideScheduled'
+            tasks: scheduledDailies
         });
 
         this.renderTagFilters('daily');
@@ -247,11 +265,8 @@ const RenderManager = {
         this.renderCollapsibleSection({
             sectionId: 'tasks-completed-section',
             listId: 'tasks-completed-list',
-            toggleTextId: 'toggle-tasks-text',
             openKey: 'todoCompleted',
-            tasks: completedTasks,
-            showKey: 'showCompleted',
-            hideKey: 'hideCompleted'
+            tasks: completedTasks
         });
 
         this.renderTagFilters('todo');
@@ -263,7 +278,7 @@ const RenderManager = {
      * Seccao colapsavel (concluidas / agendadas). Fechada = zero cartoes no DOM;
      * o rotulo do botao mostra a contagem para nao ser preciso abrir.
      */
-    renderCollapsibleSection({ sectionId, listId, toggleTextId, openKey, tasks, showKey, hideKey }) {
+    renderCollapsibleSection({ sectionId, listId, openKey, tasks }) {
         const section = document.getElementById(sectionId);
         const list = document.getElementById(listId);
         if (!section || !list) return;
@@ -278,10 +293,8 @@ const RenderManager = {
 
         section.style.display = 'block';
         const open = !!this.sectionOpen[openKey];
+        section.classList.toggle('is-open', open);
         list.style.display = open ? 'block' : 'none';
-
-        const label = document.getElementById(toggleTextId);
-        if (label) label.textContent = `${t(open ? hideKey : showKey)} (${tasks.length})`;
 
         if (!open) return;
 

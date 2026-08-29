@@ -10,8 +10,7 @@ const DataManager = {
         tasks: [],
         settings: {
             language: 'pt_BR',
-            remindersEnabled: false,
-            density: 'compact'
+            remindersEnabled: false
         },
         stats: {
             pomodoroMinutesCompleted: 0,
@@ -51,7 +50,6 @@ const DataManager = {
                 this.appData.settings = {
                     language: 'pt_BR',
                     remindersEnabled: false,
-                    density: 'compact',
                     ...(parsed.settings && typeof parsed.settings === 'object' ? parsed.settings : {})
                 };
                 // Migrate old data structure if needed
@@ -77,12 +75,11 @@ const DataManager = {
                 this.appData.tasks = [];
             }
             if (!this.appData.settings || typeof this.appData.settings !== 'object') {
-                this.appData.settings = { language: 'pt_BR', remindersEnabled: false, density: 'compact' };
+                this.appData.settings = { language: 'pt_BR', remindersEnabled: false };
             } else {
                 this.appData.settings = {
                     language: 'pt_BR',
                     remindersEnabled: false,
-                    density: 'compact',
                     ...this.appData.settings
                 };
             }

@@ -11,7 +11,6 @@ function startApp() {
     // Initialize data manager
     DataManager.init();
 
-    applyDensity(DataManager.appData.settings.density || 'compact');
     
     if (typeof WeekCalendarManager !== 'undefined') {
         try {
@@ -45,6 +44,83 @@ function startApp() {
     setupWorkspace();
     setupFocusMode();
     setupHeaderMenu();
+    setupShortcuts();
+}
+
+/**
+ * Atalhos globais:
+ *   /        pesquisar
+ *   N        nova atividade      H  novo hábito
+ *   Ctrl+Z   desfazer a última ação (a mesma do aviso com "Desfazer")
+ *   Esc      limpar a pesquisa
+ *   F        modo foco (ver setupFocusMode)
+ */
+function setupShortcuts() {
+    const isTypingIn = (el) =>
+        !!el &&
+        (el.tagName === 'INPUT' ||
+            el.tagName === 'TEXTAREA' ||
+            el.tagName === 'SELECT' ||
+            el.isContentEditable);
+
+    const modalOpen = () =>
+        [...document.querySelectorAll('.modal-overlay')].some((m) => m.style.display === 'flex');
+
+    document.addEventListener('keydown', (e) => {
+        const el = e.target;
+
+        // Esc no campo de pesquisa limpa e devolve o foco à lista
+        if (e.key === 'Escape' && el && el.id === 'global-search-input') {
+            if (el.value) {
+                e.preventDefault();
+                el.value = '';
+                FiltersManager.setGlobalSearchQuery('');
+                RenderManager.renderAll();
+            }
+            el.blur();
+            return;
+        }
+
+        // Ctrl/Cmd+Z desfaz a última ação (concluir, apagar…)
+        if ((e.ctrlKey || e.metaKey) && !e.shiftKey && (e.key === 'z' || e.key === 'Z')) {
+            if (isTypingIn(el)) return;
+            if (Utils.lastUndo && typeof Utils.lastUndo.run === 'function') {
+                e.preventDefault();
+                Utils.lastUndo.run();
+            }
+            return;
+        }
+
+        if (isTypingIn(el) || modalOpen()) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        if (e.key === '/') {
+            const search = document.getElementById('global-search-input');
+            if (search) {
+                e.preventDefault();
+                search.focus();
+                search.select();
+            }
+            return;
+        }
+
+        if (e.key === 'n' || e.key === 'N') {
+            const input = document.getElementById('add-task-input');
+            if (input) {
+                e.preventDefault();
+                input.focus();
+            }
+            return;
+        }
+
+        if (e.key === 'h' || e.key === 'H') {
+            const input = document.getElementById('add-daily-input');
+            if (input) {
+                e.preventDefault();
+                input.focus();
+            }
+        }
+    });
 }
 
 /**
@@ -126,24 +202,6 @@ function setupWorkspace() {
     requestAnimationFrame(() => requestAnimationFrame(scrollCalendarToNow));
 }
 
-/** Densidade da visao padrao: 'compact' (predefinicao) ou 'comfortable' */
-function applyDensity(mode) {
-    const compact = mode !== 'comfortable';
-    document.body.classList.toggle('density-compact', compact);
-    document.body.classList.toggle('density-comfortable', !compact);
-    document.querySelectorAll('#density-choices .header-menu-choice').forEach((btn) => {
-        const on = btn.dataset.density === (compact ? 'compact' : 'comfortable');
-        btn.classList.toggle('is-active', on);
-        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-}
-
-function setDensity(mode) {
-    DataManager.appData.settings.density = mode === 'comfortable' ? 'comfortable' : 'compact';
-    DataManager.saveData();
-    applyDensity(DataManager.appData.settings.density);
-}
-
 /** Menu "⋯" do header: idioma, densidade, lembretes, exportar/importar */
 function setupHeaderMenu() {
     const btn = document.getElementById('header-menu-btn');
@@ -174,16 +232,24 @@ function setupHeaderMenu() {
         if (e.key === 'Escape' && !panel.hidden) close();
     });
 
-    const choices = document.getElementById('density-choices');
-    if (choices) {
-        choices.addEventListener('click', (e) => {
-            const choice = e.target.closest('.header-menu-choice');
-            if (!choice) return;
-            setDensity(choice.dataset.density);
+    const completedBtn = document.getElementById('menu-toggle-completed');
+    if (completedBtn) {
+        completedBtn.addEventListener('click', () => toggleCompletedSections());
+    }
+
+    const scheduledBtn = document.getElementById('menu-toggle-scheduled');
+    if (scheduledBtn) {
+        scheduledBtn.addEventListener('click', () => toggleScheduledSection());
+    }
+
+    const deleteBtn = document.getElementById('menu-delete-completed');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            deleteCompletedWithUndo('todo');
+            deleteCompletedWithUndo('daily');
         });
     }
 
-    applyDensity(DataManager.appData.settings.density || 'compact');
 }
 
 /** Centra a grelha do calendario na hora atual */
@@ -336,28 +402,6 @@ function setupEventListeners() {
         }
     });
     
-    // Delete completed buttons — sem dialogo bloqueante: apaga e oferece Desfazer
-    document.getElementById('delete-tasks-completed').addEventListener('click', () => {
-        deleteCompletedWithUndo('todo');
-    });
-
-    document.getElementById('delete-dailies-completed').addEventListener('click', () => {
-        deleteCompletedWithUndo('daily');
-    });
-    
-    // Toggle completed sections
-    document.getElementById('toggle-tasks-completed').addEventListener('click', () => {
-        toggleCompletedSection('todo');
-    });
-    
-    document.getElementById('toggle-dailies-completed').addEventListener('click', () => {
-        toggleCompletedSection('daily');
-    });
-    
-    document.getElementById('toggle-dailies-scheduled').addEventListener('click', () => {
-        toggleScheduledSection();
-    });
-    
     // Setup module event listeners
     ModalManager.setupEventListeners();
     PomodoroManager.setupEventListeners();
@@ -441,17 +485,53 @@ function deleteCompletedWithUndo(taskType) {
     });
 }
 
-// Toggle completed section — o estado vive no RenderManager (fechada = sem DOM)
-function toggleCompletedSection(taskType) {
-    const key = taskType === 'todo' ? 'todoCompleted' : 'dailyCompleted';
-    RenderManager.sectionOpen[key] = !RenderManager.sectionOpen[key];
+// As concluidas (e os habitos agendados) alternam-se pelo menu ⋯, nao por
+// botoes dentro das colunas — nao e todos os dias que se quer ve-las.
+function toggleCompletedSections() {
+    const on = !(RenderManager.sectionOpen.todoCompleted && RenderManager.sectionOpen.dailyCompleted);
+    RenderManager.sectionOpen.todoCompleted = on;
+    RenderManager.sectionOpen.dailyCompleted = on;
     RenderManager.renderAll();
 }
 
-// Toggle scheduled section
 function toggleScheduledSection() {
     RenderManager.sectionOpen.dailyScheduled = !RenderManager.sectionOpen.dailyScheduled;
     RenderManager.renderAll();
+}
+
+/** Rotulos e contagens dos controlos de vista no menu ⋯ */
+function updateMenuViewControls() {
+    const tasks = (DataManager.getAllTasks() || []).filter((x) => !x.is_deleted);
+    const completed = tasks.filter((x) => x.status === 'done').length;
+    const scheduled = tasks.filter(
+        (x) =>
+            x.task_type === 'daily' &&
+            typeof TasksManager !== 'undefined' &&
+            TasksManager.dailyListBucket(x) === 'scheduled'
+    ).length;
+
+    const cBtn = document.getElementById('menu-toggle-completed');
+    const sBtn = document.getElementById('menu-toggle-scheduled');
+    const dBtn = document.getElementById('menu-delete-completed');
+
+    if (cBtn) {
+        const on = !!RenderManager.sectionOpen.todoCompleted;
+        cBtn.textContent = `${t('completedLabel')} (${completed})`;
+        cBtn.classList.toggle('is-active', on);
+        cBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        cBtn.disabled = completed === 0;
+    }
+    if (sBtn) {
+        const on = !!RenderManager.sectionOpen.dailyScheduled;
+        sBtn.textContent = `${t('scheduledLabel')} (${scheduled})`;
+        sBtn.classList.toggle('is-active', on);
+        sBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        sBtn.disabled = scheduled === 0;
+    }
+    if (dBtn) {
+        dBtn.textContent = t('deleteCompleted');
+        dBtn.disabled = completed === 0;
+    }
 }
 
 // Update UI when language changes
@@ -467,12 +547,6 @@ window.updateUI = function() {
     if (typeof RemindersManager !== 'undefined') {
         RemindersManager.syncToggleButton();
     }
-    
-    // Os rotulos de "mostrar concluidas/agendadas" (com contagem) vem do renderAll
-    const deleteTasksCompleted = document.getElementById('delete-tasks-completed');
-    const deleteDailiesCompleted = document.getElementById('delete-dailies-completed');
-    if (deleteTasksCompleted) deleteTasksCompleted.textContent = t('deleteCompleted');
-    if (deleteDailiesCompleted) deleteDailiesCompleted.textContent = t('deleteCompleted');
     
     updateViewToggleButton();
     if (typeof MobileViewsManager !== 'undefined') {

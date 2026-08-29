@@ -10,8 +10,8 @@ const translations = {
     pt_BR: {
         dailies: "Hábitos",
         tasks: "Atividades",
-        addDaily: "Adicionar hábito",
-        addTask: "Adicionar atividade",
+        addDaily: "Adicionar hábito  ·  “Treino seg qua sex 7h”",
+        addTask: "Adicionar atividade  ·  “Reunião amanhã 14h #trabalho !alta”",
         globalSearchPlaceholder: "Pesquisar atividades e hábitos…",
         globalSearchAriaLabel: "Pesquisar atividades e hábitos por título ou tag",
         newDaily: "Novo hábito",
@@ -106,10 +106,10 @@ const translations = {
         sendToBottom: "Para o fim",
         activityFinished: "Atividade finalizada",
         undo: "Desfazer",
+        viewLabel: "Ver",
+        completedLabel: "Concluídas",
+        scheduledLabel: "Hábitos agendados",
         menuMore: "Mais opções",
-        densityLabel: "Densidade",
-        densityCompact: "Compacta",
-        densityComfortable: "Confortável",
         languageLabel: "Idioma",
         taskDeleted: "Excluída",
         completedDeleted: "Concluídas excluídas",
@@ -222,8 +222,6 @@ function updateUI() {
     document.querySelectorAll('[data-i18n]').forEach((el) => {
         el.textContent = t(el.getAttribute('data-i18n'));
     });
-
-    document.title = 'Tasks | Habitus';
 
     document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
         el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
