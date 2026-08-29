@@ -125,7 +125,10 @@ const RenderManager = {
         }
     },
     
-    /** Titulo da aba: "(3) Habitus" com o que ainda falta hoje */
+    /**
+     * Titulo da aba: "Habitus | Rotinas e Atividades" (localizado), prefixado com
+     * o que ainda falta hoje — "(3) Habitus | …" — quando ha pendencias.
+     */
     updateDocumentTitle() {
         const today = Utils.getTodayDate();
         const tasks = (DataManager.getAllTasks() || []).filter((x) => !x.is_deleted);
@@ -138,7 +141,8 @@ const RenderManager = {
                 if (!Utils.isToday(task.last_completed_date)) pending += 1;
             }
         });
-        document.title = pending > 0 ? `(${pending}) Habitus` : 'Habitus';
+        const name = `Habitus | ${t('appSubtitle')}`;
+        document.title = pending > 0 ? `(${pending}) ${name}` : name;
     },
 
     /** Ponto no botao ⋯ quando ha algum filtro ativo (os filtros vivem la dentro) */

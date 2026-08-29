@@ -86,6 +86,7 @@ translations['de'] = {
         sendToBottom: "Nach unten",
         activityFinished: "Aktivität abgeschlossen",
         undo: "Rückgängig",
+        appSubtitle: "Routine & Aktivitäten",
         hintDailiesTitle: "Gewohnheiten — was du wiederholst",
         hintDailiesBody: "They come back every day (or on the days you pick) and keep a streak. Completing one does not remove it: tomorrow it is there again.\nExamples: brush your teeth · work out · check email · read 20 pages",
         hintTasksTitle: "Aktivitäten — was du abschließt",

@@ -86,6 +86,7 @@ translations['it'] = {
         sendToBottom: "In fondo",
         activityFinished: "Attività completata",
         undo: "Annulla",
+        appSubtitle: "Routine e Attività",
         hintDailiesTitle: "Abitudini — cose che ripeti",
         hintDailiesBody: "They come back every day (or on the days you pick) and keep a streak. Completing one does not remove it: tomorrow it is there again.\nExamples: brush your teeth · work out · check email · read 20 pages",
         hintTasksTitle: "Attività — cose che finisci",

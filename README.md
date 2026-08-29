@@ -196,7 +196,7 @@ Ignorados dentro de campos de texto e com modais abertos (`setupShortcuts` em `a
 
 ### Título da aba
 
-`document.title` mostra **`(n) Habitus`** com o que ainda falta hoje — atividades com `due_date` até hoje por concluir mais hábitos agendados para hoje ainda não feitos (`RenderManager.updateDocumentTitle`). Sem pendências, fica só `Habitus`.
+**`Habitus | Rotina e Atividades`**, com o subtítulo **localizado** (chave `appSubtitle`: *Routine & Activities*, *Rutina y Actividades*, *ルーティンとアクティビティ*, …). Quando há pendências para hoje, o número vem à frente: **`(3) Habitus | Rotina e Atividades`** — atividades com `due_date` até hoje por concluir mais hábitos agendados para hoje ainda não feitos (`RenderManager.updateDocumentTitle`). O `<title>` no HTML serve de fallback até o idioma carregar.
 
 ### Teclado (listas)
 

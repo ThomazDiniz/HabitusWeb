@@ -86,6 +86,7 @@ translations['ja'] = {
         sendToBottom: "末尾へ",
         activityFinished: "活動完了",
         undo: "元に戻す",
+        appSubtitle: "ルーティンとアクティビティ",
         hintDailiesTitle: "習慣 — 繰り返すこと",
         hintDailiesBody: "They come back every day (or on the days you pick) and keep a streak. Completing one does not remove it: tomorrow it is there again.\nExamples: brush your teeth · work out · check email · read 20 pages",
         hintTasksTitle: "アクティビティ — 終わったら消えるもの",

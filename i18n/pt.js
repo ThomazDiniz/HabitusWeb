@@ -86,6 +86,7 @@ translations['pt'] = {
         sendToBottom: "Para o fim",
         activityFinished: "Atividade finalizada",
         undo: "Desfazer",
+        appSubtitle: "Rotina e Atividades",
         hintDailiesTitle: "Hábitos — coisas que você repete",
         hintDailiesBody: "Voltam todo dia (ou nos dias que você escolher) e acumulam sequência. Concluir não apaga: amanhã ele está lá de novo.\nExemplos: escovar os dentes · treinar · verificar os e-mails · ler 20 páginas",
         hintTasksTitle: "Atividades — coisas que você termina",
