@@ -45,6 +45,52 @@ function startApp() {
     setupFocusMode();
     setupHeaderMenu();
     setupShortcuts();
+    setupHints();
+}
+
+/**
+ * Botoes "?" : a diferenca entre habitos e atividades (ao lado de cada titulo) e a
+ * ajuda da escrita rapida (dentro do menu ⋯). Simples toggle de um bloco.
+ */
+function setupHints() {
+    const pairs = [
+        ['dailies-hint-btn', 'dailies-hint'],
+        ['tasks-hint-btn', 'tasks-hint'],
+        ['help-quickadd-btn', 'help-quickadd']
+    ];
+
+    const closeAll = (except) => {
+        pairs.forEach(([btnId, boxId]) => {
+            if (boxId === except) return;
+            const box = document.getElementById(boxId);
+            const btn = document.getElementById(btnId);
+            if (box) box.hidden = true;
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        });
+    };
+
+    pairs.forEach(([btnId, boxId]) => {
+        const btn = document.getElementById(btnId);
+        const box = document.getElementById(boxId);
+        if (!btn || !box) return;
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const open = box.hidden;
+            closeAll(open ? boxId : null);
+            box.hidden = !open;
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!document.contains(e.target)) return;
+        if (e.target.closest('.hint-popover, .hint-btn, .help-block, .help-toggle')) return;
+        closeAll(null);
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeAll(null);
+    });
 }
 
 /**
@@ -438,6 +484,29 @@ function setupEventListeners() {
     }
 }
 
+/** Apaga as concluidas de um tipo e oferece Desfazer (restaura os objetos originais) */
+function deleteCompletedWithUndo(taskType) {
+    const removed = DataManager.appData.tasks.filter(
+        (x) => x.task_type === taskType && x.status === 'done' && !x.is_deleted
+    );
+    if (removed.length === 0) return;
+
+    TasksManager.deleteCompletedTasks(taskType);
+    RenderManager.renderAll();
+
+    Utils.showActionToast({
+        message: `${t('completedDeleted')} (${removed.length})`,
+        actionLabel: t('undo'),
+        timeoutMs: 6000,
+        tone: 'error',
+        onAction: () => {
+            removed.forEach((x) => DataManager.appData.tasks.push(x));
+            DataManager.saveData();
+            RenderManager.renderAll();
+        }
+    });
+}
+
 // As concluidas (e os habitos agendados) alternam-se pelo menu ⋯, nao por
 // botoes dentro das colunas — nao e todos os dias que se quer ve-las.
 function toggleCompletedSections() {
@@ -462,6 +531,9 @@ function updateMenuViewControls() {
             typeof TasksManager !== 'undefined' &&
             TasksManager.dailyListBucket(x) === 'scheduled'
     ).length;
+
+    const hBtn = document.getElementById('help-quickadd-btn');
+    if (hBtn) hBtn.textContent = `? ${t('helpQuickAddBtn')}`;
 
     const fBtn = document.getElementById('focus-toggle-btn');
     if (fBtn) fBtn.textContent = t('focusModeLabel');

@@ -84,7 +84,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
   - Antes eram ~33 listeners por cartão e ~12 por item de calendário, recriados a cada render.
 - **Secções colapsáveis não geram DOM**: concluídas e agendadas só constroem cartões quando estão **abertas** (`RenderManager.sectionOpen` + `renderCollapsibleSection`). O rótulo do botão mostra a **contagem** (ex.: «Mostrar concluídas (12)») para não ser preciso abrir. O estado de aberto/fechado **sobrevive** aos re-renders (antes, qualquer ação voltava a fechar a secção).
 - **Cartão com um só caminho de template**: `infoRowHtml()` monta a linha de info para hábitos e atividades (antes eram dois blocos quase idênticos em `createTaskCard`).
-- Referência medida com 200 atividades + 20 hábitos: `renderAll()` passou de **~78 ms para ~12 ms** e de **~3.600 listeners por render para 0** — nenhum listener é criado ao renderizar.
+- Referência medida com 200 atividades + 20 hábitos: `renderAll()` passou de **~78 ms para ~37 ms** e de **~3.600 listeners por render para 0** — nenhum listener é criado ao renderizar. Duas armadilhas encontradas por medição: recalcular os itens de cada dia várias vezes por render, e **ler `offsetHeight` logo a seguir a um `innerHTML`** (reflow síncrono da página inteira, ~40 ms) — a leitura passou para `requestAnimationFrame`.
 
 ### Tags e filtros
 
@@ -140,6 +140,29 @@ O **header fixo foi removido**. O que havia nele foi redistribuído:
 ### Código de cor das listas
 
 Os cartões usam a mesma linguagem do calendário: **hábitos amarelos** (`--streak`) e **atividades azuis** (`--blue-primary`) — barra à esquerda, fundo em gradiente muito leve e título tingido. Os concluídos ficam dessaturados.
+
+### Grelha adaptativa, carga do dia e atrasadas
+
+- **A grelha já não é fixa em 05:00–24:00.** A cada render, `WeekCalendarManager.computeVisibleHourRange()` calcula a janela: nunca começa depois das **09:00** nem acaba antes das **19:00**, alarga-se **uma hora** antes do primeiro item e depois do último da semana, e inclui sempre a **hora atual**. Numa agenda típica passa de **19 para ~10–12 horas visíveis** — quase o dobro de altura por hora, sem esconder nada.
+- **Carga do dia**: cada cabeçalho mostra o **tempo agendado** desse dia (`1h30`, `6h`), somando as durações dos itens com hora — dá para ver de relance se o dia está cheio.
+- **Filtro «Atrasadas (n)»**: aparece nos filtros do menu só quando existem atividades por fazer com data passada, e destaca-se a vermelho.
+- **A faixa de itens sem hora fica fixa** por baixo dos cabeçalhos ao percorrer as horas (antes desaparecia no scroll); o `--week-cal-header-h` é medido em `requestAnimationFrame` para o encaixe ser exato.
+- **Cache por render** (`itemsForDayCached`): cada dia era recalculado 4× (janela horária, carga, itens sem hora, itens com hora).
+
+### Ajuda no sítio certo (botões «?»)
+
+- **Ao lado de cada título** (`Hábitos` / `Atividades`) há um **?** que abre um cartão curto a explicar a diferença, com exemplos:
+  - **Hábitos** — coisas que se repetem; voltam todos os dias (ou nos dias escolhidos) e acumulam sequência. *Escovar os dentes · treinar · verificar os e-mails · ler 20 páginas.*
+  - **Atividades** — tarefas com fim; conclui-se e saem da lista. *Pagar o boleto · enviar a proposta · marcar o dentista.*
+- **Dentro do menu ⋯**, o grupo **Ajuda** tem **«? Como escrever ao adicionar»**, que abre a explicação do interpretador com exemplos separados para atividades e para hábitos, e a lista do que ele reconhece (datas, horas, `#tag`, `!prioridade`).
+- Chaves: `hintDailies*`, `hintTasks*`, `helpQuickAdd*` — traduzidas nos 9 idiomas. Um popover fecha o outro; **Esc** e o clique fora fecham todos (`setupHints` em `app.js`).
+
+### Mais espaço para o que interessa
+
+- **Título e campo de adicionar na mesma linha**: `.column-topline` junta `Hábitos (3) ?` e o campo — poupa uma linha inteira por coluna.
+- **Título discreto**: 20px → **13px**, maiúsculas, com a **cor do tipo** (amarelo nos hábitos, azul nas atividades) — a coluna identifica-se pela cor, não pelo tamanho da letra.
+- **Botões + / ☀ dos dias só no hover** da respetiva coluna: o cabeçalho do calendário perdeu uma linha inteira e passou de ~90px para **60px** de altura, que viraram grelha útil.
+- Resultado no mesmo ecrã: **13 atividades e 3 hábitos** visíveis sem rolar, e ~15 horas de grelha.
 
 ### Criação rápida com linguagem natural
 

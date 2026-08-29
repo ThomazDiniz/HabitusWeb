@@ -7,7 +7,7 @@ function editableTask(task) {
 }
 
 const RenderManager = {
-    todoDateFilter: 'all', // all | today | no_date | future
+    todoDateFilter: 'all', // all | today | overdue | no_date | future
 
     /** Cartoes com a lista de subtarefas aberta (por defeito ficam colapsadas) */
     expandedSubtasks: new Set(),
@@ -36,9 +36,18 @@ const RenderManager = {
         });
     },
 
+    /** Quantas atividades por fazer ja passaram do prazo */
+    overdueCount() {
+        const today = Utils.dateToYMD(new Date());
+        return DataManager.getTasksByType('todo').filter(
+            (task) => task.status !== 'done' && task.due_date && task.due_date < today
+        ).length;
+    },
+
     syncTasksDateFilterUI() {
         const allBtn = document.getElementById('tasks-date-filter-all');
         const todayBtn = document.getElementById('tasks-date-filter-today');
+        const overdueBtn = document.getElementById('tasks-date-filter-overdue');
         const noDateBtn = document.getElementById('tasks-date-filter-no-date');
         const futureBtn = document.getElementById('tasks-date-filter-future');
         if (!allBtn || !todayBtn || !noDateBtn || !futureBtn) return;
@@ -48,8 +57,17 @@ const RenderManager = {
         noDateBtn.textContent = t('tasksDateFilterNoDate');
         futureBtn.textContent = t('tasksDateFilterFuture');
 
-        [allBtn, todayBtn, noDateBtn, futureBtn].forEach((b) => b.classList.remove('is-active'));
+        const overdue = this.overdueCount();
+        if (overdueBtn) {
+            overdueBtn.textContent = `${t('tasksDateFilterOverdue')} (${overdue})`;
+            overdueBtn.style.display = overdue > 0 ? '' : 'none';
+        }
+
+        [allBtn, todayBtn, overdueBtn, noDateBtn, futureBtn].forEach(
+            (b) => b && b.classList.remove('is-active')
+        );
         if (this.todoDateFilter === 'today') todayBtn.classList.add('is-active');
+        else if (this.todoDateFilter === 'overdue' && overdueBtn) overdueBtn.classList.add('is-active');
         else if (this.todoDateFilter === 'no_date') noDateBtn.classList.add('is-active');
         else if (this.todoDateFilter === 'future') futureBtn.classList.add('is-active');
         else allBtn.classList.add('is-active');
@@ -63,6 +81,7 @@ const RenderManager = {
             const d = task && task.due_date ? String(task.due_date) : '';
             if (!d) return f === 'no_date';
             if (f === 'future') return d > today;
+            if (f === 'overdue') return d < today && task.status !== 'done';
             if (f === 'today') return d <= today; // inclui atrasadas + hoje
             return true;
         });

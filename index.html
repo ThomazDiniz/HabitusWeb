@@ -42,6 +42,7 @@
                         <div class="tasks-date-filter-row" id="tasks-date-filter-row">
                             <button type="button" class="tasks-date-filter-btn is-active" data-filter="all" id="tasks-date-filter-all"></button>
                             <button type="button" class="tasks-date-filter-btn" data-filter="today" id="tasks-date-filter-today"></button>
+                            <button type="button" class="tasks-date-filter-btn is-overdue" data-filter="overdue" id="tasks-date-filter-overdue"></button>
                             <button type="button" class="tasks-date-filter-btn" data-filter="no_date" id="tasks-date-filter-no-date"></button>
                             <button type="button" class="tasks-date-filter-btn" data-filter="future" id="tasks-date-filter-future"></button>
                         </div>
@@ -76,6 +77,16 @@
                             <option value="fr">Français</option>
                         </select>
                     </div>
+                    <div class="header-menu-group">
+                        <span class="header-menu-label" data-i18n="helpLabel">Ajuda</span>
+                        <button type="button" class="header-menu-choice help-toggle" id="help-quickadd-btn" aria-expanded="false" aria-controls="help-quickadd"></button>
+                        <div class="help-block" id="help-quickadd" hidden>
+                            <p class="help-intro" data-i18n="helpQuickAddIntro"></p>
+                            <pre class="help-example" data-i18n="helpQuickAddTasks"></pre>
+                            <pre class="help-example" data-i18n="helpQuickAddDailies"></pre>
+                            <pre class="help-tokens" data-i18n="helpQuickAddTokens"></pre>
+                        </div>
+                    </div>
                     <div class="header-menu-group header-menu-actions">
                         <button type="button" class="reminders-toggle-btn" id="reminders-toggle-btn" aria-pressed="false">🔕</button>
                         <button class="export-btn" id="export-btn" title="Exportar">📋</button>
@@ -93,13 +104,19 @@
         <div class="tasks-container main-view-scroll-anchor" id="main-lists-view">
             <!-- Dailies Column -->
             <div class="tasks-column" id="mobile-panel-dailies">
-                <div class="column-header">
-                    <h2 id="dailies-title">Dailies <span class="count" id="dailies-count">(0)</span></h2>
-                    <div class="column-header-right"></div>
+                <div class="column-topline">
+                    <div class="column-header">
+                        <h2 id="dailies-title">Dailies <span class="count" id="dailies-count">(0)</span></h2>
+                        <button type="button" class="hint-btn" id="dailies-hint-btn" aria-expanded="false" aria-controls="dailies-hint">?</button>
+                    </div>
+                    <div class="add-input-row">
+                        <input type="text" class="add-input" id="add-daily-input" data-i18n-placeholder="addDaily" placeholder="Adicionar hábito">
+                        <button class="add-btn" id="add-daily-btn">+</button>
+                    </div>
                 </div>
-                <div class="add-input-row">
-                    <input type="text" class="add-input" id="add-daily-input" data-i18n-placeholder="addDaily" placeholder="Adicionar Diária">
-                    <button class="add-btn" id="add-daily-btn">+</button>
+                <div class="hint-popover" id="dailies-hint" hidden>
+                    <strong class="hint-title" data-i18n="hintDailiesTitle"></strong>
+                    <p class="hint-body" data-i18n="hintDailiesBody"></p>
                 </div>
                 <div class="tasks-list" id="dailies-list"></div>
                 <div class="completed-section" id="dailies-completed-section" style="display: none;">
@@ -112,13 +129,19 @@
 
             <!-- Tasks Column -->
             <div class="tasks-column" id="mobile-panel-tasks">
-                <div class="column-header">
-                    <h2 id="tasks-title">Tasks <span class="count" id="tasks-count">(0)</span></h2>
-                    <div class="column-header-right"></div>
+                <div class="column-topline">
+                    <div class="column-header">
+                        <h2 id="tasks-title">Tasks <span class="count" id="tasks-count">(0)</span></h2>
+                        <button type="button" class="hint-btn" id="tasks-hint-btn" aria-expanded="false" aria-controls="tasks-hint">?</button>
+                    </div>
+                    <div class="add-input-row">
+                        <input type="text" class="add-input" id="add-task-input" data-i18n-placeholder="addTask" placeholder="Adicionar atividade">
+                        <button class="add-btn" id="add-task-btn">+</button>
+                    </div>
                 </div>
-                <div class="add-input-row">
-                    <input type="text" class="add-input" id="add-task-input" data-i18n-placeholder="addTask" placeholder="Adicionar Tarefa">
-                    <button class="add-btn" id="add-task-btn">+</button>
+                <div class="hint-popover" id="tasks-hint" hidden>
+                    <strong class="hint-title" data-i18n="hintTasksTitle"></strong>
+                    <p class="hint-body" data-i18n="hintTasksBody"></p>
                 </div>
                 <div class="tasks-list" id="tasks-list"></div>
                 <div class="completed-section" id="tasks-completed-section" style="display: none;">

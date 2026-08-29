@@ -720,13 +720,6 @@ body {
     min-width: 0;
 }
 
-.tags-count {
-    font-size: 11px;
-    color: var(--text-secondary);
-    padding: 2px 6px;
-    transition: all 0.2s ease;
-}
-
 .tags-count:hover {
     color: var(--blue-primary);
     opacity: 0.8;
@@ -777,28 +770,11 @@ body {
     text-decoration: underline;
 }
 
-.task-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    margin-top: 8px;
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
 .task-tags-inline {
     display: inline-flex;
     flex-wrap: wrap;
     gap: 4px;
     align-items: center;
-}
-
-.task-status-badge {
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
 }
 
 .task-status-badge.pending {
@@ -896,14 +872,6 @@ body {
 
 .inline-priority-select,
 .inline-due-date-input,
-.inline-tags-input {
-    font-family: inherit;
-}
-
-.inline-tags-input {
-    width: 100%;
-}
-
 .task-tags {
     display: flex;
     flex-wrap: wrap;
@@ -1019,12 +987,6 @@ body {
 }
 
 /* Daily specific */
-.daily-streak {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
 /* Pasted images on task cards (Ctrl+V) */
 .task-subtasks-wrap {
     margin-top: 2px;
@@ -1129,12 +1091,6 @@ body {
     margin-bottom: 8px;
 }
 
-.add-subtask-input {
-    display: flex;
-    gap: 4px;
-    margin-top: 8px;
-}
-
 .add-subtask-input input {
     flex: 1;
     background: rgba(0, 0, 0, 0.2);
@@ -1155,47 +1111,6 @@ body {
     margin-top: 24px;
     padding-top: 24px;
     border-top: 1px solid var(--border-color);
-}
-
-.completed-header, .scheduled-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.toggle-completed-btn, .toggle-scheduled-btn {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 6px 12px;
-    color: var(--text-secondary);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.toggle-completed-btn:hover, .toggle-scheduled-btn:hover {
-    background: var(--blue-hover);
-    border-color: var(--blue-primary);
-    color: var(--text-primary);
-}
-
-.delete-completed-btn {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 6px 12px;
-    color: var(--text-secondary);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.delete-completed-btn:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: var(--error);
-    color: var(--error);
 }
 
 /* Footer */
@@ -1528,15 +1443,6 @@ body {
 }
 
 /* All Tasks Complete Message */
-.all-tasks-complete {
-    text-align: center;
-    padding: 60px 24px;
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    margin: 24px 0;
-}
-
 .all-tasks-complete h2 {
     font-size: 32px;
     margin-bottom: 12px;
@@ -1719,13 +1625,6 @@ body {
     flex-wrap: wrap;
     align-items: baseline;
     gap: 12px 20px;
-}
-
-.week-calendar-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
 }
 
 .week-calendar-range {
@@ -2638,7 +2537,8 @@ body .task-info-row {
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
-    min-width: 232px;
+    min-width: 288px;
+    max-width: min(340px, calc(100vw - 24px));
     padding: 12px;
     display: flex;
     flex-direction: column;
@@ -2947,13 +2847,24 @@ body .task-info-row {
         min-width: 0;
     }
 
-    /* cabecalhos dos dias fixos ao percorrer as horas */
+    /* cabecalhos dos dias e faixa "sem hora" fixos ao percorrer as horas */
     body.workspace .week-cal-day-headers,
     body.workspace .week-cal-corner {
         position: sticky;
         top: 0;
         z-index: 6;
         background: #12141d;
+    }
+
+    body.workspace .week-cal-untimed,
+    body.workspace .week-cal-untimed-spacer {
+        position: sticky;
+        top: var(--week-cal-header-h, 44px);
+        z-index: 5;
+        background: #171a26;
+        max-height: 22vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
     }
 
     body.workspace .week-cal-day-header {
@@ -3153,7 +3064,12 @@ body.focus-mode .app-bar .header-search {
 .header-menu-panel .tasks-date-filter-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: 4px;
+}
+
+.header-menu-panel .tasks-date-filter-btn {
+    padding: 4px 8px;
+    font-size: 11px;
 }
 
 /* data + relogio na barra do calendario */
@@ -3208,4 +3124,214 @@ body.focus-mode .app-bar .header-search {
 #dailies-completed-list .task-card,
 #tasks-completed-list .task-card {
     filter: saturate(0.5);
+}
+
+/* carga do dia no cabecalho do calendario */
+.week-cal-day-load {
+    font-size: 0.625rem;
+    color: var(--text-secondary);
+    opacity: 0.85;
+    letter-spacing: 0.01em;
+}
+
+/* filtro de atrasadas em destaque */
+.tasks-date-filter-btn.is-overdue {
+    color: var(--error);
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+.tasks-date-filter-btn.is-overdue.is-active {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: var(--error);
+    color: var(--error);
+}
+
+/* ==========================================================================
+   Titulo + campo de adicionar na MESMA linha (poupa uma linha por coluna)
+   e botoes "?" de ajuda
+   ========================================================================== */
+.column-topline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.column-topline .column-header {
+    margin-bottom: 0;
+    flex: 0 0 auto;
+    gap: 5px;
+}
+
+.column-topline .add-input-row {
+    margin-bottom: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* titulo mais discreto: o campo ao lado ja diz o que se esta a adicionar */
+.column-header h2 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.column-header .count {
+    font-weight: 500;
+    opacity: 0.7;
+}
+
+#dailies-title {
+    color: rgba(251, 191, 36, 0.85);
+}
+
+#tasks-title {
+    color: rgba(124, 158, 255, 0.85);
+}
+
+.hint-btn,
+.help-toggle {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    border-radius: 50%;
+    width: 17px;
+    height: 17px;
+    padding: 0;
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+    flex: 0 0 auto;
+    transition: all 0.15s ease;
+}
+
+.help-toggle {
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 12px;
+    text-align: left;
+}
+
+.hint-btn:hover,
+.hint-btn[aria-expanded="true"],
+.help-toggle:hover,
+.help-toggle[aria-expanded="true"] {
+    border-color: var(--blue-primary);
+    color: var(--blue-primary);
+}
+
+.hint-popover {
+    position: relative;
+    margin: -4px 0 8px;
+    padding: 10px 12px;
+    background: #1b1f2c;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+    z-index: 20;
+}
+
+.hint-popover[hidden] {
+    display: none;
+}
+
+.hint-title {
+    display: block;
+    font-size: 12.5px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.hint-body {
+    margin: 0;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    white-space: pre-line;
+}
+
+#dailies-hint {
+    border-left: 3px solid rgba(251, 191, 36, 0.8);
+}
+
+#tasks-hint {
+    border-left: 3px solid rgba(124, 158, 255, 0.8);
+}
+
+/* bloco de ajuda dentro do menu ⋯ */
+.help-block {
+    margin-top: 6px;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    max-height: 46vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.help-block[hidden] {
+    display: none;
+}
+
+.help-intro {
+    margin: 0 0 8px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.help-example,
+.help-tokens {
+    margin: 0 0 8px;
+    font-family: inherit;
+    font-size: 11px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.help-example {
+    color: var(--text-primary);
+    opacity: 0.92;
+}
+
+.help-tokens {
+    margin-bottom: 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Botoes + / ☀ dos dias so no hover da coluna: libertam uma linha inteira do
+   cabecalho do calendario, que passa a ser grelha util. */
+@media (min-width: 1024px) {
+    body.workspace .week-cal-header-actions {
+        position: absolute;
+        left: 50%;
+        bottom: 2px;
+        transform: translateX(-50%);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.12s ease;
+        background: #12141d;
+        border-radius: 6px;
+        padding: 1px 3px;
+    }
+
+    body.workspace .week-cal-day-header {
+        position: relative;
+        padding-bottom: 4px;
+    }
+
+    body.workspace .week-cal-day-header:hover .week-cal-header-actions,
+    body.workspace .week-cal-day-headers:focus-within .week-cal-header-actions {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }

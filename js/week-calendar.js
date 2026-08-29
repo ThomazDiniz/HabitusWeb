@@ -4,9 +4,20 @@ const WeekCalendarManager = {
     weekStart: null,
     /** When true, the grid shows only today's column (toggle with week view). */
     todayOnlyView: false,
-    /** Timeline and DnD scale: local 05:00 inclusive → 24:00 (meia-noite) exclusive; último snap de largar ≈ 23:45. */
-    START_HOUR: 5,
-    END_HOUR: 24,
+    /**
+     * Faixa horaria VISIVEL da grelha. Ja nao e fixa em 05:00–24:00: a cada render
+     * ajusta-se ao que existe na semana (ver computeVisibleHourRange), partindo de
+     * 07:00–23:00 e alargando so quando ha itens (ou o "agora") fora disso.
+     * Resultado: menos horas mortas e mais altura por hora util.
+     */
+    START_HOUR: 8,
+    END_HOUR: 20,
+    /** A grelha nunca comeca depois desta hora nem acaba antes desta outra. */
+    LATEST_START_HOUR: 9,
+    EARLIEST_END_HOUR: 19,
+    /** Margem de uma hora antes do primeiro item e depois do ultimo. */
+    HOUR_PADDING: 1,
+    MIN_HOURS_SPAN: 8,
     /** Snap ao largar / pré-visualização na grelha de tempo (arrastar). */
     SNAP_MINUTES: 30,
     /** Task em arrasto (listas ou calendário); `getData` em dragover nem sempre existe no Chrome. */
@@ -307,6 +318,91 @@ const WeekCalendarManager = {
         return { topPct, heightPct };
     },
 
+    /**
+     * Calcula a faixa de horas a mostrar: 07:00–23:00 por defeito, alargada para
+     * caber o item mais cedo, o mais tarde (inicio + duracao) e a hora atual.
+     */
+    computeVisibleHourRange(dates) {
+        let firstItem = null;
+        let lastItem = null;
+
+        dates.forEach((d) => {
+            const ymd = Utils.dateToYMD(d);
+            this.itemsForDayCached(ymd).forEach((task) => {
+                if (task.status === 'done' && task.task_type === 'daily') return;
+                const startM = Utils.dueTimeToMinutes(task.due_time);
+                if (startM == null) return;
+                const endM = startM + Utils.getTaskDurationMinutes(task);
+                const sh = Math.floor(startM / 60);
+                const eh = Math.ceil(endM / 60);
+                firstItem = firstItem == null ? sh : Math.min(firstItem, sh);
+                lastItem = lastItem == null ? eh : Math.max(lastItem, eh);
+            });
+        });
+
+        // Sem itens: fica a janela util do dia. Com itens: uma hora de folga de cada lado.
+        let earliest =
+            firstItem == null
+                ? this.LATEST_START_HOUR
+                : Math.min(this.LATEST_START_HOUR, firstItem - this.HOUR_PADDING);
+        let latest =
+            lastItem == null
+                ? this.EARLIEST_END_HOUR
+                : Math.max(this.EARLIEST_END_HOUR, lastItem + this.HOUR_PADDING);
+
+        // a linha do "agora" tem de caber na grelha
+        if (this.isTodayInVisibleGrid()) {
+            const nowH = new Date().getHours();
+            earliest = Math.min(earliest, nowH);
+            latest = Math.max(latest, nowH + 1);
+        }
+
+        earliest = Math.max(0, earliest);
+        latest = Math.min(24, latest);
+        if (latest - earliest < this.MIN_HOURS_SPAN) {
+            latest = Math.min(24, earliest + this.MIN_HOURS_SPAN);
+            earliest = Math.max(0, latest - this.MIN_HOURS_SPAN);
+        }
+
+        this.START_HOUR = earliest;
+        this.END_HOUR = latest;
+    },
+
+    /** Minutos agendados num dia (itens com hora), para a carga do dia */
+    dayLoadMinutes(ymd) {
+        let total = 0;
+        this.itemsForDayCached(ymd).forEach((task) => {
+            if (task.status === 'done' && task.task_type === 'daily') return;
+            if (!Utils.dueTimeToMinutes(task.due_time)) return;
+            total += Utils.getTaskDurationMinutes(task);
+        });
+        return total;
+    },
+
+    formatLoad(minutes) {
+        if (!minutes) return '';
+        const h = Math.floor(minutes / 60);
+        const m = minutes % 60;
+        if (h && m) return `${h}h${String(m).padStart(2, '0')}`;
+        if (h) return `${h}h`;
+        return `${m}min`;
+    },
+
+    /**
+     * Cache dos itens por dia, valido dentro de um render. Sem ele, cada dia era
+     * recalculado 4x (faixa horaria, carga do dia, itens sem hora, itens com hora)
+     * — com 200 tarefas isso levava o render de ~12ms para ~125ms.
+     */
+    _itemsCache: null,
+
+    itemsForDayCached(ymd) {
+        if (!this._itemsCache) return this.itemsForDay(ymd);
+        if (!(ymd in this._itemsCache)) {
+            this._itemsCache[ymd] = this.itemsForDay(ymd);
+        }
+        return this._itemsCache[ymd];
+    },
+
     itemsForDay(ymd) {
         const items = [];
         const all = DataManager.appData.tasks;
@@ -329,7 +425,7 @@ const WeekCalendarManager = {
         const seen = new Set();
         dates.forEach((d) => {
             const ymd = Utils.dateToYMD(d);
-            this.itemsForDay(ymd).forEach((task) => {
+            this.itemsForDayCached(ymd).forEach((task) => {
                 if (task.task_type !== 'daily' || task.status !== 'done') return;
                 if (seen.has(task.id)) return;
                 seen.add(task.id);
@@ -345,7 +441,7 @@ const WeekCalendarManager = {
         const seen = new Set();
         dates.forEach((d) => {
             const ymd = Utils.dateToYMD(d);
-            this.itemsForDay(ymd).forEach((task) => {
+            this.itemsForDayCached(ymd).forEach((task) => {
                 if (task.task_type !== 'todo' || task.status !== 'done') return;
                 if (seen.has(task.id)) return;
                 seen.add(task.id);
@@ -771,6 +867,8 @@ const WeekCalendarManager = {
         if (!root) return;
 
         const dates = this.getVisibleDates();
+        this._itemsCache = {};
+        this.computeVisibleHourRange(dates);
         const lang = typeof currentLanguage !== 'undefined' ? currentLanguage.replace('_', '-') : 'pt-BR';
         const rangeSpan = document.getElementById('week-calendar-range');
         if (rangeSpan) {
@@ -806,6 +904,12 @@ const WeekCalendarManager = {
                 <span class="week-cal-dow">${weekday}</span>
                 <span class="week-cal-date-full">${fullDate}</span>
                 ${isToday ? `<span class="week-cal-today-pill">${this.escapeHtml(t('weekCalendarToday'))}</span>` : ''}
+                ${(() => {
+                    const load = this.formatLoad(this.dayLoadMinutes(ymd));
+                    return load
+                        ? `<span class="week-cal-day-load" title="${this.escapeAttr(t('scheduledTimeLabel'))}">${load}</span>`
+                        : '';
+                })()}
                 <div class="week-cal-header-actions">
                     <button type="button" class="week-cal-mini-btn week-cal-add-task-btn" data-date="${ymd}" title="${this.escapeAttr(t('weekCalendarAddTask'))}">+</button>
                     <button type="button" class="week-cal-mini-btn week-cal-add-daily-btn" data-dow="${dow}" title="${this.escapeAttr(t('weekCalendarAddDaily'))}">☀</button>
@@ -819,7 +923,7 @@ const WeekCalendarManager = {
         dates.forEach((d, i) => {
             const ymd = Utils.dateToYMD(d);
             const isToday = Utils.isToday(ymd);
-            const items = this.itemsForDay(ymd);
+            const items = this.itemsForDayCached(ymd);
             const timed = [];
             const untimed = [];
             items.forEach((task) => {
@@ -859,7 +963,7 @@ const WeekCalendarManager = {
         dates.forEach((d, i) => {
             const ymd = Utils.dateToYMD(d);
             const isToday = Utils.isToday(ymd);
-            const items = this.itemsForDay(ymd);
+            const items = this.itemsForDayCached(ymd);
             const timed = [];
             items.forEach((task) => {
                 if (task.status === 'done' && task.task_type === 'daily') return;
@@ -887,10 +991,33 @@ const WeekCalendarManager = {
 
         root.innerHTML = html;
 
+        this._itemsCache = null;
+
         // Um unico conjunto de listeners, ligado a primeira vez (ver bindRootDelegation)
         this.bindRootDelegation(root);
+        this.syncStickyOffsets(root);
         this.updateNowClockDisplay();
         this.updateNowLine();
+    },
+
+    /**
+     * A faixa de itens sem hora fica fixa por baixo dos cabecalhos ao percorrer as
+     * horas — antes desaparecia no scroll e perdiam-se os itens do dia sem horario.
+     * O CSS precisa de saber a altura dos cabecalhos, que depende do idioma.
+     */
+    syncStickyOffsets(root) {
+        const apply = () => {
+            const layout = root.querySelector('.week-cal-layout');
+            const headers = root.querySelector('.week-cal-day-headers');
+            if (!layout || !headers) return;
+            // offsetHeight depois do layout estar resolvido (o valor logo a seguir ao
+            // innerHTML fica desatualizado e a faixa grudava demasiado abaixo)
+            const h = headers.offsetHeight;
+            if (h > 0) layout.style.setProperty('--week-cal-header-h', `${h}px`);
+        };
+        // Só no frame seguinte: ler offsetHeight logo a seguir ao innerHTML forcava
+        // um reflow sincrono da pagina toda (~40ms com 200 tarefas).
+        requestAnimationFrame(apply);
     },
 
     escapeHtml(s) {

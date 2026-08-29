@@ -160,6 +160,10 @@ const ModalManager = {
     
     // Save task from modal
     saveTaskFromModal() {
+        // uma subtarefa a meio de ser escrita nao pode perder-se ao clicar em Guardar
+        const pendingSubtask = document.querySelector('#subtasks-list .subtask-title-input');
+        if (pendingSubtask) pendingSubtask.blur();
+
         const titleInput = document.getElementById('task-title-input');
         const statusSelect = document.getElementById('task-status-select');
         const prioritySelect = document.getElementById('task-priority-select');
@@ -300,14 +304,23 @@ const ModalManager = {
             input.style.color = 'var(--text-primary)';
             input.style.fontSize = '13px';
             
+            // A task e guardada no closure: se o modal fechar (Guardar/Esc) antes do
+            // blur, `currentEditingTask` ja e null e a subtarefa perdia-se com erro.
+            const owner = this.currentEditingTask;
+            let saved = false;
             const handleBlur = () => {
+                if (saved) return;
+                saved = true;
                 const title = input.value.trim();
-                if (title) {
-                    SubtasksManager.addSubtask(this.currentEditingTask.id, title);
-                    this.renderSubtasksInModal(this.currentEditingTask);
-                } else {
-                    input.remove();
+                if (title && owner) {
+                    SubtasksManager.addSubtask(owner.id, title);
+                    if (this.currentEditingTask && this.currentEditingTask.id === owner.id) {
+                        this.renderSubtasksInModal(owner);
+                    } else if (typeof RenderManager !== 'undefined') {
+                        RenderManager.renderAll();
+                    }
                 }
+                input.remove();
             };
             
             input.addEventListener('blur', handleBlur);
