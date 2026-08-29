@@ -69,7 +69,28 @@ function scrollFocusCalendarToNow() {
 
 function setupFocusMode() {
     const FOCUS_STORAGE_KEY = 'habitus-focus-mode';
+    const LAYOUT_STORAGE_KEY = 'habitus-focus-layout'; // 'lists-top' | 'calendar-top'
     const btn = document.getElementById('focus-toggle-btn');
+    const layoutBtn = document.getElementById('focus-layout-btn');
+
+    const applyFocusLayout = (mode) => {
+        const calendarTop = mode === 'calendar-top';
+        document.body.classList.toggle('focus-calendar-top', calendarTop);
+        if (layoutBtn) {
+            layoutBtn.title = calendarTop
+                ? 'Trocar ordem: listas em cima'
+                : 'Trocar ordem: calendário em cima';
+            layoutBtn.setAttribute('aria-pressed', calendarTop ? 'true' : 'false');
+        }
+        try {
+            localStorage.setItem(LAYOUT_STORAGE_KEY, calendarTop ? 'calendar-top' : 'lists-top');
+        } catch (e) {
+            /* ignore */
+        }
+        if (document.body.classList.contains('focus-mode')) {
+            requestAnimationFrame(() => requestAnimationFrame(scrollFocusCalendarToNow));
+        }
+    };
 
     const applyFocusMode = (on) => {
         document.body.classList.toggle('focus-mode', on);
@@ -111,6 +132,24 @@ function setupFocusMode() {
         e.preventDefault();
         applyFocusMode(!document.body.classList.contains('focus-mode'));
     });
+
+    if (layoutBtn) {
+        layoutBtn.addEventListener('click', () => {
+            applyFocusLayout(
+                document.body.classList.contains('focus-calendar-top') ? 'lists-top' : 'calendar-top'
+            );
+        });
+    }
+
+    let storedLayout = 'lists-top';
+    try {
+        if (localStorage.getItem(LAYOUT_STORAGE_KEY) === 'calendar-top') {
+            storedLayout = 'calendar-top';
+        }
+    } catch (e) {
+        /* ignore */
+    }
+    applyFocusLayout(storedLayout);
 
     try {
         if (localStorage.getItem(FOCUS_STORAGE_KEY) === '1') {

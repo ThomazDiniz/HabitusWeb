@@ -97,7 +97,8 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - **Ecrãs > 640px — ecrã dividido**: a página deixa de ter scroll próprio (`100dvh`) e divide-se em duas metades:
   - **Metade de cima**: **Hábitos** e **Atividades** lado a lado; **cada coluna tem scroll vertical independente**.
   - **Metade de baixo**: o **calendário semanal** reduzido à **grelha de horas** (semana seg–dom, `--week-cal-hour-px: 46px`), com scroll vertical próprio e cabeçalhos dos dias **fixos** (sticky) ao topo. Ficam ocultos a barra de navegação (‹ Hoje ›), a faixa de itens sem hora, os painéis de concluídas e os botões **+** / **☀** nos dias.
-  - Ao **entrar** no modo foco, a grelha centra-se automaticamente na **hora atual** (`scrollFocusCalendarToNow` em `app.js`, usando `WeekCalendarManager.nowLineTopPct`).
+  - **Ordem configurável**: o botão **⇅** (`#focus-layout-btn`, ao lado do **F**, só existe dentro do modo foco em ecrãs > 640px) troca as metades — **listas em cima** (predefinição) ou **calendário em cima**. A escolha guarda-se em `localStorage` na chave `habitus-focus-layout` (`lists-top` | `calendar-top`) e traduz-se na classe `focus-calendar-top` no `body` (a troca é feita com `order` no flex do `.container`).
+  - Ao **entrar** no modo foco — e sempre que a ordem muda — a grelha centra-se automaticamente na **hora atual** (`scrollFocusCalendarToNow` em `app.js`, usando `WeekCalendarManager.nowLineTopPct`).
 - **Ecrãs ≤640px**: o modo foco mantém o comportamento anterior — só as listas; o calendário continua acessível pelo separador **Hoje** das abas móveis.
 
 ### Teclado (listas)

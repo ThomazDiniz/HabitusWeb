@@ -2634,6 +2634,40 @@ body {
     border-color: var(--blue-primary);
 }
 
+/* Botao de trocar a ordem das metades: so existe dentro do modo foco */
+.focus-layout-btn {
+    display: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.focus-layout-btn:hover {
+    background: var(--blue-hover);
+    border-color: var(--blue-primary);
+    color: var(--text-primary);
+}
+
+@media (min-width: 641px) {
+    body.focus-mode .focus-layout-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        right: 60px;
+        bottom: 16px;
+        z-index: 1200;
+        pointer-events: auto;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    }
+}
+
 body.focus-mode .focus-toggle-btn {
     position: fixed;
     right: 16px;
@@ -2795,11 +2829,12 @@ body.focus-mode .add-input {
         overflow: hidden;
     }
 
-    /* Metade de cima: as duas listas */
+    /* Metade de cima: as duas listas (ordem invertivel — ver .focus-calendar-top) */
     body.focus-mode .tasks-container {
         flex: 1 1 50%;
         min-height: 0;
         overflow: hidden;
+        order: 1;
     }
 
     body.focus-mode .tasks-column {
@@ -2825,6 +2860,20 @@ body.focus-mode .add-input {
         margin-top: 0;
         padding-top: 6px;
         border-top: 1px solid var(--border-color);
+        order: 2;
+    }
+
+    /* Ordem invertida: calendario em cima, listas em baixo */
+    body.focus-mode.focus-calendar-top .week-calendar-section {
+        order: 1;
+        padding-top: 0;
+        padding-bottom: 6px;
+        border-top: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    body.focus-mode.focus-calendar-top .tasks-container {
+        order: 2;
     }
 
     /* So a grelha: sem barra de navegacao, sem faixa de itens sem hora,
