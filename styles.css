@@ -2681,6 +2681,13 @@ body.focus-mode .footer {
     display: none;
 }
 
+/* Modo foco: esconder os controlos de concluídas (mostrar / deletar concluídas) */
+body.focus-mode .completed-header,
+body.focus-mode .toggle-completed-btn,
+body.focus-mode .delete-completed-btn {
+    display: none;
+}
+
 body.focus-mode .task-info-row .add-priority,
 body.focus-mode .task-info-row .add-due-date,
 body.focus-mode .task-info-row .add-tag,
