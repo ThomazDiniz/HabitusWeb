@@ -65,7 +65,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - **Marcadores de campos vazios** (`+ Prioridade`, `+ Data`, `+ Tags`, `+ Dias`, seletor de hora) têm a classe `is-hint` e seguem a mesma regra. A `.task-info-row` tem `min-height` para o hover não empurrar os cartões seguintes.
 - **Subtarefas colapsadas**: o cartão mostra um contador **☰ 2/3** ao lado do título (`.task-subtasks-badge`); a lista só entra no DOM quando é expandida (`RenderManager.expandedSubtasks`). Adicionar uma subtarefa abre automaticamente a lista desse cartão.
 - **O stepper de duração saiu das listas** — a duração define-se no **calendário** (arrastar a aresta do bloco) ou no **modal** (campo *Tempo no calendário*).
-- **Densidade** em `appData.settings.density`: **`compact`** (predefinição) ou `comfortable`, escolhida no menu **⋯** do header. Em compacta, e em ecrãs > 640px, a lista de tarefas ganha **scroll próprio** (`max-height: 58vh`) — o calendário fica logo abaixo em vez de exigir percorrer a página inteira.
+- **Densidade** em `appData.settings.density`: **`compact`** (predefinição) ou `comfortable`, escolhida no menu **⋯**. A densidade compacta aplica-se **também no modo foco** — o cartão é o mesmo nos dois.
 - **Cartão numa linha** (compacta, > 640px): `.task-content` é um flex row — título à esquerda, badges à direita, com `padding-right` reservado para a barra de ações não os tapar. **Definir para hoje** passou a ser o ícone **📌** (tooltip mantido) para encurtar a barra.
 - Medido: cartão de **105 px → 38 px**, **6 → 15** cartões visíveis no ecrã, e a página de **7.307 px → ~3.000 px**.
 
@@ -120,16 +120,38 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - **Ecrãs estreitos (≤640px)**: barra de **três separadores** (Hábitos / Atividades / **Hoje** — o terceiro é o calendário focado no dia atual) e **gesto de deslizar** horizontalmente (swipe) para mudar de vista; o separador ativo e o índice são memorizados em `sessionStorage` (`habitus-mobile-tab`). O botão de alternar listas/calendário no header fica oculto neste modo (redundante).
 - `scroll-margin-top` nas âncoras para compensar o header fixo
 
-### Modo foco
+### Workspace: um único layout (≥ 1024px)
 
-- Botão **F** no header (`#focus-toggle-btn`, passa a canto inferior direito quando ativo) ou a tecla **F** (fora de campos de texto) alternam o modo foco. A preferência fica em `localStorage` na chave `habitus-focus-mode` e é reposta ao abrir a app.
-- **Sempre oculto no modo foco**: cabeçalhos das colunas (títulos, contadores e filtro rápido de datas), filtros de tags, controlos de concluídas (**Mostrar concluídas** e **Deletar concluídas**), estatísticas, rodapé e a maior parte do header (título, relógio, pesquisa global, idioma, lembretes, export/import). Nos cartões escondem-se também os botões de adicionar (prioridade, data, tags, dias), o seletor de hora inline, o stepper de duração, subtarefas e imagens coladas.
-- **Ecrãs > 640px — ecrã dividido**: a página deixa de ter scroll próprio (`100dvh`) e divide-se em duas metades:
-  - **Metade de cima**: **Hábitos** e **Atividades** lado a lado; **cada coluna tem scroll vertical independente**.
-  - **Metade de baixo**: o **calendário semanal** reduzido à **grelha de horas** (semana seg–dom, `--week-cal-hour-px: 46px`), com scroll vertical próprio e cabeçalhos dos dias **fixos** (sticky) ao topo. Ficam ocultos a barra de navegação (‹ Hoje ›), a faixa de itens sem hora, os painéis de concluídas e os botões **+** / **☀** nos dias.
-  - **Ordem configurável**: o botão **⇅** (`#focus-layout-btn`, ao lado do **F**, só existe dentro do modo foco em ecrãs > 640px) troca as metades — **listas em cima** (predefinição) ou **calendário em cima**. A escolha guarda-se em `localStorage` na chave `habitus-focus-layout` (`lists-top` | `calendar-top`) e traduz-se na classe `focus-calendar-top` no `body` (a troca é feita com `order` no flex do `.container`).
-  - Ao **entrar** no modo foco — e sempre que a ordem muda — a grelha centra-se automaticamente na **hora atual** (`scrollFocusCalendarToNow` em `app.js`, usando `WeekCalendarManager.nowLineTopPct`).
-- **Ecrãs ≤640px**: o modo foco mantém o comportamento anterior — só as listas; o calendário continua acessível pelo separador **Hoje** das abas móveis.
+Listas e calendário estão **sempre visíveis na mesma tela**. Não há alternância entre "vista de listas" e "vista de calendário", nem um segundo layout para o modo foco.
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ header: Habitus · Hoje/data/hora · pesquisa · F ⇅ ⋯          │
+├──────────────────────┬┬──────────────────────────────────────┤
+│ Hábitos    (scroll)  ││                                      │
+├──────────────────────┤│   Calendário da semana               │
+│ Atividades (scroll)  ││   (altura toda, cabeçalhos fixos)    │
+│                      ││                                      │
+├──────────────────────┤│                                      │
+│ estatísticas (faixa) ││                                      │
+└──────────────────────┴┴──────────────────────────────────────┘
+                    divisor arrastável
+```
+
+- **Sem scroll de página** (`100dvh`): cada lista tem o seu próprio scroll, o calendário também.
+- **Hábitos ocupam só o que precisam** (até 42vh) e as **atividades ficam com o espaço restante**.
+- **Divisor arrastável** entre as duas colunas (`#workspace-divider`): define a proporção entre 24% e 62%, guardada em `localStorage` (`habitus-workspace-split`). Duplo clique repõe 42%; ←/→ ajustam pelo teclado. **Substitui a antiga escolha entre modos** por uma preferência contínua.
+- **⇅ troca os lados** (listas à esquerda ou à direita), guardado em `habitus-workspace-side`.
+- **Estatísticas** deixaram de ser uma secção no fundo da página: são uma **faixa fina** no rodapé da coluna das listas.
+- O botão de **alternar listas/calendário** desapareceu — ambos estão à vista.
+- Abaixo de 1024px mantém-se o layout empilhado; abaixo de 640px continuam as **abas móveis**.
+
+### Modo foco = silêncio (não é outro layout)
+
+- Botão **F** no header (passa a flutuante no canto inferior direito) ou a tecla **F** fora de campos de texto. Guardado em `habitus-focus-mode`.
+- **O layout não muda** — muda o que se esconde: header (título, relógio, pesquisa), cabeçalhos das colunas, filtros de tags, controlos de concluídas, estatísticas e os marcadores de campos por preencher.
+- Os botões flutuantes no canto inferior direito são **⋯**, **⇅** e **F** (o header perde `pointer-events` no foco, por isso o menu tem de sair de lá; o painel abre para cima).
+- Com o cromo escondido, o calendário ganha ~75px de altura e a lista mostra mais 4 cartões.
 
 ### Teclado (listas)
 

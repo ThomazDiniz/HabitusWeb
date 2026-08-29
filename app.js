@@ -42,8 +42,88 @@ function startApp() {
         RemindersManager.init();
     }
 
+    setupWorkspace();
     setupFocusMode();
     setupHeaderMenu();
+}
+
+/**
+ * Workspace: listas e calendario na mesma tela (>= 1024px), com um divisor
+ * arrastavel a definir a proporcao. Substitui a alternancia entre "modos".
+ */
+function setupWorkspace() {
+    const SPLIT_KEY = 'habitus-workspace-split';
+    const MIN_PCT = 24;
+    const MAX_PCT = 62;
+
+    document.body.classList.add('workspace');
+
+    const container = document.querySelector('.container');
+    const divider = document.getElementById('workspace-divider');
+    if (!container || !divider) return;
+
+    const apply = (pct, persist = true) => {
+        const clamped = Math.max(MIN_PCT, Math.min(MAX_PCT, pct));
+        container.style.setProperty('--workspace-split', `${clamped}%`);
+        divider.setAttribute('aria-valuenow', String(Math.round(clamped)));
+        if (persist) {
+            try {
+                localStorage.setItem(SPLIT_KEY, String(clamped));
+            } catch (e) {
+                /* ignore */
+            }
+        }
+        return clamped;
+    };
+
+    let current = 42;
+    try {
+        const saved = parseFloat(localStorage.getItem(SPLIT_KEY));
+        if (!Number.isNaN(saved)) current = saved;
+    } catch (e) {
+        /* ignore */
+    }
+    current = apply(current, false);
+
+    const pctFromX = (clientX) => {
+        const rect = container.getBoundingClientRect();
+        const raw = ((clientX - rect.left) / rect.width) * 100;
+        return document.body.classList.contains('workspace-swapped') ? 100 - raw : raw;
+    };
+
+    divider.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        divider.classList.add('is-dragging');
+        document.body.style.userSelect = 'none';
+
+        const onMove = (ev) => {
+            current = apply(pctFromX(ev.clientX));
+        };
+        const onUp = () => {
+            divider.classList.remove('is-dragging');
+            document.body.style.userSelect = '';
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            if (typeof WeekCalendarManager !== 'undefined') WeekCalendarManager.render();
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    });
+
+    // acessivel pelo teclado
+    divider.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        e.preventDefault();
+        current = apply(current + (e.key === 'ArrowLeft' ? -2 : 2));
+    });
+
+    divider.addEventListener('dblclick', () => {
+        current = apply(42);
+    });
+
+    // ao arrancar, mostrar a hora atual
+    requestAnimationFrame(() => requestAnimationFrame(scrollCalendarToNow));
 }
 
 /** Densidade da visao padrao: 'compact' (predefinicao) ou 'comfortable' */
@@ -106,8 +186,8 @@ function setupHeaderMenu() {
     applyDensity(DataManager.appData.settings.density || 'compact');
 }
 
-// Focus mode: compact view — listas em cima, grelha do calendario em baixo
-function scrollFocusCalendarToNow() {
+/** Centra a grelha do calendario na hora atual */
+function scrollCalendarToNow() {
     const scroller = document.getElementById('week-calendar-root');
     if (!scroller || typeof WeekCalendarManager === 'undefined') return;
     const timeline = scroller.querySelector('.week-cal-timeline');
@@ -131,27 +211,25 @@ function scrollFocusCalendarToNow() {
 
 function setupFocusMode() {
     const FOCUS_STORAGE_KEY = 'habitus-focus-mode';
-    const LAYOUT_STORAGE_KEY = 'habitus-focus-layout'; // 'lists-top' | 'calendar-top'
+    const LAYOUT_STORAGE_KEY = 'habitus-workspace-side'; // 'lists-left' | 'lists-right'
     const btn = document.getElementById('focus-toggle-btn');
     const layoutBtn = document.getElementById('focus-layout-btn');
 
     const applyFocusLayout = (mode) => {
-        const calendarTop = mode === 'calendar-top';
-        document.body.classList.toggle('focus-calendar-top', calendarTop);
+        const swapped = mode === 'lists-right';
+        document.body.classList.toggle('workspace-swapped', swapped);
         if (layoutBtn) {
-            layoutBtn.title = calendarTop
-                ? 'Trocar ordem: listas em cima'
-                : 'Trocar ordem: calendário em cima';
-            layoutBtn.setAttribute('aria-pressed', calendarTop ? 'true' : 'false');
+            layoutBtn.title = swapped
+                ? 'Trocar lados: calendário à direita'
+                : 'Trocar lados: calendário à esquerda';
+            layoutBtn.setAttribute('aria-pressed', swapped ? 'true' : 'false');
         }
         try {
-            localStorage.setItem(LAYOUT_STORAGE_KEY, calendarTop ? 'calendar-top' : 'lists-top');
+            localStorage.setItem(LAYOUT_STORAGE_KEY, swapped ? 'lists-right' : 'lists-left');
         } catch (e) {
             /* ignore */
         }
-        if (document.body.classList.contains('focus-mode')) {
-            requestAnimationFrame(() => requestAnimationFrame(scrollFocusCalendarToNow));
-        }
+        requestAnimationFrame(() => requestAnimationFrame(scrollCalendarToNow));
     };
 
     const applyFocusMode = (on) => {
@@ -167,7 +245,7 @@ function setupFocusMode() {
         }
         if (on) {
             // Depois do layout do modo foco, centrar a grelha na hora atual
-            requestAnimationFrame(() => requestAnimationFrame(scrollFocusCalendarToNow));
+            requestAnimationFrame(() => requestAnimationFrame(scrollCalendarToNow));
         }
     };
 
@@ -198,15 +276,15 @@ function setupFocusMode() {
     if (layoutBtn) {
         layoutBtn.addEventListener('click', () => {
             applyFocusLayout(
-                document.body.classList.contains('focus-calendar-top') ? 'lists-top' : 'calendar-top'
+                document.body.classList.contains('workspace-swapped') ? 'lists-left' : 'lists-right'
             );
         });
     }
 
-    let storedLayout = 'lists-top';
+    let storedLayout = 'lists-left';
     try {
-        if (localStorage.getItem(LAYOUT_STORAGE_KEY) === 'calendar-top') {
-            storedLayout = 'calendar-top';
+        if (localStorage.getItem(LAYOUT_STORAGE_KEY) === 'lists-right') {
+            storedLayout = 'lists-right';
         }
     } catch (e) {
         /* ignore */

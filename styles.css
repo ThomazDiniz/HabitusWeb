@@ -2566,7 +2566,7 @@ body {
     }
 }
 
-/* No modo foco o header perde pointer-events: o menu ⋯ tem de ir para junto
+/* No modo foco o header perde pointer-events: o menu ⋯ vai para junto
    dos botoes flutuantes (F e ⇅), com o painel a abrir para CIMA. */
 body.focus-mode .header-menu {
     position: fixed;
@@ -2620,27 +2620,11 @@ body.focus-mode .header-center {
     display: none;
 }
 
-body.focus-mode .container {
-    width: 100%;
-    padding: 8px 8px 16px;
-}
-
-body.focus-mode .tasks-container {
-    gap: 8px;
-}
-
 body.focus-mode .column-header,
 body.focus-mode .tag-filters,
 body.focus-mode .stats-section,
 body.focus-mode .footer {
     display: none;
-}
-
-/* Ecras estreitos: no modo foco mantem-se so as listas (as abas moveis tratam do calendario) */
-@media (max-width: 640px) {
-    body.focus-mode .week-calendar-section {
-        display: none;
-    }
 }
 
 /* Modo foco: esconder os controlos de concluídas (mostrar / deletar concluídas) */
@@ -2656,12 +2640,6 @@ body.focus-mode .task-info-row .add-tag,
 body.focus-mode .task-info-row .add-days,
 body.focus-mode .task-inline-time-input,
 body.focus-mode .task-subtasks-wrap,
-body.focus-mode .task-card {
-    --task-card-pad-y: 4px;
-    --task-card-pad-x: 10px;
-    border-radius: 8px;
-}
-
 body.focus-mode .tasks-list,
 body.focus-mode .completed-list,
 body.focus-mode .scheduled-list {
@@ -2724,128 +2702,6 @@ body.focus-mode .add-input {
     padding: 6px 10px;
     font-size: 13px;
 }
-
-/* ==========================================================================
-   Modo foco (ecras largos): metade de cima = Habitos + Atividades, cada
-   coluna com scroll vertical proprio; metade de baixo = grelha do calendario
-   (semana seg-dom, so a grelha de horas com a linha do agora).
-   ========================================================================== */
-@media (min-width: 641px) {
-    body.focus-mode {
-        overflow: hidden;
-    }
-
-    body.focus-mode .container {
-        height: 100vh;
-        height: 100dvh;
-        padding: 8px 8px 6px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        overflow: hidden;
-    }
-
-    /* Metade de cima: as duas listas (ordem invertivel — ver .focus-calendar-top) */
-    body.focus-mode .tasks-container {
-        flex: 1 1 50%;
-        min-height: 0;
-        overflow: hidden;
-        order: 1;
-    }
-
-    body.focus-mode .tasks-column {
-        min-height: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding-right: 6px;
-        scrollbar-width: thin;
-    }
-
-    body.focus-mode .tasks-list,
-    body.focus-mode .completed-list,
-    body.focus-mode .scheduled-list {
-        min-height: 0;
-    }
-
-    /* Metade de baixo: o calendario */
-    body.focus-mode .week-calendar-section {
-        display: flex;
-        flex-direction: column;
-        flex: 1 1 50%;
-        min-height: 0;
-        margin-top: 0;
-        padding-top: 6px;
-        border-top: 1px solid var(--border-color);
-        order: 2;
-    }
-
-    /* Ordem invertida: calendario em cima, listas em baixo */
-    body.focus-mode.focus-calendar-top .week-calendar-section {
-        order: 1;
-        padding-top: 0;
-        padding-bottom: 6px;
-        border-top: none;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    body.focus-mode.focus-calendar-top .tasks-container {
-        order: 2;
-    }
-
-    /* So a grelha: sem barra de navegacao, sem faixa de itens sem hora,
-       sem paineis de concluidas e sem botoes nos cabecalhos dos dias */
-    body.focus-mode .week-calendar-toolbar,
-    body.focus-mode .week-cal-completed-stack,
-    body.focus-mode .week-cal-untimed,
-    body.focus-mode .week-cal-untimed-spacer,
-    body.focus-mode .week-cal-header-actions,
-    body.focus-mode .week-cal-today-pill {
-        display: none;
-    }
-
-    body.focus-mode .week-calendar-scroll {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow: auto;
-        scrollbar-width: thin;
-    }
-
-    body.focus-mode .week-cal-outer {
-        gap: 0;
-    }
-
-    body.focus-mode .week-cal-layout {
-        --week-cal-hour-px: 46px;
-        grid-template-rows: auto 0 minmax(0, auto);
-        border-radius: 8px;
-        /* sticky dos cabecalhos exige que o container nao recorte o scroll */
-        overflow: visible;
-    }
-
-    /* Cabecalhos dos dias fixos ao topo enquanto se percorre as horas */
-    body.focus-mode .week-cal-day-headers,
-    body.focus-mode .week-cal-corner {
-        position: sticky;
-        top: 0;
-        z-index: 6;
-        background: #12141d;
-    }
-
-    body.focus-mode .week-cal-day-header {
-        padding: 4px 6px;
-        gap: 0;
-    }
-
-    body.focus-mode .week-cal-date-full {
-        font-size: 0.625rem;
-        opacity: 0.7;
-    }
-
-    body.focus-mode .week-cal-hour-label {
-        font-size: 0.625rem;
-    }
-}
-
 
 /* ==========================================================================
    Densidade da visao padrao + cartao "silencioso"
@@ -2921,24 +2777,24 @@ body.focus-mode .add-input {
 }
 
 /* --- Densidade compacta (predefinicao) --- */
-body.density-compact:not(.focus-mode) .task-card {
+body.density-compact .task-card {
     --task-card-pad-y: 7px;
     --task-card-pad-x: 11px;
     border-radius: 9px;
 }
 
-body.density-compact:not(.focus-mode) .task-title {
+body.density-compact .task-title {
     font-size: 13.5px;
     margin-bottom: 0;
 }
 
-body.density-compact:not(.focus-mode) .tasks-list,
-body.density-compact:not(.focus-mode) .completed-list,
-body.density-compact:not(.focus-mode) .scheduled-list {
+body.density-compact .tasks-list,
+body.density-compact .completed-list,
+body.density-compact .scheduled-list {
     gap: 6px;
 }
 
-body.density-compact:not(.focus-mode) .task-info-row {
+body.density-compact .task-info-row {
     margin-top: 2px;
 }
 
@@ -3055,7 +2911,7 @@ body.density-compact:not(.focus-mode) .task-info-row {
 
 /* --- Cartao numa linha (densidade compacta): titulo e badges lado a lado --- */
 @media (min-width: 641px) {
-    body.density-compact:not(.focus-mode) .task-content {
+    body.density-compact .task-content {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
@@ -3064,25 +2920,310 @@ body.density-compact:not(.focus-mode) .task-info-row {
         padding-right: 132px;
     }
 
-    body.density-compact:not(.focus-mode) .task-title-row {
+    body.density-compact .task-title-row {
         flex: 1 1 180px;
         min-width: 0;
     }
 
-    body.density-compact:not(.focus-mode) .task-info-row {
+    body.density-compact .task-info-row {
         flex: 0 1 auto;
         margin-top: 0;
         min-height: 0;
         justify-content: flex-end;
     }
 
-    body.density-compact:not(.focus-mode) .task-info-left {
+    body.density-compact .task-info-left {
         justify-content: flex-end;
     }
 
     /* subtarefas expandidas ocupam a linha seguinte inteira */
-    body.density-compact:not(.focus-mode) .task-subtasks-wrap:not(:empty) {
+    body.density-compact .task-subtasks-wrap:not(:empty) {
         flex: 1 0 100%;
         margin-top: 4px;
+    }
+}
+
+
+/* ==========================================================================
+   Workspace: UM layout so. Listas e calendario sempre visiveis na mesma tela,
+   com um divisor arrastavel a definir a proporcao. O "modo foco" deixou de ser
+   um segundo layout: passou a ser apenas silencio (esconde o cromo).
+   ========================================================================== */
+@media (min-width: 1024px) {
+    body.workspace {
+        overflow: hidden;
+    }
+
+    body.workspace .container {
+        --workspace-split: 42%;
+        width: 100%;
+        height: 100dvh;
+        padding: 84px 14px 8px;
+        display: grid;
+        grid-template-columns: var(--workspace-split) 12px minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) auto;
+        gap: 0;
+        overflow: hidden;
+    }
+
+    /* silencio (F): sem header, o workspace comeca no topo */
+    body.workspace.focus-mode .container {
+        padding-top: 10px;
+    }
+
+    /* --- coluna das listas: habitos em cima (so o que precisam), atividades
+       ficam com todo o espaco restante --- */
+    body.workspace .tasks-container {
+        grid-column: 1;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, auto) minmax(0, 1fr);
+        gap: 10px;
+        grid-row: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    body.workspace #mobile-panel-dailies {
+        max-height: 42vh;
+    }
+
+    /* linha de tags vazia nao deve ocupar espaco */
+    body.workspace .tag-filters:empty {
+        display: none;
+    }
+
+    body.workspace .tasks-container::before {
+        display: none;
+    }
+
+    body.workspace .tasks-column {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    body.workspace .column-header {
+        margin-bottom: 6px;
+    }
+
+    body.workspace .tasks-list {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: none;
+        overflow-y: auto;
+        padding-right: 4px;
+        scrollbar-width: thin;
+    }
+
+    body.workspace .completed-section,
+    body.workspace .scheduled-section {
+        flex: 0 0 auto;
+    }
+
+    body.workspace .completed-list,
+    body.workspace .scheduled-list {
+        max-height: 24vh;
+        overflow-y: auto;
+    }
+
+    /* --- divisor: substitui a escolha entre "modos" por uma proporcao --- */
+    body.workspace .workspace-divider {
+        grid-column: 2;
+        grid-row: 1 / -1;
+        align-self: stretch;
+        cursor: col-resize;
+        position: relative;
+    }
+
+    body.workspace .workspace-divider::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 6px;
+        bottom: 6px;
+        width: 1px;
+        background: var(--border-color);
+        transform: translateX(-50%);
+        transition: background 0.15s ease, width 0.15s ease;
+    }
+
+    body.workspace .workspace-divider:hover::after,
+    body.workspace .workspace-divider:focus-visible::after,
+    body.workspace .workspace-divider.is-dragging::after {
+        background: var(--blue-primary);
+        width: 3px;
+    }
+
+    /* --- coluna do calendario: altura toda --- */
+    body.workspace .week-calendar-section {
+        grid-column: 3;
+        grid-row: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        margin-top: 0;
+        padding-top: 0;
+        padding-left: 12px;
+        border-top: none;
+    }
+
+    body.workspace .week-calendar-toolbar {
+        margin-bottom: 6px;
+        flex: 0 0 auto;
+    }
+
+    body.workspace .week-calendar-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+        scrollbar-width: thin;
+    }
+
+    body.workspace .week-cal-layout {
+        --week-cal-hour-px: 54px;
+        overflow: visible;
+        min-width: 0;
+    }
+
+    /* cabecalhos dos dias fixos ao percorrer as horas */
+    body.workspace .week-cal-day-headers,
+    body.workspace .week-cal-corner {
+        position: sticky;
+        top: 0;
+        z-index: 6;
+        background: #12141d;
+    }
+
+    body.workspace .week-cal-day-header {
+        padding: 5px 4px;
+        gap: 0;
+    }
+
+    body.workspace .week-cal-date-full {
+        font-size: 0.625rem;
+        opacity: 0.75;
+    }
+
+    /* --- lados trocados (botao ⇅): calendario a esquerda --- */
+    body.workspace.workspace-swapped .container {
+        grid-template-columns: minmax(0, 1fr) 12px var(--workspace-split);
+    }
+
+    body.workspace.workspace-swapped .tasks-container {
+        grid-column: 3;
+    }
+
+    body.workspace.workspace-swapped .week-calendar-section {
+        grid-column: 1;
+        padding-left: 0;
+        padding-right: 12px;
+    }
+
+    /* --- estatisticas: faixa fina no fundo das listas, ja nao uma seccao --- */
+    body.workspace .stats-section {
+        grid-column: 1;
+        grid-row: 2;
+        align-self: end;
+        margin: 0;
+        padding: 6px 0 0;
+        border-top: 1px solid var(--border-color);
+    }
+
+    body.workspace.workspace-swapped .stats-section {
+        grid-column: 3;
+    }
+
+    body.workspace .stats-section-title,
+    body.workspace .stats-section-subtitle {
+        display: none;
+    }
+
+    body.workspace .stats-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 14px;
+        margin: 0;
+    }
+
+    body.workspace .stats-card {
+        flex: 0 0 auto;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 5px;
+        padding: 0;
+        margin: 0;
+        background: none;
+        border: none;
+        box-shadow: none;
+    }
+
+    body.workspace .stats-value {
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    body.workspace .stats-label {
+        font-size: 10.5px;
+        color: var(--text-secondary);
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    /* alternar listas/calendario perde sentido: ambos estao a vista */
+    body.workspace .view-toggle-btn,
+    body.workspace .footer {
+        display: none;
+    }
+
+    /* o ⇅ (trocar lados) vive no header enquanto nao estamos em silencio */
+    body.workspace:not(.focus-mode) .focus-layout-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* --- itens do calendario mais legiveis em colunas estreitas --- */
+    body.workspace .week-cal-chip,
+    body.workspace .week-cal-block-main {
+        gap: 2px;
+    }
+
+    body.workspace .week-cal-chip-title,
+    body.workspace .week-cal-block-title {
+        font-size: 11px;
+    }
+
+    /* faixa de itens sem hora: fina quando esta vazia */
+    body.workspace .week-cal-untimed:empty,
+    body.workspace .week-cal-untimed-spacer {
+        min-height: 6px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+
+    /* blocos altos podem mostrar o titulo em duas linhas */
+    body.workspace .week-cal-block-title {
+        white-space: normal;
+        line-height: 1.2;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* o identificador ⋮ so aparece no hover: liberta largura para o titulo */
+    body.workspace .week-cal-drag-handle {
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+        transition: opacity 0.12s ease;
+    }
+
+    body.workspace .week-cal-chip:hover .week-cal-drag-handle,
+    body.workspace .week-cal-block:hover .week-cal-drag-handle {
+        opacity: 1;
+        width: auto;
     }
 }
