@@ -114,46 +114,32 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
   - **Ícone ✓ (concluir)**: alterna pendente/concluída (`TasksManager.toggleTaskStatus`), igual às listas
 - Títulos dos botões e textos traduzíveis (`weekCalendar*`, `weekCalendarDragHandle`, `weekCalendarNowLine`, `weekCalendarCompletedTitle`, `weekCalendarCompletedTodosTitle`, etc.); **não** há parágrafo de dicas longas abaixo do calendário (só os painéis opcionais de concluídas, quando houver)
 
-### Navegação na página
+### Sem header: barra da app + barra do calendário
 
-- **Header fixo**: além do título e do botão de alternar vista, mostra a etiqueta **Hoje** (traduzida), a **data corrente** por extenso no idioma ativo e o **relógio** local `HH:MM:SS` (atualizado a cada segundo por `WeekCalendarManager`); **barra de pesquisa global** centrada (`globalSearchPlaceholder` / `globalSearchAriaLabel` em `i18n.js`)
-- Botão no header alterna **scroll suave** entre as **listas** e o **calendário semanal**; ao lado, **lembretes** (🔔), pesquisa global, export/import, etc.
-- **Ecrãs estreitos (≤640px)**: barra de **três separadores** (Hábitos / Atividades / **Hoje** — o terceiro é o calendário focado no dia atual) e **gesto de deslizar** horizontalmente (swipe) para mudar de vista; o separador ativo e o índice são memorizados em `sessionStorage` (`habitus-mobile-tab`). O botão de alternar listas/calendário no header fica oculto neste modo (redundante).
-- `scroll-margin-top` nas âncoras para compensar o header fixo
+O **header fixo foi removido**. O que havia nele foi redistribuído:
 
-### Workspace: um único layout (≥ 1024px)
+- **Barra da app** (`.app-bar`, topo da coluna das listas): apenas a **pesquisa global** e o menu **⋯**. No modo foco fica só o **⋯**.
+- **Data, relógio e a etiqueta «Hoje»** mudaram-se para a **barra do calendário**, ao lado do intervalo da semana e da navegação (‹ Hoje ›) — é onde a informação de «agora» faz sentido. Mesmos IDs (`header-today-date`, `header-today-clock`), atualizados por `WeekCalendarManager`.
+- Saíram de vez: o título **Habitus**, o botão de **alternar listas/calendário** (ambos estão à vista) e os botões flutuantes **F** e **⇅**.
+- **Ecrãs estreitos (≤640px)**: barra de **três separadores** (Hábitos / Atividades / **Hoje**) e **swipe** horizontal; o separador ativo fica em `sessionStorage` (`habitus-mobile-tab`).
 
-Listas e calendário estão **sempre visíveis na mesma tela**. Não há alternância entre "vista de listas" e "vista de calendário", nem um segundo layout para o modo foco.
+### Tudo o que é ocasional vive no **⋯**
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│ header: Habitus · Hoje/data/hora · pesquisa · F ⇅ ⋯          │
-├──────────────────────┬┬──────────────────────────────────────┤
-│ Hábitos    (scroll)  ││                                      │
-├──────────────────────┤│   Calendário da semana               │
-│ Atividades (scroll)  ││   (altura toda, cabeçalhos fixos)    │
-│                      ││                                      │
-├──────────────────────┤│                                      │
-│ estatísticas (faixa) ││                                      │
-└──────────────────────┴┴──────────────────────────────────────┘
-                    divisor arrastável
-```
+| Grupo | Conteúdo |
+|---|---|
+| **Tela** | **Foco (F)** e **Trocar lados** |
+| **Filtros** | **Todas / Hoje / Sem data / Futuras** e as **tags** (por Atividades e por Hábitos) |
+| **Ver** | **Concluídas (n)**, **Hábitos agendados (n)** e **Apagar concluídas** (com Desfazer) |
+| **Idioma** | seletor dos 9 idiomas |
+| — | lembretes 🔔, exportar 📋, importar 📥 |
 
-- **Sem scroll de página** (`100dvh`): cada lista tem o seu próprio scroll, o calendário também.
-- **Hábitos ocupam só o que precisam** (até 42vh) e as **atividades ficam com o espaço restante**.
-- **Divisor arrastável** entre as duas colunas (`#workspace-divider`): define a proporção entre 24% e 62%, guardada em `localStorage` (`habitus-workspace-split`). Duplo clique repõe 42%; ←/→ ajustam pelo teclado. **Substitui a antiga escolha entre modos** por uma preferência contínua.
-- **⇅ troca os lados** (listas à esquerda ou à direita), guardado em `habitus-workspace-side`.
-- **Estatísticas**: faixa fina de uma linha **por baixo do calendário**, à direita.
-- **Coluna dos hábitos encolhe ao conteúdo** (até 34vh de lista): as atividades ficam com todo o espaço restante. As secções de concluídas/agendadas deixaram de reservar 48px cada.
-- O botão de **alternar listas/calendário** desapareceu — ambos estão à vista.
-- Abaixo de 1024px mantém-se o layout empilhado; abaixo de 640px continuam as **abas móveis**.
+- As colunas ficaram sem **nenhum** botão de filtro ou de concluídas: sobra o título com a contagem, o campo de adicionar e os cartões.
+- Como os filtros ficam escondidos, o botão **⋯** ganha um **ponto azul** quando há algum filtro ativo (`RenderManager.syncFilterIndicator`).
+- O painel fecha ao entrar/sair do modo foco, com **Esc** ou com um clique fora. Um clique **dentro** do painel que provoque um re-render (tags, filtros) já não o fecha por engano.
 
-### Modo foco = silêncio (não é outro layout)
+### Código de cor das listas
 
-- Botão **F** no header (passa a flutuante no canto inferior direito) ou a tecla **F** fora de campos de texto. Guardado em `habitus-focus-mode`.
-- **O layout não muda** — muda o que se esconde: header (título, relógio, pesquisa), cabeçalhos das colunas, filtros de tags, controlos de concluídas, estatísticas e os marcadores de campos por preencher.
-- Os botões flutuantes no canto inferior direito são **⋯**, **⇅** e **F** (o header perde `pointer-events` no foco, por isso o menu tem de sair de lá; o painel abre para cima).
-- Com o cromo escondido, o calendário ganha ~75px de altura e a lista mostra mais 4 cartões.
+Os cartões usam a mesma linguagem do calendário: **hábitos amarelos** (`--streak`) e **atividades azuis** (`--blue-primary`) — barra à esquerda, fundo em gradiente muito leve e título tingido. Os concluídos ficam dessaturados.
 
 ### Criação rápida com linguagem natural
 

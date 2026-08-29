@@ -9,19 +9,10 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="header">
-        <div class="header-left">
-            <h1 class="app-title">Habitus</h1>
-            <button type="button" class="view-toggle-btn" id="view-toggle-btn" aria-label=""></button>
-            <div class="header-datetime" id="header-datetime">
-                <span class="header-today-pill" id="header-today-pill" data-i18n="weekCalendarToday">Hoje</span>
-                <div class="header-datetime-text">
-                    <span class="header-today-date" id="header-today-date" aria-live="polite"></span>
-                    <time class="header-today-clock" id="header-today-clock" datetime="" aria-live="polite"></time>
-                </div>
-            </div>
-        </div>
-        <div class="header-center">
+    <input type="file" id="import-file" accept=".json" style="display: none;">
+
+    <div class="container">
+        <div class="app-bar" id="app-bar">
             <div class="header-search" role="search">
                 <label class="header-search-inner" for="global-search-input">
                     <span class="header-search-icon" aria-hidden="true">🔍</span>
@@ -36,14 +27,33 @@
                     />
                 </label>
             </div>
-        </div>
-        <div class="header-right">
-            <button type="button" class="focus-toggle-btn" id="focus-toggle-btn" title="Modo foco" aria-pressed="false">F</button>
-            <button type="button" class="focus-layout-btn" id="focus-layout-btn" title="Trocar lados: calendário à esquerda" aria-label="Trocar os lados do workspace">⇅</button>
-
             <div class="header-menu" id="header-menu">
                 <button type="button" class="header-menu-btn" id="header-menu-btn" aria-haspopup="true" aria-expanded="false" data-i18n-aria-label="menuMore" title="Mais opções">⋯</button>
                 <div class="header-menu-panel" id="header-menu-panel" hidden>
+                    <div class="header-menu-group">
+                        <span class="header-menu-label" data-i18n="layoutLabel">Ecrã</span>
+                        <div class="header-menu-choices">
+                            <button type="button" class="header-menu-choice" id="focus-toggle-btn" aria-pressed="false"></button>
+                            <button type="button" class="header-menu-choice" id="focus-layout-btn" aria-pressed="false"></button>
+                        </div>
+                    </div>
+                    <div class="header-menu-group">
+                        <span class="header-menu-label" data-i18n="filtersLabel">Filtros</span>
+                        <div class="tasks-date-filter-row" id="tasks-date-filter-row">
+                            <button type="button" class="tasks-date-filter-btn is-active" data-filter="all" id="tasks-date-filter-all"></button>
+                            <button type="button" class="tasks-date-filter-btn" data-filter="today" id="tasks-date-filter-today"></button>
+                            <button type="button" class="tasks-date-filter-btn" data-filter="no_date" id="tasks-date-filter-no-date"></button>
+                            <button type="button" class="tasks-date-filter-btn" data-filter="future" id="tasks-date-filter-future"></button>
+                        </div>
+                        <div class="menu-tag-block" id="tasks-tag-block">
+                            <span class="header-menu-sublabel" id="tasks-tag-label"></span>
+                            <div class="tag-filters" id="tasks-tag-filters"></div>
+                        </div>
+                        <div class="menu-tag-block" id="dailies-tag-block">
+                            <span class="header-menu-sublabel" id="dailies-tag-label"></span>
+                            <div class="tag-filters" id="dailies-tag-filters"></div>
+                        </div>
+                    </div>
                     <div class="header-menu-group">
                         <span class="header-menu-label" data-i18n="viewLabel">Ver</span>
                         <div class="header-menu-choices">
@@ -73,11 +83,8 @@
                     </div>
                 </div>
             </div>
-            <input type="file" id="import-file" accept=".json" style="display: none;">
         </div>
-    </div>
 
-    <div class="container">
         <nav class="mobile-view-tabs" id="mobile-view-tabs" role="tablist" hidden aria-label="">
             <button type="button" class="mobile-view-tab" role="tab" id="mobile-tab-dailies" data-mobile-tab="0" aria-selected="true"></button>
             <button type="button" class="mobile-view-tab" role="tab" id="mobile-tab-tasks" data-mobile-tab="1" aria-selected="false"></button>
@@ -90,7 +97,6 @@
                     <h2 id="dailies-title">Dailies <span class="count" id="dailies-count">(0)</span></h2>
                     <div class="column-header-right"></div>
                 </div>
-                <div class="tag-filters" id="dailies-tag-filters"></div>
                 <div class="add-input-row">
                     <input type="text" class="add-input" id="add-daily-input" data-i18n-placeholder="addDaily" placeholder="Adicionar Diária">
                     <button class="add-btn" id="add-daily-btn">+</button>
@@ -108,16 +114,8 @@
             <div class="tasks-column" id="mobile-panel-tasks">
                 <div class="column-header">
                     <h2 id="tasks-title">Tasks <span class="count" id="tasks-count">(0)</span></h2>
-                    <div class="column-header-right">
-                        <div class="tasks-date-filter-row" id="tasks-date-filter-row" aria-label="Tasks date filter">
-                            <button type="button" class="tasks-date-filter-btn is-active" data-filter="all" id="tasks-date-filter-all"></button>
-                            <button type="button" class="tasks-date-filter-btn" data-filter="today" id="tasks-date-filter-today"></button>
-                            <button type="button" class="tasks-date-filter-btn" data-filter="no_date" id="tasks-date-filter-no-date"></button>
-                            <button type="button" class="tasks-date-filter-btn" data-filter="future" id="tasks-date-filter-future"></button>
-                        </div>
-                    </div>
+                    <div class="column-header-right"></div>
                 </div>
-                <div class="tag-filters" id="tasks-tag-filters"></div>
                 <div class="add-input-row">
                     <input type="text" class="add-input" id="add-task-input" data-i18n-placeholder="addTask" placeholder="Adicionar Tarefa">
                     <button class="add-btn" id="add-task-btn">+</button>
@@ -134,7 +132,13 @@
         <section class="week-calendar-section main-view-scroll-anchor" id="week-calendar-section" aria-label="Calendar">
             <div class="week-calendar-toolbar">
                 <div class="week-calendar-toolbar-left">
-                    <h2 class="week-calendar-title" id="week-calendar-title">Semana</h2>
+                    <div class="header-datetime" id="header-datetime">
+                        <span class="header-today-pill" id="header-today-pill" data-i18n="weekCalendarToday">Hoje</span>
+                        <div class="header-datetime-text">
+                            <span class="header-today-date" id="header-today-date" aria-live="polite"></span>
+                            <time class="header-today-clock" id="header-today-clock" datetime="" aria-live="polite"></time>
+                        </div>
+                    </div>
                     <span class="week-calendar-range" id="week-calendar-range"></span>
                 </div>
                 <div class="week-calendar-nav">

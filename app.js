@@ -202,6 +202,14 @@ function setupWorkspace() {
     requestAnimationFrame(() => requestAnimationFrame(scrollCalendarToNow));
 }
 
+/** Fecha o painel do menu ⋯ (usado tambem ao entrar/sair do modo foco) */
+function closeHeaderMenu() {
+    const panel = document.getElementById('header-menu-panel');
+    const btn = document.getElementById('header-menu-btn');
+    if (panel) panel.hidden = true;
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
 /** Menu "⋯" do header: idioma, densidade, lembretes, exportar/importar */
 function setupHeaderMenu() {
     const btn = document.getElementById('header-menu-btn');
@@ -224,6 +232,10 @@ function setupHeaderMenu() {
 
     document.addEventListener('click', (e) => {
         if (panel.hidden) return;
+        // Um clique dentro do menu pode disparar um re-render (tags, filtros) que
+        // substitui o proprio elemento clicado: nesse caso ele ja nao esta no
+        // documento e o closest() falharia, fechando o painel sem querer.
+        if (!document.contains(e.target)) return;
         if (e.target.closest('#header-menu')) return;
         close();
     });
@@ -285,9 +297,8 @@ function setupFocusMode() {
         const swapped = mode === 'lists-right';
         document.body.classList.toggle('workspace-swapped', swapped);
         if (layoutBtn) {
-            layoutBtn.title = swapped
-                ? 'Trocar lados: calendário à direita'
-                : 'Trocar lados: calendário à esquerda';
+            layoutBtn.textContent = t('swapSidesLabel');
+            layoutBtn.classList.toggle('is-active', swapped);
             layoutBtn.setAttribute('aria-pressed', swapped ? 'true' : 'false');
         }
         try {
@@ -300,9 +311,11 @@ function setupFocusMode() {
 
     const applyFocusMode = (on) => {
         document.body.classList.toggle('focus-mode', on);
+        closeHeaderMenu();
         if (btn) {
             btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-            btn.title = on ? 'Sair do modo foco' : 'Modo foco';
+            btn.classList.toggle('is-active', on);
+            btn.textContent = t('focusModeLabel');
         }
         try {
             localStorage.setItem(FOCUS_STORAGE_KEY, on ? '1' : '0');
@@ -407,7 +420,6 @@ function setupEventListeners() {
     PomodoroManager.setupEventListeners();
     ExportImportManager.setupEventListeners();
     KeyboardNavManager.init();
-    setupViewToggle();
 
     if (typeof RemindersManager !== 'undefined') {
         RemindersManager.setupToggleButton();
@@ -424,65 +436,6 @@ function setupEventListeners() {
             }, 200);
         });
     }
-}
-
-/** Next header toggle scroll target: true → week calendar, false → lists */
-let viewToggleNextToCalendar = true;
-
-function updateViewToggleButton() {
-    const btn = document.getElementById('view-toggle-btn');
-    if (!btn) return;
-    if (viewToggleNextToCalendar) {
-        btn.textContent = t('viewToggleWeek');
-        const hint = t('viewToggleWeekTitle');
-        btn.title = hint;
-        btn.setAttribute('aria-label', hint);
-    } else {
-        btn.textContent = t('viewToggleLists');
-        const hint = t('viewToggleListsTitle');
-        btn.title = hint;
-        btn.setAttribute('aria-label', hint);
-    }
-}
-
-function setupViewToggle() {
-    const btn = document.getElementById('view-toggle-btn');
-    const listsEl = document.getElementById('main-lists-view');
-    const calEl = document.getElementById('week-calendar-section');
-    if (!btn || !listsEl || !calEl) return;
-    updateViewToggleButton();
-    btn.addEventListener('click', () => {
-        if (viewToggleNextToCalendar) {
-            calEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-            listsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        viewToggleNextToCalendar = !viewToggleNextToCalendar;
-        updateViewToggleButton();
-    });
-}
-
-/** Apaga as concluidas de um tipo e oferece Desfazer (restaura os objetos originais) */
-function deleteCompletedWithUndo(taskType) {
-    const removed = DataManager.appData.tasks.filter(
-        (x) => x.task_type === taskType && x.status === 'done' && !x.is_deleted
-    );
-    if (removed.length === 0) return;
-
-    TasksManager.deleteCompletedTasks(taskType);
-    RenderManager.renderAll();
-
-    Utils.showActionToast({
-        message: `${t('completedDeleted')} (${removed.length})`,
-        actionLabel: t('undo'),
-        timeoutMs: 6000,
-        tone: 'error',
-        onAction: () => {
-            removed.forEach((x) => DataManager.appData.tasks.push(x));
-            DataManager.saveData();
-            RenderManager.renderAll();
-        }
-    });
 }
 
 // As concluidas (e os habitos agendados) alternam-se pelo menu ⋯, nao por
@@ -509,6 +462,11 @@ function updateMenuViewControls() {
             typeof TasksManager !== 'undefined' &&
             TasksManager.dailyListBucket(x) === 'scheduled'
     ).length;
+
+    const fBtn = document.getElementById('focus-toggle-btn');
+    if (fBtn) fBtn.textContent = t('focusModeLabel');
+    const lBtn = document.getElementById('focus-layout-btn');
+    if (lBtn) lBtn.textContent = t('swapSidesLabel');
 
     const cBtn = document.getElementById('menu-toggle-completed');
     const sBtn = document.getElementById('menu-toggle-scheduled');
@@ -548,7 +506,6 @@ window.updateUI = function() {
         RemindersManager.syncToggleButton();
     }
     
-    updateViewToggleButton();
     if (typeof MobileViewsManager !== 'undefined') {
         MobileViewsManager.updateTabLabels();
     }

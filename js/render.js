@@ -89,6 +89,7 @@ const RenderManager = {
                 console.error('WeekCalendarManager.render failed:', err);
             }
         }
+        this.syncFilterIndicator();
         if (typeof updateMenuViewControls === 'function') {
             try {
                 updateMenuViewControls();
@@ -119,6 +120,17 @@ const RenderManager = {
             }
         });
         document.title = pending > 0 ? `(${pending}) Habitus` : 'Habitus';
+    },
+
+    /** Ponto no botao ⋯ quando ha algum filtro ativo (os filtros vivem la dentro) */
+    syncFilterIndicator() {
+        const btn = document.getElementById('header-menu-btn');
+        if (!btn) return;
+        const active =
+            this.todoDateFilter !== 'all' ||
+            FiltersManager.activeFilters.todos.size > 0 ||
+            FiltersManager.activeFilters.dailies.size > 0;
+        btn.classList.toggle('has-active-filter', active);
     },
 
     // Update task counts
@@ -304,12 +316,19 @@ const RenderManager = {
         this.bindListDelegation(listId);
     },
 
-    // Render tag filters
+    // Render tag filters (vivem dentro do menu ⋯)
     renderTagFilters(taskType) {
-        const container = document.getElementById(`${taskType === 'todo' ? 'tasks' : 'dailies'}-tag-filters`);
+        const key = taskType === 'todo' ? 'tasks' : 'dailies';
+        const container = document.getElementById(`${key}-tag-filters`);
+        if (!container) return;
         container.innerHTML = '';
-        
+
         const allTags = FiltersManager.getAllTags(taskType);
+
+        const block = document.getElementById(`${key}-tag-block`);
+        if (block) block.style.display = allTags.length ? 'flex' : 'none';
+        const label = document.getElementById(`${key}-tag-label`);
+        if (label) label.textContent = t(taskType === 'todo' ? 'tasks' : 'dailies');
         
         allTags.forEach(tag => {
             const btn = document.createElement('button');
