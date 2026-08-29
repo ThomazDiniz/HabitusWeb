@@ -9,6 +9,9 @@ function editableTask(task) {
 const RenderManager = {
     todoDateFilter: 'all', // all | today | no_date | future
 
+    /** Cartoes com a lista de subtarefas aberta (por defeito ficam colapsadas) */
+    expandedSubtasks: new Set(),
+
     /** Seccoes colapsaveis: fechadas nao geram DOM nenhum */
     sectionOpen: {
         dailyCompleted: false,
@@ -333,7 +336,7 @@ const RenderManager = {
                     `<span class="task-tag" data-tag="${tag}">${tag}<span class="tag-remove" data-tag="${tag}">×</span></span>`
             )
             .join('');
-        return `<div class="task-tags-inline">${chips}<span class="task-tag add-tag">+ ${t('tags')}</span></div>`;
+        return `<div class="task-tags-inline">${chips}<span class="task-tag add-tag is-hint">+ ${t('tags')}</span></div>`;
     },
 
     /**
@@ -348,20 +351,20 @@ const RenderManager = {
             chunks.push(
                 days
                     ? `<span class="task-days-of-week">📅 ${days}</span>`
-                    : `<span class="task-days-of-week add-days">+ ${t('daysOfWeek')}</span>`
+                    : `<span class="task-days-of-week add-days is-hint">+ ${t('daysOfWeek')}</span>`
             );
         } else {
             chunks.push(
                 task.priority
                     ? `<span class="task-priority-badge ${task.priority}">${t(task.priority)}</span>`
-                    : `<span class="task-priority-badge add-priority">+ ${t('priority')}</span>`
+                    : `<span class="task-priority-badge add-priority is-hint">+ ${t('priority')}</span>`
             );
             const isOverdue =
                 task.due_date && task.due_date < Utils.dateToYMD(new Date()) && task.status !== 'done';
             chunks.push(
                 task.due_date
                     ? `<span class="task-due-date ${isOverdue ? 'overdue' : ''}">${Utils.formatDate(task.due_date)}</span>`
-                    : `<span class="task-due-date add-due-date">+ ${t('dueDate')}</span>`
+                    : `<span class="task-due-date add-due-date is-hint">+ ${t('dueDate')}</span>`
             );
         }
 
@@ -369,16 +372,9 @@ const RenderManager = {
             chunks.push(`<span class="task-due-time-badge">🕐 ${task.due_time}</span>`);
         } else if (task.task_type === 'daily' || task.due_date) {
             chunks.push(
-                `<input type="time" class="task-inline-time-input" step="1800" aria-label="${t('weekCalendarPickTime')}" title="${t('weekCalendarPickTime')}" />`
+                `<input type="time" class="task-inline-time-input is-hint" step="1800" aria-label="${t('weekCalendarPickTime')}" title="${t('weekCalendarPickTime')}" />`
             );
         }
-
-        const durM = Utils.getTaskDurationMinutes(task);
-        chunks.push(`<div class="task-duration-stepper" title="${t('taskDurationLabel')}">
-                <button type="button" class="task-duration-btn task-duration-minus" aria-label="${t('taskDurationDecrease')}">−</button>
-                <span class="task-duration-value">${durM}</span>
-                <button type="button" class="task-duration-btn task-duration-plus" aria-label="${t('taskDurationIncrease')}">+</button>
-            </div>`);
 
         chunks.push(this.tagsHtml(task));
 
@@ -398,6 +394,11 @@ const RenderManager = {
 
         const progress = SubtasksManager.getSubtasksProgress(task);
         const editable = task.status !== 'done';
+        const subtasksOpen = this.expandedSubtasks.has(task.id);
+        const subtasksBadge =
+            progress.total > 0
+                ? `<button type="button" class="task-subtasks-badge${subtasksOpen ? ' is-open' : ''}" title="${t('subtasks')}" aria-expanded="${subtasksOpen ? 'true' : 'false'}">☰ ${progress.completed}/${progress.total}</button>`
+                : '';
 
         card.innerHTML = `
             <div class="task-header">
@@ -405,12 +406,14 @@ const RenderManager = {
                 <div class="task-content">
                     <div class="task-title-row">
                         <div class="task-title"${editable ? ` title="${t('edit')}"` : ''}>${Utils.linkify(task.title)}</div>
+                        ${subtasksBadge}
                         <div class="task-actions-inline">
                             ${
                                 task.task_type === 'todo' && task.status !== 'done'
                                     ? `<button type="button" class="task-btn task-btn-today">${t('setForToday')}</button>`
                                     : ''
                             }
+                            <button type="button" class="task-btn task-add-subtask-btn" title="${t('addSubtask')}" aria-label="${t('addSubtask')}">＋☰</button>
                             <button type="button" class="task-btn task-order-top" title="${t('sendToTop')}" aria-label="${t('sendToTop')}">↑</button>
                             <button type="button" class="task-btn task-order-bottom" title="${t('sendToBottom')}" aria-label="${t('sendToBottom')}">↓</button>
                             <button type="button" class="task-btn pomodoro" title="${t('pomodoro')}" aria-label="${t('pomodoro')}">🍅</button>
@@ -418,7 +421,7 @@ const RenderManager = {
                         </div>
                     </div>
                     ${this.infoRowHtml(task)}
-                    ${this.createSubtasksBlock(task, progress)}
+                    ${this.createSubtasksBlock(task, progress, subtasksOpen)}
                 </div>
             </div>
         `;
@@ -459,11 +462,10 @@ const RenderManager = {
             FiltersManager.toggleFilter(task.task_type, hit('.task-tag[data-tag]').dataset.tag);
             return this.renderAll();
         }
-        if (hit('.task-duration-btn')) {
+        if (hit('.task-subtasks-badge')) {
             stop();
-            const cur = Utils.getTaskDurationMinutes(task);
-            const delta = hit('.task-duration-btn').classList.contains('task-duration-minus') ? -15 : 15;
-            TasksManager.updateTask(task.id, { duration_minutes: Utils.normalizeDurationMinutes(cur + delta) });
+            if (this.expandedSubtasks.has(task.id)) this.expandedSubtasks.delete(task.id);
+            else this.expandedSubtasks.add(task.id);
             return this.renderAll();
         }
         if (hit('.task-btn-today')) {
@@ -500,6 +502,7 @@ const RenderManager = {
         }
         if (hit('.task-add-subtask-btn')) {
             stop();
+            this.expandedSubtasks.add(task.id);
             return InlineEditManager.addSubtaskInline(card, task);
         }
         if (hit('.task-priority-badge')) {
@@ -523,7 +526,7 @@ const RenderManager = {
         // --- clique no fundo do cartao abre o editor completo ---
         if (
             e.target.closest(
-                'button, a, input, select, textarea, .task-tags-inline, .task-inline-time-input, .task-duration-stepper, .task-subtasks-wrap, .subtasks-container, [contenteditable="true"]'
+                'button, a, input, select, textarea, .task-tags-inline, .task-inline-time-input, .task-subtasks-wrap, .subtasks-container, [contenteditable="true"]'
             )
         ) {
             return;
@@ -606,15 +609,10 @@ const RenderManager = {
         });
     },
 
-    createSubtasksBlock(task, progress) {
-        const list =
-            task.subtasks && task.subtasks.length > 0 ? this.createSubtasksHTML(task, progress) : '';
-        return `
-            <div class="task-subtasks-wrap">
-                ${list}
-                <button type="button" class="task-add-subtask-btn">+ ${t('addSubtask')}</button>
-            </div>
-        `;
+    createSubtasksBlock(task, progress, open) {
+        const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+        const list = hasSubtasks && open ? this.createSubtasksHTML(task, progress) : '';
+        return `<div class="task-subtasks-wrap">${list}</div>`;
     },
     
     // Create subtasks HTML

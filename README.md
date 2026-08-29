@@ -27,8 +27,9 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - Prioridade: nenhuma, baixa, média, alta
 - **Data de vencimento** (`due_date`, formato `YYYY-MM-DD`)
 - **Hora opcional** (`due_time`, formato `HH:MM`; na grelha do calendário o arrasto alinha a **30 em 30 minutos**)
+- **Duração do bloco** (`meta.duration_minutes`, múltiplos de 15) — definida no calendário ou no modal, já não no cartão da lista
 - Tags múltiplas
-- Subtasks com progresso; no cartão, **+ Adicionar subtarefa** (ou equivalente i18n) abre um campo inline — Enter ou clique fora grava; Esc cancela
+- Subtasks com progresso; no cartão o botão **＋☰** (barra de ações, visível no hover) abre um campo inline — Enter ou clique fora grava; Esc cancela. O contador **☰ feitas/total** ao lado do título expande e recolhe a lista
 - Reordenação por **drag and drop** nas listas; botões **↑ / ↓** (**Para o topo** / **Para o fim**) na mesma sublista (ativas vs concluídas; em hábitos também secção agendada quando aplicável), ajustando `order_index`
 - Filtro rápido acima da lista de atividades: **Todas / Hoje / Sem data / Futuras** (combina com o filtro de tags) para reduzir o volume de itens visíveis no dia.
 - **Definir para hoje** (botão no card, só atividades não concluídas): define `due_date` para o dia **calendário local** atual (`Utils.dateToYMD`) e `due_time` para a **hora atual** (`Utils.getLocalDueTimeNow()`). Toast de confirmação; a pessoa pode depois alterar data/hora (lista, modal ou calendário).
@@ -54,6 +55,20 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - Limite de **20** hábitos (diárias) ativos
 - Secções: ativas, concluídas, agendadas (quando aplicável à UI)
 - Integração com o mesmo modelo de dados que tasks (`task_type: "daily"`)
+
+### Densidade e cartão silencioso (visão padrão)
+
+- **O cartão em repouso mostra só o que tem conteúdo.** As ações (**Definir para hoje**, **＋☰** subtarefa, ↑, ↓, 🍅, 🗑) vivem numa **barra sobreposta** (`position: absolute`), que aparece no **hover**, no **foco** ou quando o cartão está **selecionado pelo teclado** (`.keyboard-selected`). Como está fora do fluxo, não ocupa espaço nem desloca a lista.
+- **Marcadores de campos vazios** (`+ Prioridade`, `+ Data`, `+ Tags`, `+ Dias`, seletor de hora) têm a classe `is-hint` e seguem a mesma regra. A `.task-info-row` tem `min-height` para o hover não empurrar os cartões seguintes.
+- **Subtarefas colapsadas**: o cartão mostra um contador **☰ 2/3** ao lado do título (`.task-subtasks-badge`); a lista só entra no DOM quando é expandida (`RenderManager.expandedSubtasks`). Adicionar uma subtarefa abre automaticamente a lista desse cartão.
+- **O stepper de duração saiu das listas** — a duração define-se no **calendário** (arrastar a aresta do bloco) ou no **modal** (campo *Tempo no calendário*).
+- **Densidade** em `appData.settings.density`: **`compact`** (predefinição) ou `comfortable`, escolhida no menu **⋯** do header. Em compacta, e em ecrãs > 640px, a lista de tarefas ganha **scroll próprio** (`max-height: 58vh`) — o calendário fica logo abaixo em vez de exigir percorrer a página inteira.
+- Medido com 30 atividades: cartão de **105 px → 55 px**, **6 → 11** cartões visíveis no ecrã, e a página passou de **7.307 px → 3.001 px** de altura.
+
+### Menu **⋯** do header
+
+- O header fica com: título, alternar vista, **Hoje** + data + relógio, **pesquisa global**, **F** (modo foco) e **⋯**.
+- Dentro do **⋯**: **Densidade** (compacta / confortável), **Idioma**, **lembretes** (🔔), **exportar** (📋) e **importar** (📥). Fecha com clique fora ou **Esc**.
 
 ### Render e eventos (desempenho)
 
@@ -245,7 +260,7 @@ Persistência na chave **`habitus_data`**. Exemplo simplificado de um item em `t
 
 Preferência de idioma: chave separada **`habitus_language`** (ex.: `pt_BR`).
 
-Definições de aplicação em `appData.settings` (ex.: `language`, `remindersEnabled`) e totais em `appData.stats` (ex.: `pomodoroMinutesCompleted`, `pomodoroSessionsCompleted`) persistem em **`habitus_data`** junto com `tasks`.
+Definições de aplicação em `appData.settings` (ex.: `language`, `remindersEnabled`, `density`) e totais em `appData.stats` (ex.: `pomodoroMinutesCompleted`, `pomodoroSessionsCompleted`) persistem em **`habitus_data`** junto com `tasks`.
 
 ---
 

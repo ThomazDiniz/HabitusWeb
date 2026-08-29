@@ -486,7 +486,6 @@ const InlineEditManager = {
         const wrap = card.querySelector('.task-subtasks-wrap');
         if (!wrap) return;
         const btn = wrap.querySelector('.task-add-subtask-btn');
-        if (!btn) return;
 
         const input = document.createElement('input');
         input.type = 'text';
@@ -494,7 +493,8 @@ const InlineEditManager = {
         input.placeholder = t('addSubtask');
         input.setAttribute('aria-label', t('addSubtask'));
 
-        btn.replaceWith(input);
+        if (btn) btn.replaceWith(input);
+        else wrap.appendChild(input);
         input.focus();
 
         let finished = false;

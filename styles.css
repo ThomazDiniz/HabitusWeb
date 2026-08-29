@@ -1732,45 +1732,6 @@ body {
     border-color: var(--blue-primary);
 }
 
-.task-duration-stepper {
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-    margin-left: 4px;
-    padding: 1px 4px;
-    border-radius: 10px;
-    background: rgba(124, 158, 255, 0.1);
-    border: 1px solid rgba(124, 158, 255, 0.28);
-    font-variant-numeric: tabular-nums;
-    vertical-align: middle;
-}
-
-.task-duration-btn {
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    line-height: 1;
-    font-size: 14px;
-    font-weight: 600;
-    border: none;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--text-primary);
-    cursor: pointer;
-}
-
-.task-duration-btn:hover {
-    background: rgba(124, 158, 255, 0.35);
-}
-
-.task-duration-value {
-    min-width: 1.75rem;
-    text-align: center;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
 .task-inline-time-input:focus {
     outline: none;
     border-color: var(--blue-primary);
@@ -2670,7 +2631,6 @@ body.focus-mode .task-info-row .add-due-date,
 body.focus-mode .task-info-row .add-tag,
 body.focus-mode .task-info-row .add-days,
 body.focus-mode .task-inline-time-input,
-body.focus-mode .task-duration-stepper,
 body.focus-mode .task-subtasks-wrap,
 body.focus-mode .task-card {
     --task-card-pad-y: 4px;
@@ -2862,3 +2822,208 @@ body.focus-mode .add-input {
     }
 }
 
+
+/* ==========================================================================
+   Densidade da visao padrao + cartao "silencioso"
+   As acoes e os marcadores de campos vazios so aparecem no hover / foco /
+   selecao por teclado: o cartao em repouso mostra apenas o que tem conteudo.
+   ========================================================================== */
+
+.task-card {
+    position: relative;
+}
+
+/* Barra de acoes sobreposta: nao ocupa espaco no fluxo */
+.task-actions-inline {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    gap: 4px;
+    padding: 3px 5px;
+    border-radius: 8px;
+    background: #232838;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+    z-index: 3;
+}
+
+.task-card:hover .task-actions-inline,
+.task-card:focus-within .task-actions-inline,
+.task-card.keyboard-selected .task-actions-inline {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Marcadores de campos por preencher (+ Prioridade, + Data, + Tags, hora…) */
+.task-card .is-hint {
+    display: none;
+}
+
+.task-card:hover .is-hint,
+.task-card:focus-within .is-hint,
+.task-card.keyboard-selected .is-hint {
+    display: inline-flex;
+}
+
+/* Reserva a altura da linha de info para o hover nao empurrar a lista */
+.task-info-row {
+    min-height: 22px;
+}
+
+/* Subtarefas: contador no titulo, lista so quando expandida */
+.task-subtasks-badge {
+    flex-shrink: 0;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    line-height: 1;
+    padding: 3px 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.task-subtasks-badge:hover,
+.task-subtasks-badge.is-open {
+    color: var(--blue-primary);
+    border-color: var(--blue-primary);
+}
+
+.task-subtasks-wrap:empty {
+    display: none;
+}
+
+/* --- Densidade compacta (predefinicao) --- */
+body.density-compact:not(.focus-mode) .task-card {
+    --task-card-pad-y: 7px;
+    --task-card-pad-x: 11px;
+    border-radius: 9px;
+}
+
+body.density-compact:not(.focus-mode) .task-title {
+    font-size: 13.5px;
+    margin-bottom: 0;
+}
+
+body.density-compact:not(.focus-mode) .tasks-list,
+body.density-compact:not(.focus-mode) .completed-list,
+body.density-compact:not(.focus-mode) .scheduled-list {
+    gap: 6px;
+}
+
+body.density-compact:not(.focus-mode) .task-info-row {
+    margin-top: 2px;
+}
+
+/* Em ecra largo as listas ganham scroll proprio: o calendario fica a um passo,
+   sem ter de percorrer a pagina toda */
+@media (min-width: 641px) {
+    body.density-compact:not(.focus-mode) .tasks-list {
+        max-height: 58vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 4px;
+        scrollbar-width: thin;
+    }
+}
+
+/* ==========================================================================
+   Menu "⋯" do header (idioma, densidade, lembretes, exportar/importar)
+   ========================================================================== */
+
+.header-menu {
+    position: relative;
+}
+
+.header-menu-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.header-menu-btn:hover,
+.header-menu-btn[aria-expanded="true"] {
+    background: var(--blue-hover);
+    border-color: var(--blue-primary);
+    color: var(--text-primary);
+}
+
+.header-menu-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 232px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: #1b1f2c;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    z-index: 1400;
+}
+
+/* [hidden] tem menos peso que a regra acima: e preciso o reforco */
+.header-menu-panel[hidden] {
+    display: none;
+}
+
+.header-menu-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.header-menu-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+}
+
+.header-menu-choices {
+    display: flex;
+    gap: 6px;
+}
+
+.header-menu-choice {
+    flex: 1;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 6px 8px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.header-menu-choice:hover {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+}
+
+.header-menu-choice.is-active {
+    background: var(--blue-hover);
+    border-color: var(--blue-primary);
+    color: var(--text-primary);
+}
+
+.header-menu-actions {
+    flex-direction: row;
+    gap: 8px;
+}
+
+.header-menu-panel .language-selector {
+    width: 100%;
+}

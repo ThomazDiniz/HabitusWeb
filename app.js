@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function startApp() {
     // Initialize data manager
     DataManager.init();
+
+    applyDensity(DataManager.appData.settings.density || 'compact');
     
     if (typeof WeekCalendarManager !== 'undefined') {
         try {
@@ -41,6 +43,67 @@ function startApp() {
     }
 
     setupFocusMode();
+    setupHeaderMenu();
+}
+
+/** Densidade da visao padrao: 'compact' (predefinicao) ou 'comfortable' */
+function applyDensity(mode) {
+    const compact = mode !== 'comfortable';
+    document.body.classList.toggle('density-compact', compact);
+    document.body.classList.toggle('density-comfortable', !compact);
+    document.querySelectorAll('#density-choices .header-menu-choice').forEach((btn) => {
+        const on = btn.dataset.density === (compact ? 'compact' : 'comfortable');
+        btn.classList.toggle('is-active', on);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+}
+
+function setDensity(mode) {
+    DataManager.appData.settings.density = mode === 'comfortable' ? 'comfortable' : 'compact';
+    DataManager.saveData();
+    applyDensity(DataManager.appData.settings.density);
+}
+
+/** Menu "⋯" do header: idioma, densidade, lembretes, exportar/importar */
+function setupHeaderMenu() {
+    const btn = document.getElementById('header-menu-btn');
+    const panel = document.getElementById('header-menu-panel');
+    if (!btn || !panel) return;
+
+    const close = () => {
+        panel.hidden = true;
+        btn.setAttribute('aria-expanded', 'false');
+    };
+    const open = () => {
+        panel.hidden = false;
+        btn.setAttribute('aria-expanded', 'true');
+    };
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        panel.hidden ? open() : close();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (panel.hidden) return;
+        if (e.target.closest('#header-menu')) return;
+        close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !panel.hidden) close();
+    });
+
+    const choices = document.getElementById('density-choices');
+    if (choices) {
+        choices.addEventListener('click', (e) => {
+            const choice = e.target.closest('.header-menu-choice');
+            if (!choice) return;
+            setDensity(choice.dataset.density);
+        });
+    }
+
+    applyDensity(DataManager.appData.settings.density || 'compact');
 }
 
 // Focus mode: compact view — listas em cima, grelha do calendario em baixo

@@ -38,22 +38,40 @@
             </div>
         </div>
         <div class="header-right">
-            <select id="language-selector" class="language-selector">
-                <option value="en">English</option>
-                <option value="es">Español</option>
-                <option value="zh">中文</option>
-                <option value="ja">日本語</option>
-                <option value="de">Deutsch</option>
-                <option value="it">Italiano</option>
-                <option value="pt_BR">Português BR</option>
-                <option value="pt">Português PT</option>
-                <option value="fr">Français</option>
-            </select>
-            <button type="button" class="reminders-toggle-btn" id="reminders-toggle-btn" aria-pressed="false">🔕</button>
-            <button class="export-btn" id="export-btn" title="Exportar">📋</button>
-            <button class="import-btn" id="import-btn" title="Importar">📥</button>
             <button type="button" class="focus-toggle-btn" id="focus-toggle-btn" title="Modo foco" aria-pressed="false">F</button>
             <button type="button" class="focus-layout-btn" id="focus-layout-btn" title="Trocar ordem: calendário em cima" aria-label="Trocar ordem das metades no modo foco">⇅</button>
+
+            <div class="header-menu" id="header-menu">
+                <button type="button" class="header-menu-btn" id="header-menu-btn" aria-haspopup="true" aria-expanded="false" data-i18n-aria-label="menuMore" title="Mais opções">⋯</button>
+                <div class="header-menu-panel" id="header-menu-panel" hidden>
+                    <div class="header-menu-group">
+                        <span class="header-menu-label" data-i18n="densityLabel">Densidade</span>
+                        <div class="header-menu-choices" id="density-choices">
+                            <button type="button" class="header-menu-choice" data-density="compact" data-i18n="densityCompact">Compacta</button>
+                            <button type="button" class="header-menu-choice" data-density="comfortable" data-i18n="densityComfortable">Confortável</button>
+                        </div>
+                    </div>
+                    <div class="header-menu-group">
+                        <span class="header-menu-label" data-i18n="languageLabel">Idioma</span>
+                        <select id="language-selector" class="language-selector">
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                            <option value="zh">中文</option>
+                            <option value="ja">日本語</option>
+                            <option value="de">Deutsch</option>
+                            <option value="it">Italiano</option>
+                            <option value="pt_BR">Português BR</option>
+                            <option value="pt">Português PT</option>
+                            <option value="fr">Français</option>
+                        </select>
+                    </div>
+                    <div class="header-menu-group header-menu-actions">
+                        <button type="button" class="reminders-toggle-btn" id="reminders-toggle-btn" aria-pressed="false">🔕</button>
+                        <button class="export-btn" id="export-btn" title="Exportar">📋</button>
+                        <button class="import-btn" id="import-btn" title="Importar">📥</button>
+                    </div>
+                </div>
+            </div>
             <input type="file" id="import-file" accept=".json" style="display: none;">
         </div>
     </div>
