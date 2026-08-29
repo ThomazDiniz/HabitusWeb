@@ -277,13 +277,9 @@ const ModalManager = {
         if (deleteBtn) {
             deleteBtn.addEventListener('click', () => {
                 if (!this.currentEditingTask) return;
-                if (confirm(t('confirmDelete'))) {
-                    TasksManager.deleteTask(this.currentEditingTask.id);
-                    this.closeTaskModal();
-                    if (typeof RenderManager !== 'undefined') {
-                        RenderManager.renderAll();
-                    }
-                }
+                const task = this.currentEditingTask;
+                this.closeTaskModal();
+                RenderManager.deleteTaskWithUndo(task);
             });
         }
         

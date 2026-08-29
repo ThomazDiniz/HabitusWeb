@@ -178,7 +178,8 @@ const Utils = {
                 try {
                     onAction();
                 } finally {
-                    row.remove();
+                    if (typeof row._dismiss === 'function') row._dismiss();
+                    else row.remove();
                 }
             });
             row.appendChild(btn);
@@ -186,12 +187,15 @@ const Utils = {
 
         stack.appendChild(row);
 
-        const t = setTimeout(() => {
+        // Remocao unica: o timeout e cancelado por quem remover primeiro.
+        // (Antes usava-se DOMNodeRemoved, um mutation event ja removido das specs
+        // que nunca chegava a disparar — o timer ficava pendurado.)
+        const dismiss = () => {
+            clearTimeout(timer);
             row.remove();
-        }, Math.max(250, timeoutMs || 0));
-
-        // Se o elemento sair antes (ex.: ação), limpar timeout.
-        row.addEventListener('DOMNodeRemoved', () => clearTimeout(t), { once: true });
+        };
+        const timer = setTimeout(dismiss, Math.max(250, timeoutMs || 0));
+        row._dismiss = dismiss;
     },
     
     // Play beep sound

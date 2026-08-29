@@ -53,6 +53,8 @@ const DataManager = {
                     ...(parsed.settings && typeof parsed.settings === 'object' ? parsed.settings : {})
                 };
                 // Migrate old data structure if needed
+                // Migracao: normaliza meta e DESCARTA meta.pasted_images (funcionalidade
+                // removida — as data URLs enchiam o localStorage a cada gravacao)
                 this.appData.tasks = this.appData.tasks.map((task) => {
                     const m = task.meta || {};
                     return {
@@ -63,8 +65,7 @@ const DataManager = {
                             days_of_week: Array.isArray(m.days_of_week) ? m.days_of_week : [],
                             ...(typeof m.duration_minutes !== 'undefined'
                                 ? { duration_minutes: m.duration_minutes }
-                                : {}),
-                            ...(Array.isArray(m.pasted_images) ? { pasted_images: m.pasted_images } : {})
+                                : {})
                         },
                         subtasks: task.subtasks || []
                     };

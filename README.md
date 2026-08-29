@@ -29,13 +29,13 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 - **Hora opcional** (`due_time`, formato `HH:MM`; na grelha do calendário o arrasto alinha a **30 em 30 minutos**)
 - Tags múltiplas
 - Subtasks com progresso; no cartão, **+ Adicionar subtarefa** (ou equivalente i18n) abre um campo inline — Enter ou clique fora grava; Esc cancela
-- **Imagens coladas (Ctrl+V)**: com o cartão **focado** (clique antes), colar uma imagem da área de transferência acrescenta uma miniatura **abaixo** do conteúdo principal; até **8** imagens por tarefa; guardadas em `meta.pasted_images` como data URLs (consumo de `localStorage`); não cola quando o foco está num campo de texto ou com um modal aberto
 - Reordenação por **drag and drop** nas listas; botões **↑ / ↓** (**Para o topo** / **Para o fim**) na mesma sublista (ativas vs concluídas; em hábitos também secção agendada quando aplicável), ajustando `order_index`
 - Filtro rápido acima da lista de atividades: **Todas / Hoje / Sem data / Futuras** (combina com o filtro de tags) para reduzir o volume de itens visíveis no dia.
 - **Definir para hoje** (botão no card, só atividades não concluídas): define `due_date` para o dia **calendário local** atual (`Utils.dateToYMD`) e `due_time` para a **hora atual** (`Utils.getLocalDueTimeNow()`). Toast de confirmação; a pessoa pode depois alterar data/hora (lista, modal ou calendário).
 - **Finalização sem animação**: ao concluir uma **atividade**, ela vai imediatamente para concluídas e aparece um tooltip empilhável no canto superior direito: **“Atividade finalizada: <nome>”** (verde) por **2s**, com botão **Desfazer**. Se várias forem concluídas, empilham para baixo e vão desaparecendo (estilo “console”).
 - Limite de **200** atividades (todos) ativas
-- Secção de concluídas (oculta por defeito) com eliminar todas as concluídas
+- Secção de concluídas (oculta por defeito, com contagem no botão) e eliminar todas as concluídas
+- **Eliminar não usa diálogos do navegador**: apagar uma tarefa (cartão, editor inline ou modal) ou todas as concluídas remove já e mostra um toast empilhável com **Desfazer** (~6 s), que restaura o objeto original na mesma posição
 - Criação rápida pelo campo `+` e teclado (ver atalhos)
 - Edição inline de título e dias da semana (quando aplicável) nas listas
 
@@ -48,12 +48,19 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 
 - Na interface (pt-BR e i18n alinhado), a coluna chama-se **Hábitos**; o modelo de dados continua a usar “daily” / diária no código.
 - Criar, editar e eliminar hábitos (diárias)
-- **Streak** (`streak_count`) e **max streak** (`max_streak`): ao concluir, a sequência incrementa se a última conclusão (`last_completed_date`) foi no **último dia civil anterior em que o hábito estava agendado** (`getPreviousScheduledYmdBefore` + `isScheduledCalendarDay` em `js/tasks.js`). Caso contrário, a sequência volta a **1**. Isto cobre hábitos só em alguns dias da semana (ex.: seg/qua) sem exigir conclusão em dias “em branco” entre elas.
+- **Streak** (`streak_count`) e **max streak** (`max_streak`) — mantidos no modelo de dados e mostrados nas **estatísticas** (melhor sequência); **já não aparecem como badges no cartão**. Ao concluir, a sequência incrementa se a última conclusão (`last_completed_date`) foi no **último dia civil anterior em que o hábito estava agendado** (`getPreviousScheduledYmdBefore` + `isScheduledCalendarDay` em `js/tasks.js`). Caso contrário, a sequência volta a **1**. Isto cobre hábitos só em alguns dias da semana (ex.: seg/qua) sem exigir conclusão em dias “em branco” entre elas.
 - **Dias da semana** em que a diária conta (meta `days_of_week`); no cartão, o seletor inline permite marcar **vários dias** de seguida — **OK** ou clique **fora** grava; **Esc** descarta
 - Reset lógico diário (estado “hoje” / conclusão)
 - Limite de **20** hábitos (diárias) ativos
 - Secções: ativas, concluídas, agendadas (quando aplicável à UI)
 - Integração com o mesmo modelo de dados que tasks (`task_type: "daily"`)
+
+### Render e eventos (desempenho)
+
+- **Delegação de eventos**: os cartões são criados sem nenhum `addEventListener`. Cada lista (`#dailies-list`, `#tasks-list`, listas de concluídas/agendadas) liga **um** par de listeners (`click` + `change`) uma única vez — `RenderManager.bindListDelegation` / `onListClick` / `onListChange`. O drag and drop segue o mesmo padrão em `DragDropManager.setup` (um listener por tipo, por container). Antes eram ~33 listeners por cartão, recriados a cada render.
+- **Secções colapsáveis não geram DOM**: concluídas e agendadas só constroem cartões quando estão **abertas** (`RenderManager.sectionOpen` + `renderCollapsibleSection`). O rótulo do botão mostra a **contagem** (ex.: «Mostrar concluídas (12)») para não ser preciso abrir. O estado de aberto/fechado **sobrevive** aos re-renders (antes, qualquer ação voltava a fechar a secção).
+- **Cartão com um só caminho de template**: `infoRowHtml()` monta a linha de info para hábitos e atividades (antes eram dois blocos quase idênticos em `createTaskCard`).
+- Referência medida com 200 atividades + 20 hábitos: `renderAll()` passou de ~78 ms para ~46 ms e de ~3.600 para ~2.500 listeners por render (os que restam são todos do calendário semanal, que ainda liga listeners por item).
 
 ### Tags e filtros
 
@@ -137,6 +144,7 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 ### Internacionalização (i18n)
 
 - Idiomas: EN, ES, ZH, JA, DE, IT, PT-BR, PT, FR
+- **Carregamento por idioma**: `i18n.js` traz só o **pt-BR** (idioma base e fallback de `t()`) mais o motor; os outros oito vivem em `i18n/<lang>.js` e são carregados **a pedido** (`loadLanguageAssets`, `setLanguage`). Como o idioma pode estar noutro ficheiro, o arranque da app corre no callback de `initI18n(startApp)` em `app.js`. O ficheiro passou de ~58 KB para ~9 KB + ~5 KB do idioma ativo.
 - Deteção pelo idioma do sistema
 - `updateUI` estendido na app para títulos de botões export/import, secções de concluídas, **toggle de vista**, etc.
 - Chaves de rótulos principais: `dailies` / `tasks` (ex.: pt-BR **Hábitos** / **Atividades**); ações do card: `setForToday`, `setForTodayDone`.
@@ -172,7 +180,8 @@ Este ficheiro é a **fonte de verdade** do produto para evolução futura (por e
 HabitusWeb/
 ├── index.html           # Marcação principal (header, listas, calendário, modais)
 ├── styles.css           # Tema, layout, calendário, responsivo
-├── i18n.js              # Traduções e `t()`, `updateUI`, seletor de idioma
+├── i18n.js              # Motor i18n + pt-BR (fallback); carrega i18n/<lang>.js a pedido
+├── i18n/                # en, es, zh, ja, de, it, pt, fr — um ficheiro por idioma
 ├── app.js               # DOMContentLoaded, listeners globais, `window.updateUI`, toggle de vista
 ├── README.md            # Este documento (fonte de verdade)
 ├── LICENSE
@@ -182,7 +191,7 @@ HabitusWeb/
     ├── tasks.js         # CRUD e regras de tasks/dailies
     ├── subtasks.js
     ├── filters.js
-    ├── drag-drop.js     # Reordenar nas listas; integração com dados
+    ├── drag-drop.js     # Reordenar nas listas (delegação por container)
     ├── pomodoro.js
     ├── export-import.js
     ├── reminders.js     # Lembretes por hora (Notification API, due_time)
@@ -191,7 +200,7 @@ HabitusWeb/
     ├── keyboard-nav.js  # Navegação por teclado nas listas
     ├── mobile-views.js  # ≤640px: tabs + swipe entre hábitos, atividades e calendário (hoje)
     ├── week-calendar.js # Vista semanal, DnD, edição inline, hora
-    ├── render.js        # RenderManager.renderAll(); botão «Definir para hoje» em atividades
+    ├── render.js        # RenderManager.renderAll(), cartões sem listeners + delegação por lista
     ├── modal.js         # Modal de task/daily e Pomodoro (referência)
     └── README.md        # Notas técnicas dos módulos
 ```
@@ -220,7 +229,8 @@ Persistência na chave **`habitus_data`**. Exemplo simplificado de um item em `t
   "order_index": 0,
   "meta": {
     "tags": ["tag1"],
-    "days_of_week": ["monday", "wednesday"]
+    "days_of_week": ["monday", "wednesday"],
+    "duration_minutes": 30
   },
   "is_deleted": false,
   "created_at": "2026-01-01T00:00:00.000Z",

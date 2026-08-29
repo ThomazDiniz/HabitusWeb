@@ -240,12 +240,9 @@ const InlineEditManager = {
 
         const deleteBtn = editForm.querySelector('.edit-delete-btn');
         deleteBtn.addEventListener('click', () => {
-            if (confirm(t('confirmDelete'))) {
-                cleanupFullEditOutside();
-                TasksManager.deleteTask(task.id);
-                this.editingTaskId = null;
-                RenderManager.renderAll();
-            }
+            cleanupFullEditOutside();
+            this.editingTaskId = null;
+            RenderManager.deleteTaskWithUndo(task);
         });
         
         // Enter key on title saves

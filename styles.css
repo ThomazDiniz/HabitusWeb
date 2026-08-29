@@ -1094,70 +1094,7 @@ body {
     gap: 8px;
 }
 
-.streak-badge {
-    background: rgba(251, 191, 36, 0.2);
-    color: var(--streak);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-}
-
 /* Pasted images on task cards (Ctrl+V) */
-.task-pasted-images {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-    min-height: 0;
-}
-
-.task-pasted-images[aria-hidden="true"] {
-    display: none;
-}
-
-.task-pasted-thumb-wrap {
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    background: rgba(0, 0, 0, 0.15);
-    max-width: 100%;
-}
-
-.task-pasted-thumb {
-    display: block;
-    max-width: min(220px, 100%);
-    max-height: 160px;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-}
-
-.task-pasted-remove {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    border: none;
-    border-radius: 6px;
-    background: rgba(0, 0, 0, 0.55);
-    color: #fff;
-    font-size: 16px;
-    line-height: 1;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s ease;
-}
-
-.task-pasted-remove:hover {
-    background: rgba(220, 38, 38, 0.85);
-}
-
 .task-subtasks-wrap {
     margin-top: 2px;
 }
@@ -2735,10 +2672,6 @@ body.focus-mode .task-info-row .add-days,
 body.focus-mode .task-inline-time-input,
 body.focus-mode .task-duration-stepper,
 body.focus-mode .task-subtasks-wrap,
-body.focus-mode .task-pasted-images {
-    display: none;
-}
-
 body.focus-mode .task-card {
     --task-card-pad-y: 4px;
     --task-card-pad-x: 10px;
@@ -2791,7 +2724,6 @@ body.focus-mode .task-actions-inline {
     gap: 4px;
 }
 
-body.focus-mode .streak-badge,
 body.focus-mode .task-priority-badge,
 body.focus-mode .task-due-date,
 body.focus-mode .task-days-of-week,

@@ -6,34 +6,46 @@ const DragDropManager = {
     draggedTaskId: null,
     
     // Setup drag and drop for a container
+    /**
+     * Liga o drag and drop por DELEGACAO, uma unica vez por container: antes eram
+     * 6 listeners por cartao, recriados a cada render.
+     */
     setup(containerId) {
         const container = document.getElementById(containerId);
-        if (!container) return;
-        
-        container.querySelectorAll('.task-card').forEach(card => {
-            card.addEventListener('dragstart', this.handleDragStart.bind(this));
-            card.addEventListener('dragend', this.handleDragEnd.bind(this));
-            card.addEventListener('dragover', this.handleDragOver.bind(this));
-            card.addEventListener('drop', this.handleDrop.bind(this));
-            card.addEventListener('dragenter', this.handleDragEnter.bind(this));
-            card.addEventListener('dragleave', this.handleDragLeave.bind(this));
+        if (!container || container.dataset.dndBound === '1') return;
+        container.dataset.dndBound = '1';
+
+        ['dragstart', 'dragend', 'dragover', 'drop', 'dragenter', 'dragleave'].forEach((type) => {
+            container.addEventListener(type, (e) => {
+                const card = e.target.closest('.task-card');
+                if (!card || !container.contains(card)) return;
+                const handler = {
+                    dragstart: this.handleDragStart,
+                    dragend: this.handleDragEnd,
+                    dragover: this.handleDragOver,
+                    drop: this.handleDrop,
+                    dragenter: this.handleDragEnter,
+                    dragleave: this.handleDragLeave
+                }[type];
+                handler.call(this, e, card);
+            });
         });
     },
     
-    handleDragStart(e) {
-        this.draggedElement = e.currentTarget;
-        this.draggedTaskId = parseFloat(e.currentTarget.dataset.taskId);
-        e.currentTarget.classList.add('dragging');
+    handleDragStart(e, card) {
+        this.draggedElement = card;
+        this.draggedTaskId = parseFloat(card.dataset.taskId);
+        card.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
+        e.dataTransfer.setData('text/html', card.innerHTML);
         e.dataTransfer.setData('application/x-habitus-task-id', String(this.draggedTaskId));
         if (typeof WeekCalendarManager !== 'undefined') {
             WeekCalendarManager._calendarDragTaskId = String(this.draggedTaskId);
         }
     },
     
-    handleDragEnd(e) {
-        e.currentTarget.classList.remove('dragging');
+    handleDragEnd(e, card) {
+        card.classList.remove('dragging');
         document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
         if (typeof WeekCalendarManager !== 'undefined') {
             WeekCalendarManager._calendarDragTaskId = null;
@@ -43,7 +55,7 @@ const DragDropManager = {
         }
     },
     
-    handleDragOver(e) {
+    handleDragOver(e, card) {
         if (e.preventDefault) {
             e.preventDefault();
         }
@@ -51,23 +63,23 @@ const DragDropManager = {
         return false;
     },
     
-    handleDragEnter(e) {
-        if (e.currentTarget !== this.draggedElement) {
-            e.currentTarget.classList.add('drag-over');
+    handleDragEnter(e, card) {
+        if (card !== this.draggedElement) {
+            card.classList.add('drag-over');
         }
     },
     
-    handleDragLeave(e) {
-        e.currentTarget.classList.remove('drag-over');
+    handleDragLeave(e, card) {
+        card.classList.remove('drag-over');
     },
     
-    handleDrop(e) {
+    handleDrop(e, card) {
         if (e.stopPropagation) {
             e.stopPropagation();
         }
         
-        if (this.draggedElement !== e.currentTarget) {
-            const taskId = parseFloat(e.currentTarget.dataset.taskId);
+        if (this.draggedElement !== card) {
+            const taskId = parseFloat(card.dataset.taskId);
             const draggedTask = DataManager.findTask(this.draggedTaskId);
             const targetTask = DataManager.findTask(taskId);
             
@@ -90,7 +102,7 @@ const DragDropManager = {
             }
         }
         
-        e.currentTarget.classList.remove('drag-over');
+        card.classList.remove('drag-over');
         return false;
     }
 };

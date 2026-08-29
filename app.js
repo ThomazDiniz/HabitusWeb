@@ -3,9 +3,11 @@
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize i18n first
-    initI18n();
-    
+    // O idioma pode viver em i18n/<lang>.js — arrancar so depois de carregado
+    initI18n(startApp);
+});
+
+function startApp() {
     // Initialize data manager
     DataManager.init();
     
@@ -37,12 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof RemindersManager !== 'undefined') {
         RemindersManager.init();
     }
-    if (typeof RenderManager !== 'undefined' && RenderManager.setupGlobalImagePaste) {
-        RenderManager.setupGlobalImagePaste();
-    }
 
     setupFocusMode();
-});
+}
 
 // Focus mode: compact view — listas em cima, grelha do calendario em baixo
 function scrollFocusCalendarToNow() {
@@ -196,19 +195,13 @@ function setupEventListeners() {
         }
     });
     
-    // Delete completed buttons
+    // Delete completed buttons — sem dialogo bloqueante: apaga e oferece Desfazer
     document.getElementById('delete-tasks-completed').addEventListener('click', () => {
-        if (confirm(t('confirmDeleteCompleted'))) {
-            TasksManager.deleteCompletedTasks('todo');
-            RenderManager.renderAll();
-        }
+        deleteCompletedWithUndo('todo');
     });
-    
+
     document.getElementById('delete-dailies-completed').addEventListener('click', () => {
-        if (confirm(t('confirmDeleteCompleted'))) {
-            TasksManager.deleteCompletedTasks('daily');
-            RenderManager.renderAll();
-        }
+        deleteCompletedWithUndo('daily');
     });
     
     // Toggle completed sections
@@ -284,30 +277,40 @@ function setupViewToggle() {
     });
 }
 
-// Toggle completed section
+/** Apaga as concluidas de um tipo e oferece Desfazer (restaura os objetos originais) */
+function deleteCompletedWithUndo(taskType) {
+    const removed = DataManager.appData.tasks.filter(
+        (x) => x.task_type === taskType && x.status === 'done' && !x.is_deleted
+    );
+    if (removed.length === 0) return;
+
+    TasksManager.deleteCompletedTasks(taskType);
+    RenderManager.renderAll();
+
+    Utils.showActionToast({
+        message: `${t('completedDeleted')} (${removed.length})`,
+        actionLabel: t('undo'),
+        timeoutMs: 6000,
+        tone: 'error',
+        onAction: () => {
+            removed.forEach((x) => DataManager.appData.tasks.push(x));
+            DataManager.saveData();
+            RenderManager.renderAll();
+        }
+    });
+}
+
+// Toggle completed section — o estado vive no RenderManager (fechada = sem DOM)
 function toggleCompletedSection(taskType) {
-    const section = document.getElementById(`${taskType === 'todo' ? 'tasks' : 'dailies'}-completed-section`);
-    const list = section.querySelector('.completed-list');
-    const toggleBtn = section.querySelector('.toggle-completed-btn span');
-    const deleteBtn = section.querySelector('.delete-completed-btn');
-    const isVisible = list.style.display !== 'none';
-    
-    list.style.display = isVisible ? 'none' : 'block';
-    toggleBtn.textContent = isVisible ? t('showCompleted') : t('hideCompleted');
-    if (deleteBtn) {
-        deleteBtn.textContent = t('deleteCompleted');
-    }
+    const key = taskType === 'todo' ? 'todoCompleted' : 'dailyCompleted';
+    RenderManager.sectionOpen[key] = !RenderManager.sectionOpen[key];
+    RenderManager.renderAll();
 }
 
 // Toggle scheduled section
 function toggleScheduledSection() {
-    const section = document.getElementById('dailies-scheduled-section');
-    const list = section.querySelector('.scheduled-list');
-    const toggleBtn = section.querySelector('.toggle-scheduled-btn span');
-    const isVisible = list.style.display !== 'none';
-    
-    list.style.display = isVisible ? 'none' : 'block';
-    toggleBtn.textContent = isVisible ? t('showScheduled') : t('hideScheduled');
+    RenderManager.sectionOpen.dailyScheduled = !RenderManager.sectionOpen.dailyScheduled;
+    RenderManager.renderAll();
 }
 
 // Update UI when language changes
@@ -324,14 +327,7 @@ window.updateUI = function() {
         RemindersManager.syncToggleButton();
     }
     
-    // Update completed section buttons
-    const toggleTasksText = document.getElementById('toggle-tasks-text');
-    const toggleDailiesText = document.getElementById('toggle-dailies-text');
-    const toggleDailiesScheduledText = document.getElementById('toggle-dailies-scheduled-text');
-    if (toggleTasksText) toggleTasksText.textContent = t('showCompleted');
-    if (toggleDailiesText) toggleDailiesText.textContent = t('showCompleted');
-    if (toggleDailiesScheduledText) toggleDailiesScheduledText.textContent = t('showScheduled');
-    
+    // Os rotulos de "mostrar concluidas/agendadas" (com contagem) vem do renderAll
     const deleteTasksCompleted = document.getElementById('delete-tasks-completed');
     const deleteDailiesCompleted = document.getElementById('delete-dailies-completed');
     if (deleteTasksCompleted) deleteTasksCompleted.textContent = t('deleteCompleted');

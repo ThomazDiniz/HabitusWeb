@@ -1,13 +1,20 @@
 // Render Management Module
 // Handles all UI rendering functionality
 
-/** Último cartão com mousedown (para colar imagem com Ctrl+V). */
-const TaskCardPasteState = {
-    lastCard: null
-};
+/** Cartao editavel (nao concluido) */
+function editableTask(task) {
+    return task && task.status !== 'done';
+}
 
 const RenderManager = {
     todoDateFilter: 'all', // all | today | no_date | future
+
+    /** Seccoes colapsaveis: fechadas nao geram DOM nenhum */
+    sectionOpen: {
+        dailyCompleted: false,
+        dailyScheduled: false,
+        todoCompleted: false
+    },
     _tasksDateFilterBound: false,
 
     bindTasksDateFilterUI() {
@@ -122,12 +129,7 @@ const RenderManager = {
     // Render dailies
     renderDailies() {
         const container = document.getElementById('dailies-list');
-        const completedContainer = document.getElementById('dailies-completed-list');
-        const scheduledContainer = document.getElementById('dailies-scheduled-list');
-        
         container.innerHTML = '';
-        completedContainer.innerHTML = '';
-        scheduledContainer.innerHTML = '';
         
         // Update title
         document.getElementById('dailies-title').innerHTML = `${t('dailies')} <span class="count" id="dailies-count">(0)</span>`;
@@ -175,41 +177,35 @@ const RenderManager = {
             });
         }
         
-        if (completedDailies.length > 0) {
-            const section = document.getElementById('dailies-completed-section');
-            section.style.display = 'block';
-            const list = section.querySelector('.completed-list');
-            list.style.display = 'none'; // Hidden by default
-            completedDailies.forEach(task => {
-                completedContainer.appendChild(this.createTaskCard(task));
-            });
-        } else {
-            document.getElementById('dailies-completed-section').style.display = 'none';
-        }
-        
-        if (scheduledDailies.length > 0) {
-            const section = document.getElementById('dailies-scheduled-section');
-            section.style.display = 'block';
-            const list = section.querySelector('.scheduled-list');
-            list.style.display = 'none'; // Hidden by default
-            scheduledDailies.forEach(task => {
-                scheduledContainer.appendChild(this.createTaskCard(task));
-            });
-        } else {
-            document.getElementById('dailies-scheduled-section').style.display = 'none';
-        }
-        
+        this.renderCollapsibleSection({
+            sectionId: 'dailies-completed-section',
+            listId: 'dailies-completed-list',
+            toggleTextId: 'toggle-dailies-text',
+            openKey: 'dailyCompleted',
+            tasks: completedDailies,
+            showKey: 'showCompleted',
+            hideKey: 'hideCompleted'
+        });
+
+        this.renderCollapsibleSection({
+            sectionId: 'dailies-scheduled-section',
+            listId: 'dailies-scheduled-list',
+            toggleTextId: 'toggle-dailies-scheduled-text',
+            openKey: 'dailyScheduled',
+            tasks: scheduledDailies,
+            showKey: 'showScheduled',
+            hideKey: 'hideScheduled'
+        });
+
         this.renderTagFilters('daily');
+        this.bindListDelegation('dailies-list');
         DragDropManager.setup('dailies-list');
     },
     
     // Render tasks
     renderTasks() {
         const container = document.getElementById('tasks-list');
-        const completedContainer = document.getElementById('tasks-completed-list');
-        
         container.innerHTML = '';
-        completedContainer.innerHTML = '';
         
         // Update title
         document.getElementById('tasks-title').innerHTML = `${t('tasks')} <span class="count" id="tasks-count">(0)</span>`;
@@ -245,22 +241,53 @@ const RenderManager = {
             });
         }
         
-        if (completedTasks.length > 0) {
-            const section = document.getElementById('tasks-completed-section');
-            section.style.display = 'block';
-            const list = section.querySelector('.completed-list');
-            list.style.display = 'none'; // Hidden by default
-            completedTasks.forEach(task => {
-                completedContainer.appendChild(this.createTaskCard(task));
-            });
-        } else {
-            document.getElementById('tasks-completed-section').style.display = 'none';
-        }
-        
+        this.renderCollapsibleSection({
+            sectionId: 'tasks-completed-section',
+            listId: 'tasks-completed-list',
+            toggleTextId: 'toggle-tasks-text',
+            openKey: 'todoCompleted',
+            tasks: completedTasks,
+            showKey: 'showCompleted',
+            hideKey: 'hideCompleted'
+        });
+
         this.renderTagFilters('todo');
+        this.bindListDelegation('tasks-list');
         DragDropManager.setup('tasks-list');
     },
     
+    /**
+     * Seccao colapsavel (concluidas / agendadas). Fechada = zero cartoes no DOM;
+     * o rotulo do botao mostra a contagem para nao ser preciso abrir.
+     */
+    renderCollapsibleSection({ sectionId, listId, toggleTextId, openKey, tasks, showKey, hideKey }) {
+        const section = document.getElementById(sectionId);
+        const list = document.getElementById(listId);
+        if (!section || !list) return;
+
+        list.innerHTML = '';
+
+        if (!tasks || tasks.length === 0) {
+            section.style.display = 'none';
+            this.sectionOpen[openKey] = false;
+            return;
+        }
+
+        section.style.display = 'block';
+        const open = !!this.sectionOpen[openKey];
+        list.style.display = open ? 'block' : 'none';
+
+        const label = document.getElementById(toggleTextId);
+        if (label) label.textContent = `${t(open ? hideKey : showKey)} (${tasks.length})`;
+
+        if (!open) return;
+
+        const frag = document.createDocumentFragment();
+        tasks.forEach((task) => frag.appendChild(this.createTaskCard(task)));
+        list.appendChild(frag);
+        this.bindListDelegation(listId);
+    },
+
     // Render tag filters
     renderTagFilters(taskType) {
         const container = document.getElementById(`${taskType === 'todo' ? 'tasks' : 'dailies'}-tag-filters`);
@@ -280,408 +307,303 @@ const RenderManager = {
         });
     },
     
-    // Create task card
+    // ===== Cartao =====
+
+    formatDaysOfWeek(days) {
+        if (!days || days.length === 0) return '';
+        if (days.length === 7) return t('everyDay');
+        const labels = {
+            monday: t('monday'),
+            tuesday: t('tuesday'),
+            wednesday: t('wednesday'),
+            thursday: t('thursday'),
+            friday: t('friday'),
+            saturday: t('saturday'),
+            sunday: t('sunday')
+        };
+        return days.map((d) => labels[d] || d).join(', ');
+    },
+
+    /** Tags do cartao (identicas para habitos e atividades) */
+    tagsHtml(task) {
+        const tags = task.meta?.tags || [];
+        const chips = tags
+            .map(
+                (tag) =>
+                    `<span class="task-tag" data-tag="${tag}">${tag}<span class="tag-remove" data-tag="${tag}">×</span></span>`
+            )
+            .join('');
+        return `<div class="task-tags-inline">${chips}<span class="task-tag add-tag">+ ${t('tags')}</span></div>`;
+    },
+
+    /**
+     * Linha de info. Habitos e atividades so diferem nos dois primeiros badges;
+     * o resto (hora, duracao, tags) e comum — um unico caminho, sem duplicar o template.
+     */
+    infoRowHtml(task) {
+        const chunks = [];
+
+        if (task.task_type === 'daily') {
+            const days = this.formatDaysOfWeek(task.meta?.days_of_week || []);
+            chunks.push(
+                days
+                    ? `<span class="task-days-of-week">📅 ${days}</span>`
+                    : `<span class="task-days-of-week add-days">+ ${t('daysOfWeek')}</span>`
+            );
+        } else {
+            chunks.push(
+                task.priority
+                    ? `<span class="task-priority-badge ${task.priority}">${t(task.priority)}</span>`
+                    : `<span class="task-priority-badge add-priority">+ ${t('priority')}</span>`
+            );
+            const isOverdue =
+                task.due_date && task.due_date < Utils.dateToYMD(new Date()) && task.status !== 'done';
+            chunks.push(
+                task.due_date
+                    ? `<span class="task-due-date ${isOverdue ? 'overdue' : ''}">${Utils.formatDate(task.due_date)}</span>`
+                    : `<span class="task-due-date add-due-date">+ ${t('dueDate')}</span>`
+            );
+        }
+
+        if (task.due_time) {
+            chunks.push(`<span class="task-due-time-badge">🕐 ${task.due_time}</span>`);
+        } else if (task.task_type === 'daily' || task.due_date) {
+            chunks.push(
+                `<input type="time" class="task-inline-time-input" step="1800" aria-label="${t('weekCalendarPickTime')}" title="${t('weekCalendarPickTime')}" />`
+            );
+        }
+
+        const durM = Utils.getTaskDurationMinutes(task);
+        chunks.push(`<div class="task-duration-stepper" title="${t('taskDurationLabel')}">
+                <button type="button" class="task-duration-btn task-duration-minus" aria-label="${t('taskDurationDecrease')}">−</button>
+                <span class="task-duration-value">${durM}</span>
+                <button type="button" class="task-duration-btn task-duration-plus" aria-label="${t('taskDurationIncrease')}">+</button>
+            </div>`);
+
+        chunks.push(this.tagsHtml(task));
+
+        return `<div class="task-info-row"><div class="task-info-left">${chunks.join('')}</div></div>`;
+    },
+
+    /**
+     * Cria o cartao. NAO liga nenhum listener: os eventos sao tratados por
+     * delegacao no container (ver bindListDelegation) — antes eram ~33 listeners
+     * por cartao, recriados a cada render.
+     */
     createTaskCard(task) {
         const card = document.createElement('div');
         card.className = `task-card ${task.status === 'done' ? 'completed' : ''}`;
         card.draggable = true;
         card.dataset.taskId = task.id;
 
-        // Click no card abre o editor completo (exceto em controles/edições inline)
-        card.addEventListener('mousedown', () => {
-            TaskCardPasteState.lastCard = card;
-        });
-
-        card.addEventListener('click', (e) => {
-            const interactive = e.target.closest(
-                'button, a, input, select, textarea, .task-tags-inline, .task-tag, .tag-remove, .task-inline-time-input, .task-duration-stepper, .task-pasted-images, .task-pasted-remove, .task-add-subtask-btn, .task-subtasks-wrap, .subtasks-container, .subtask-item, [contenteditable="true"]'
-            );
-            if (interactive) return;
-            InlineEditManager.startEditing(task.id, 'full');
-        });
-        
-        const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'done';
         const progress = SubtasksManager.getSubtasksProgress(task);
-        
-        // Format days of week for dailies
-        const formatDaysOfWeek = (days) => {
-            if (!days || days.length === 0) return '';
-            const dayLabels = {
-                monday: t('monday'),
-                tuesday: t('tuesday'),
-                wednesday: t('wednesday'),
-                thursday: t('thursday'),
-                friday: t('friday'),
-                saturday: t('saturday'),
-                sunday: t('sunday')
-            };
-            const allDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-            if (days.length === 7) return t('everyDay');
-            return days.map(d => dayLabels[d] || d).join(', ');
-        };
-        
-        const daysOfWeek = task.meta?.days_of_week || [];
-        const formattedDays = formatDaysOfWeek(daysOfWeek);
-
-        const inlineTimePicker =
-            !task.due_time &&
-            (task.task_type === 'daily' || (task.task_type === 'todo' && task.due_date))
-                ? `<input type="time" class="task-inline-time-input" data-task-id="${task.id}" step="1800" aria-label="${t('weekCalendarPickTime')}" title="${t('weekCalendarPickTime')}" />`
-                : '';
-        const dueTimeDisplay = task.due_time
-            ? `<span class="task-due-time-badge">🕐 ${task.due_time}</span>`
-            : inlineTimePicker;
-
-        const durM = Utils.getTaskDurationMinutes(task);
-        const durationStepper = `
-            <div class="task-duration-stepper" data-task-id="${task.id}" title="${t('taskDurationLabel')}">
-                <button type="button" class="task-duration-btn task-duration-minus" aria-label="${t('taskDurationDecrease')}">−</button>
-                <span class="task-duration-value">${durM}</span>
-                <button type="button" class="task-duration-btn task-duration-plus" aria-label="${t('taskDurationIncrease')}">+</button>
-            </div>`;
+        const editable = task.status !== 'done';
 
         card.innerHTML = `
             <div class="task-header">
                 <input type="checkbox" class="task-checkbox" ${task.status === 'done' ? 'checked' : ''}>
                 <div class="task-content">
                     <div class="task-title-row">
-                        <div class="task-title">${Utils.linkify(task.title)}</div>
+                        <div class="task-title"${editable ? ` title="${t('edit')}"` : ''}>${Utils.linkify(task.title)}</div>
                         <div class="task-actions-inline">
-                            ${task.task_type === 'todo' && task.status !== 'done'
-                                ? `<button type="button" class="task-btn task-btn-today" data-task-id="${task.id}">${t('setForToday')}</button>`
-                                : ''}
-                            <button type="button" class="task-btn task-order-top" data-task-id="${task.id}" title="${t('sendToTop')}" aria-label="${t('sendToTop')}">↑</button>
-                            <button type="button" class="task-btn task-order-bottom" data-task-id="${task.id}" title="${t('sendToBottom')}" aria-label="${t('sendToBottom')}">↓</button>
-                            <button class="task-btn pomodoro" data-task-id="${task.id}" title="${t('pomodoro')}" aria-label="${t('pomodoro')}">🍅</button>
-                            <button class="task-btn delete" data-task-id="${task.id}" title="${t('delete')}" aria-label="${t('delete')}">🗑</button>
+                            ${
+                                task.task_type === 'todo' && task.status !== 'done'
+                                    ? `<button type="button" class="task-btn task-btn-today">${t('setForToday')}</button>`
+                                    : ''
+                            }
+                            <button type="button" class="task-btn task-order-top" title="${t('sendToTop')}" aria-label="${t('sendToTop')}">↑</button>
+                            <button type="button" class="task-btn task-order-bottom" title="${t('sendToBottom')}" aria-label="${t('sendToBottom')}">↓</button>
+                            <button type="button" class="task-btn pomodoro" title="${t('pomodoro')}" aria-label="${t('pomodoro')}">🍅</button>
+                            <button type="button" class="task-btn delete" title="${t('delete')}" aria-label="${t('delete')}">🗑</button>
                         </div>
                     </div>
-                    <div class="task-info-row">
-                        ${task.task_type === 'daily' ? `
-                            <div class="task-info-left">
-                                ${formattedDays ? `<span class="task-days-of-week" data-field="days_of_week" data-task-id="${task.id}">📅 ${formattedDays}</span>` : `<span class="task-days-of-week add-days" data-field="days_of_week" data-task-id="${task.id}">+ ${t('daysOfWeek')}</span>`}
-                                <span class="streak-badge">🔥 ${task.streak_count || 0} ${t('days')}</span>
-                                ${task.max_streak > 0 ? `<span class="streak-badge">⭐ ${task.max_streak} ${t('maxStreak')}</span>` : ''}
-                                ${dueTimeDisplay}
-                                ${durationStepper}
-                                <div class="task-tags-inline" data-field="tags" data-task-id="${task.id}">
-                                    ${task.meta?.tags?.length > 0 ? task.meta.tags.map(tag => `
-                                        <span class="task-tag" data-tag="${tag}">
-                                            ${tag}
-                                            <span class="tag-remove" data-tag="${tag}">×</span>
-                                        </span>
-                                    `).join('') : ''}
-                                    <span class="task-tag add-tag">+ ${t('tags')}</span>
-                                </div>
-                            </div>
-                        ` : `
-                            <div class="task-info-left">
-                                ${task.priority ? `<span class="task-priority-badge ${task.priority}" data-field="priority" data-task-id="${task.id}">${t(task.priority)}</span>` : ''}
-                                ${!task.priority ? `<span class="task-priority-badge add-priority" data-field="priority" data-task-id="${task.id}">+ ${t('priority')}</span>` : ''}
-                                ${task.due_date ? `<span class="task-due-date ${isOverdue ? 'overdue' : ''}" data-field="due_date" data-task-id="${task.id}">${Utils.formatDate(task.due_date)}</span>` : ''}
-                                ${!task.due_date ? `<span class="task-due-date add-due-date" data-field="due_date" data-task-id="${task.id}">+ ${t('dueDate')}</span>` : ''}
-                                ${dueTimeDisplay}
-                                ${durationStepper}
-                                <div class="task-tags-inline" data-field="tags" data-task-id="${task.id}">
-                                    ${task.meta?.tags?.length > 0 ? task.meta.tags.map(tag => `
-                                        <span class="task-tag" data-tag="${tag}">
-                                            ${tag}
-                                            <span class="tag-remove" data-tag="${tag}">×</span>
-                                        </span>
-                                    `).join('') : ''}
-                                    <span class="task-tag add-tag">+ ${t('tags')}</span>
-                                </div>
-                            </div>
-                        `}
-                    </div>
-                    ${this.createPastedImagesHTML(task)}
+                    ${this.infoRowHtml(task)}
                     ${this.createSubtasksBlock(task, progress)}
                 </div>
             </div>
         `;
-        
-        // Event listeners
-        card.querySelector('.task-checkbox').addEventListener('change', (e) => {
-            const isMarkingDone = e.target.checked;
-            const before = DataManager.findTask(task.id);
-            const snapshot = before
-                ? {
-                      status: before.status,
-                      completed_at: before.completed_at,
-                      last_completed_date: before.last_completed_date,
-                      streak_count: before.streak_count,
-                      max_streak: before.max_streak
-                  }
-                : null;
 
-            TasksManager.toggleTaskStatus(task.id);
-            this.renderAll();
-
-            if (isMarkingDone && snapshot) {
-                Utils.showActionToast({
-                    message: `${t('activityFinished')}: ${task.title || ''}`.trim(),
-                    actionLabel: t('undo'),
-                    timeoutMs: 5000,
-                    tone: 'success',
-                    onAction: () => {
-                        TasksManager.updateTask(task.id, snapshot);
-                        if (typeof RenderManager !== 'undefined') {
-                            RenderManager.renderAll();
-                        }
-                    }
-                });
-            }
-        });
-        
-        // Tags - click to filter, or add new tag, or remove tag
-        card.querySelectorAll('.task-tag').forEach(tagEl => {
-            tagEl.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const tag = tagEl.dataset.tag;
-                if (tag) {
-                    // Check if clicked on remove button
-                    if (e.target.classList.contains('tag-remove')) {
-                        e.stopPropagation();
-                        InlineEditManager.removeTag(task.id, tag);
-                        this.renderAll();
-                    } else {
-                        // Existing tag - filter
-                        FiltersManager.toggleFilter(task.task_type, tag);
-                        this.renderAll();
-                    }
-                } else if (tagEl.classList.contains('add-tag')) {
-                    // Add tag button
-                    InlineEditManager.addTagInline(card, task);
-                }
-            });
-        });
-        
-        // Days of week for dailies - click to edit
-        const daysOfWeekEl = card.querySelector('.task-days-of-week');
-        if (daysOfWeekEl && task.task_type === 'daily') {
-            daysOfWeekEl.style.cursor = 'pointer';
-            daysOfWeekEl.addEventListener('click', (e) => {
-                e.stopPropagation();
-                InlineEditManager.startEditing(task.id, 'full');
-            });
-        }
-        
-        // Priority - click to edit or add
-        const priorityEl = card.querySelector('.task-priority-badge');
-        if (priorityEl) {
-            priorityEl.style.cursor = 'pointer';
-            priorityEl.addEventListener('click', (e) => {
-                e.stopPropagation();
-                InlineEditManager.editPriorityInline(card, task);
-            });
-        }
-        
-        // Due date - click to edit
-        const dueDateEl = card.querySelector('.task-due-date');
-        if (dueDateEl) {
-            dueDateEl.style.cursor = 'pointer';
-            dueDateEl.addEventListener('click', (e) => {
-                e.stopPropagation();
-                InlineEditManager.editDueDateInline(card, task);
-            });
-        }
-
-        const inlineTimeEl = card.querySelector('.task-inline-time-input');
-        if (inlineTimeEl) {
-            inlineTimeEl.addEventListener('click', (e) => e.stopPropagation());
-            inlineTimeEl.addEventListener('keydown', (e) => e.stopPropagation());
-            inlineTimeEl.addEventListener('change', () => {
-                const v = inlineTimeEl.value;
-                const normalized = v ? Utils.normalizeDueTime(v) : null;
-                if (v && !normalized) return;
-                TasksManager.updateTask(task.id, { due_time: normalized || null });
-                if (typeof RenderManager !== 'undefined') {
-                    RenderManager.renderAll();
-                }
-            });
-        }
-
-        const durationStepperEl = card.querySelector('.task-duration-stepper');
-        if (durationStepperEl) {
-            durationStepperEl.addEventListener('click', (e) => {
-                const btn = e.target.closest('.task-duration-btn');
-                if (!btn) return;
-                e.stopPropagation();
-                const fresh = DataManager.findTask(task.id);
-                if (!fresh) return;
-                const cur = Utils.getTaskDurationMinutes(fresh);
-                const delta = btn.classList.contains('task-duration-minus') ? -15 : 15;
-                const next = Utils.normalizeDurationMinutes(cur + delta);
-                TasksManager.updateTask(task.id, { duration_minutes: next });
-                this.renderAll();
-            });
-        }
-
-        card.querySelectorAll('.task-pasted-remove').forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const idx = parseInt(btn.getAttribute('data-img-index'), 10);
-                const fresh = DataManager.findTask(task.id);
-                if (!fresh || Number.isNaN(idx)) return;
-                const arr = [...(fresh.meta?.pasted_images || [])];
-                arr.splice(idx, 1);
-                TasksManager.updateTask(task.id, { pasted_images: arr });
-                this.renderAll();
-            });
-        });
-
-        const addSubBtn = card.querySelector('.task-add-subtask-btn');
-        if (addSubBtn) {
-            addSubBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                InlineEditManager.addSubtaskInline(card, task);
-            });
-        }
-
-        // Subtask event listeners
-        card.querySelectorAll('.subtask-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                const subtaskId = parseFloat(e.target.dataset.subtaskId);
-                SubtasksManager.toggleSubtaskStatus(task.id, subtaskId);
-                this.renderAll();
-            });
-        });
-        
-        card.querySelectorAll('.subtask-delete').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const subtaskId = parseFloat(e.target.dataset.subtaskId);
-                SubtasksManager.deleteSubtask(task.id, subtaskId);
-                this.renderAll();
-            });
-        });
-        
-        card.querySelector('.task-order-top').addEventListener('click', (e) => {
-            e.stopPropagation();
-            TasksManager.moveTaskToTop(task.id);
-            this.renderAll();
-        });
-        card.querySelector('.task-order-bottom').addEventListener('click', (e) => {
-            e.stopPropagation();
-            TasksManager.moveTaskToBottom(task.id);
-            this.renderAll();
-        });
-
-        card.querySelector('.pomodoro').addEventListener('click', () => {
-            PomodoroManager.openModal(task);
-        });
-
-        const todayBtn = card.querySelector('.task-btn-today');
-        if (todayBtn) {
-            todayBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const hhmm = Utils.getLocalDueTimeNow();
-                TasksManager.updateTask(task.id, {
-                    due_date: Utils.dateToYMD(new Date()),
-                    due_time: hhmm
-                });
-                Utils.showToast(t('setForTodayDone'));
-                this.renderAll();
-            });
-        }
-        
-        // Make task title clickable to edit (if not done)
-        const titleEl = card.querySelector('.task-title');
-        if (titleEl && task.status !== 'done') {
-            titleEl.style.cursor = 'pointer';
-            titleEl.title = t('edit');
-            titleEl.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (InlineEditManager.isEditing(task.id)) return;
-                if (task.task_type === 'daily') {
-                    InlineEditManager.startEditing(task.id, 'full');
-                } else {
-                    InlineEditManager.startEditing(task.id, 'title');
-                }
-            });
-        }
-        
-        card.querySelector('.delete').addEventListener('click', () => {
-            if (confirm(t('confirmDelete'))) {
-                TasksManager.deleteTask(task.id);
-                this.renderAll();
-            }
-        });
-        
         return card;
     },
 
-    setupGlobalImagePaste() {
-        if (this._globalImagePasteBound) return;
-        this._globalImagePasteBound = true;
-        document.addEventListener('paste', (e) => {
-            const el = e.target;
-            if (el && el.closest && el.closest('input, textarea, [contenteditable="true"]')) return;
-            if (el && el.id === 'global-search-input') return;
-            let modalOpen = false;
-            document.querySelectorAll('.modal-overlay').forEach((m) => {
-                if (m.style.display === 'flex') modalOpen = true;
-            });
-            if (modalOpen) return;
-
-            const items = e.clipboardData && e.clipboardData.items;
-            if (!items) return;
-            let imageBlob = null;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    imageBlob = items[i].getAsFile();
-                    break;
-                }
-            }
-            if (!imageBlob) return;
-
-            const card = TaskCardPasteState.lastCard;
-            if (!card || !document.body.contains(card)) {
-                Utils.showToast(t('pasteImageNoCard'), 'error');
-                return;
-            }
-
-            e.preventDefault();
-            const taskId = parseFloat(card.dataset.taskId, 10);
-            const reader = new FileReader();
-            reader.onload = () => {
-                const dataUrl = reader.result;
-                const fresh = DataManager.findTask(taskId);
-                if (!fresh) return;
-                const arr = [...(fresh.meta?.pasted_images || [])];
-                if (arr.length >= 8) {
-                    Utils.showToast(t('pasteImageTooMany'), 'error');
-                    return;
-                }
-                if (String(dataUrl).length > 1500000) {
-                    Utils.showToast(t('pasteImageTooLarge'), 'error');
-                    return;
-                }
-                arr.push(dataUrl);
-                TasksManager.updateTask(taskId, { pasted_images: arr });
-                this.renderAll();
-            };
-            reader.readAsDataURL(imageBlob);
-        });
+    /** Um par de listeners por lista, ligado uma unica vez. */
+    bindListDelegation(containerId) {
+        const el = document.getElementById(containerId);
+        if (!el || el.dataset.delegated === '1') return;
+        el.dataset.delegated = '1';
+        el.addEventListener('click', (e) => this.onListClick(e));
+        el.addEventListener('change', (e) => this.onListChange(e));
     },
 
-    createPastedImagesHTML(task) {
-        const imgs = task.meta?.pasted_images || [];
-        if (!imgs.length) {
-            return `<div class="task-pasted-images" data-task-id="${task.id}" aria-hidden="true"></div>`;
+    onListClick(e) {
+        const card = e.target.closest('.task-card');
+        if (!card) return;
+        const task = DataManager.findTask(Number(card.dataset.taskId));
+        if (!task) return;
+
+        const hit = (sel) => e.target.closest(sel);
+        const stop = () => e.stopPropagation();
+
+        // --- acoes explicitas ---
+        if (hit('.tag-remove')) {
+            stop();
+            InlineEditManager.removeTag(task.id, hit('.tag-remove').dataset.tag);
+            return this.renderAll();
         }
-        const removeLabel = String(t('removeImageAria')).replace(/"/g, '&quot;');
-        return `
-            <div class="task-pasted-images" data-task-id="${task.id}">
-                ${imgs
-                    .map(
-                        (url, i) => `
-                    <div class="task-pasted-thumb-wrap">
-                        <img src="${url}" alt="" class="task-pasted-thumb" loading="lazy" />
-                        <button type="button" class="task-pasted-remove" data-img-index="${i}" aria-label="${removeLabel}">×</button>
-                    </div>`
-                    )
-                    .join('')}
-            </div>`;
+        if (hit('.task-tag.add-tag')) {
+            stop();
+            return InlineEditManager.addTagInline(card, task);
+        }
+        if (hit('.task-tag[data-tag]')) {
+            stop();
+            FiltersManager.toggleFilter(task.task_type, hit('.task-tag[data-tag]').dataset.tag);
+            return this.renderAll();
+        }
+        if (hit('.task-duration-btn')) {
+            stop();
+            const cur = Utils.getTaskDurationMinutes(task);
+            const delta = hit('.task-duration-btn').classList.contains('task-duration-minus') ? -15 : 15;
+            TasksManager.updateTask(task.id, { duration_minutes: Utils.normalizeDurationMinutes(cur + delta) });
+            return this.renderAll();
+        }
+        if (hit('.task-btn-today')) {
+            stop();
+            TasksManager.updateTask(task.id, {
+                due_date: Utils.dateToYMD(new Date()),
+                due_time: Utils.getLocalDueTimeNow()
+            });
+            Utils.showToast(t('setForTodayDone'));
+            return this.renderAll();
+        }
+        if (hit('.task-order-top')) {
+            stop();
+            TasksManager.moveTaskToTop(task.id);
+            return this.renderAll();
+        }
+        if (hit('.task-order-bottom')) {
+            stop();
+            TasksManager.moveTaskToBottom(task.id);
+            return this.renderAll();
+        }
+        if (hit('.task-btn.pomodoro')) {
+            stop();
+            return PomodoroManager.openModal(task);
+        }
+        if (hit('.task-btn.delete')) {
+            stop();
+            return this.deleteTaskWithUndo(task);
+        }
+        if (hit('.subtask-delete')) {
+            stop();
+            SubtasksManager.deleteSubtask(task.id, parseFloat(hit('.subtask-delete').dataset.subtaskId));
+            return this.renderAll();
+        }
+        if (hit('.task-add-subtask-btn')) {
+            stop();
+            return InlineEditManager.addSubtaskInline(card, task);
+        }
+        if (hit('.task-priority-badge')) {
+            stop();
+            return InlineEditManager.editPriorityInline(card, task);
+        }
+        if (hit('.task-due-date')) {
+            stop();
+            return InlineEditManager.editDueDateInline(card, task);
+        }
+        if (hit('.task-days-of-week')) {
+            stop();
+            return InlineEditManager.startEditing(task.id, 'full');
+        }
+        if (hit('.task-title')) {
+            stop();
+            if (!editableTask(task) || InlineEditManager.isEditing(task.id)) return;
+            return InlineEditManager.startEditing(task.id, task.task_type === 'daily' ? 'full' : 'title');
+        }
+
+        // --- clique no fundo do cartao abre o editor completo ---
+        if (
+            e.target.closest(
+                'button, a, input, select, textarea, .task-tags-inline, .task-inline-time-input, .task-duration-stepper, .task-subtasks-wrap, .subtasks-container, [contenteditable="true"]'
+            )
+        ) {
+            return;
+        }
+        InlineEditManager.startEditing(task.id, 'full');
+    },
+
+    onListChange(e) {
+        const card = e.target.closest('.task-card');
+        if (!card) return;
+        const taskId = Number(card.dataset.taskId);
+        const task = DataManager.findTask(taskId);
+        if (!task) return;
+
+        if (e.target.classList.contains('task-checkbox')) {
+            return this.toggleWithUndo(task, e.target.checked);
+        }
+        if (e.target.classList.contains('subtask-checkbox')) {
+            SubtasksManager.toggleSubtaskStatus(taskId, parseFloat(e.target.dataset.subtaskId));
+            return this.renderAll();
+        }
+        if (e.target.classList.contains('task-inline-time-input')) {
+            const v = e.target.value;
+            const normalized = v ? Utils.normalizeDueTime(v) : null;
+            if (v && !normalized) return;
+            TasksManager.updateTask(taskId, { due_time: normalized || null });
+            return this.renderAll();
+        }
+    },
+
+    /** Concluir com aviso empilhavel + Desfazer (sem dialogos bloqueantes) */
+    toggleWithUndo(task, isMarkingDone) {
+        const before = DataManager.findTask(task.id);
+        const snapshot = before
+            ? {
+                  status: before.status,
+                  completed_at: before.completed_at,
+                  last_completed_date: before.last_completed_date,
+                  streak_count: before.streak_count,
+                  max_streak: before.max_streak
+              }
+            : null;
+
+        TasksManager.toggleTaskStatus(task.id);
+        this.renderAll();
+
+        if (isMarkingDone && snapshot) {
+            Utils.showActionToast({
+                message: `${t('activityFinished')}: ${task.title || ''}`.trim(),
+                actionLabel: t('undo'),
+                timeoutMs: 5000,
+                tone: 'success',
+                onAction: () => {
+                    TasksManager.updateTask(task.id, snapshot);
+                    this.renderAll();
+                }
+            });
+        }
+    },
+
+    /** Eliminar sem confirm(): apaga ja e oferece Desfazer no toast */
+    deleteTaskWithUndo(task) {
+        const index = DataManager.appData.tasks.findIndex((x) => x.id === task.id);
+        const snapshot = DataManager.findTask(task.id);
+        if (index === -1 || !snapshot) return;
+
+        TasksManager.deleteTask(task.id);
+        this.renderAll();
+
+        Utils.showActionToast({
+            message: `${t('taskDeleted')}: ${snapshot.title || ''}`.trim(),
+            actionLabel: t('undo'),
+            timeoutMs: 6000,
+            tone: 'error',
+            onAction: () => {
+                DataManager.appData.tasks.splice(Math.min(index, DataManager.appData.tasks.length), 0, snapshot);
+                DataManager.saveData();
+                this.renderAll();
+            }
+        });
     },
 
     createSubtasksBlock(task, progress) {
