@@ -457,7 +457,7 @@ const RenderManager = {
 
         card.innerHTML = `
             <div class="task-header">
-                <input type="checkbox" class="task-checkbox" ${task.status === 'done' ? 'checked' : ''}>
+                <button type="button" class="task-done-btn${task.status === 'done' ? ' is-done' : ''}" aria-pressed="${task.status === 'done' ? 'true' : 'false'}" title="${t('complete')}" aria-label="${t('complete')}">✓</button>
                 <div class="task-content">
                     <div class="task-title-row">
                         <div class="task-title"${editable ? ` title="${t('edit')}"` : ''}>${Utils.linkify(task.title)}</div>
@@ -469,6 +469,11 @@ const RenderManager = {
                                     : ''
                             }
                             <button type="button" class="task-btn task-add-subtask-btn" title="${t('addSubtask')}" aria-label="${t('addSubtask')}">＋☰</button>
+                            ${
+                                task.status !== 'done'
+                                    ? `<button type="button" class="task-btn task-btn-tomorrow" title="${t('snoozeTomorrow')}" aria-label="${t('snoozeTomorrow')}">→</button>`
+                                    : ''
+                            }
                             <button type="button" class="task-btn task-order-top" title="${t('sendToTop')}" aria-label="${t('sendToTop')}">↑</button>
                             <button type="button" class="task-btn task-order-bottom" title="${t('sendToBottom')}" aria-label="${t('sendToBottom')}">↓</button>
                             <button type="button" class="task-btn pomodoro" title="${t('pomodoro')}" aria-label="${t('pomodoro')}">🍅</button>
@@ -517,11 +522,19 @@ const RenderManager = {
             FiltersManager.toggleFilter(task.task_type, hit('.task-tag[data-tag]').dataset.tag);
             return this.renderAll();
         }
+        if (hit('.task-done-btn')) {
+            stop();
+            return this.toggleWithUndo(task, task.status !== 'done');
+        }
         if (hit('.task-subtasks-badge')) {
             stop();
             if (this.expandedSubtasks.has(task.id)) this.expandedSubtasks.delete(task.id);
             else this.expandedSubtasks.add(task.id);
             return this.renderAll();
+        }
+        if (hit('.task-btn-tomorrow')) {
+            stop();
+            return this.snoozeToTomorrow(task);
         }
         if (hit('.task-btn-today')) {
             stop();
@@ -596,9 +609,6 @@ const RenderManager = {
         const task = DataManager.findTask(taskId);
         if (!task) return;
 
-        if (e.target.classList.contains('task-checkbox')) {
-            return this.toggleWithUndo(task, e.target.checked);
-        }
         if (e.target.classList.contains('subtask-checkbox')) {
             SubtasksManager.toggleSubtaskStatus(taskId, e.target.dataset.subtaskId);
             return this.renderAll();
@@ -610,6 +620,28 @@ const RenderManager = {
             TasksManager.updateTask(taskId, { due_time: normalized || null });
             return this.renderAll();
         }
+    },
+
+    /**
+     * Adiar um dia. Numa atividade empurra a `due_date` (ou marca amanha, se nao
+     * tinha data); num habito, move os dias da semana um dia para a frente.
+     * A hora mantem-se.
+     */
+    snoozeToTomorrow(task) {
+        const today = Utils.dateToYMD(new Date());
+        if (task.task_type === 'todo') {
+            const base = task.due_date && task.due_date > today ? task.due_date : today;
+            TasksManager.updateTask(task.id, { due_date: Utils.ymdAddDays(base, 1) });
+        } else {
+            const order = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            const days = task.meta?.days_of_week || [];
+            const moved = days.length
+                ? days.map((d) => order[(order.indexOf(d) + 1) % 7])
+                : [Utils.ymdToDayOfWeek(Utils.ymdAddDays(today, 1))];
+            TasksManager.updateTask(task.id, { days_of_week: moved });
+        }
+        Utils.showToast(t('snoozedTomorrow'));
+        this.renderAll();
     },
 
     /** Concluir com aviso empilhavel + Desfazer (sem dialogos bloqueantes) */

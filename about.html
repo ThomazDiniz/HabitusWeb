@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sobre o Habitus</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+    :root {
+        --bg: linear-gradient(135deg, #0f1117 0%, #1a1d29 100%);
+        --card: rgba(37, 41, 56, 0.5);
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #e4e7eb;
+        --muted: #9ca3af;
+        --blue: #7c9eff;
+        --yellow: #fbbf24;
+        --green: #4ade80;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: var(--bg);
+        background-attachment: fixed;
+        color: var(--text);
+        line-height: 1.6;
+        padding: 40px 20px 80px;
+    }
+    .wrap { max-width: 860px; margin: 0 auto; }
+    header { margin-bottom: 36px; }
+    .back {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: var(--blue);
+        text-decoration: none;
+        font-size: 13px;
+    }
+    .back:hover { text-decoration: underline; }
+    h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.01em; }
+    h1 span { color: var(--blue); }
+    .sub { color: var(--muted); font-size: 15px; margin-top: 6px; }
+    h2 {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 34px 0 12px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border);
+    }
+    h3 { font-size: 15px; margin: 18px 0 4px; }
+    p { margin-bottom: 10px; }
+    p, li { font-size: 14px; }
+    ul { margin: 0 0 10px 18px; }
+    li { margin-bottom: 4px; }
+    .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 18px;
+        margin-bottom: 12px;
+    }
+    .card.habit { border-left: 3px solid var(--yellow); }
+    .card.task { border-left: 3px solid var(--blue); }
+    .card h3 { margin-top: 0; }
+    .card.habit h3 { color: var(--yellow); }
+    .card.task h3 { color: var(--blue); }
+    code, kbd {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12.5px;
+        background: rgba(0, 0, 0, 0.32);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 1px 5px;
+    }
+    kbd { min-width: 22px; display: inline-block; text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+    th, td {
+        text-align: left;
+        padding: 7px 10px;
+        border-bottom: 1px solid var(--border);
+        font-size: 13.5px;
+        vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+    td:first-child { white-space: nowrap; }
+    .ex { color: var(--green); }
+    footer {
+        margin-top: 44px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 12.5px;
+    }
+    footer a { color: var(--blue); }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <a class="back" href="index.html">← Voltar ao Habitus</a>
+        <h1>Habitus <span>| Rotina e Atividades</span></h1>
+        <p class="sub">Um gestor de rotina e tarefas que cabe numa tela só. Sem conta, sem servidor: os seus dados ficam no próprio navegador.</p>
+    </header>
+
+    <h2>Os dois tipos</h2>
+
+    <div class="card habit">
+        <h3>Hábitos — coisas que você repete</h3>
+        <p>Voltam todo dia (ou só nos dias que você escolher) e acumulam <strong>sequência</strong>. Concluir não apaga: amanhã ele está lá de novo.</p>
+        <p class="ex">Escovar os dentes · treinar · verificar os e-mails · ler 20 páginas</p>
+    </div>
+
+    <div class="card task">
+        <h3>Atividades — coisas que você termina</h3>
+        <p>Tarefas com fim. Você marca como concluída e ela sai da lista de vez.</p>
+        <p class="ex">Pagar o boleto · enviar a proposta · marcar o dentista · responder a Ana</p>
+    </div>
+
+    <p>Nas listas, hábitos são <span style="color:var(--yellow)">amarelos</span> e atividades <span style="color:var(--blue)">azuis</span> — a mesma cor que usam no calendário.</p>
+
+    <h2>A tela</h2>
+    <p>Listas à esquerda (hábitos em cima, atividades embaixo) e o calendário da semana à direita, sempre visíveis ao mesmo tempo. A página não rola: cada lista e o calendário rolam por dentro.</p>
+    <ul>
+        <li><strong>Divisor arrastável</strong> entre as duas colunas define a proporção; duplo clique volta ao padrão.</li>
+        <li><strong>Trocar lados</strong> (no menu <code>⋯</code>) põe o calendário à esquerda.</li>
+        <li>A <strong>grade de horas se adapta</strong> ao que existe na semana: nunca começa depois das 9h nem acaba antes das 19h, e se abre para caber o primeiro e o último compromisso.</li>
+        <li>Cada dia mostra o <strong>tempo agendado</strong> (<code>1h30</code>, <code>6h</code>) para você ver se o dia está cheio.</li>
+        <li>Abaixo do calendário, uma faixa com as <strong>estatísticas</strong> da semana e do Pomodoro.</li>
+    </ul>
+
+    <h2>Escrever ao adicionar</h2>
+    <p>O campo de adicionar entende data, hora, tag e prioridade no meio do texto — tudo o que ele reconhece sai do título.</p>
+    <table>
+        <tr><th>Você escreve</th><th>O que é criado</th></tr>
+        <tr><td><code>Reunião amanhã 14h #trabalho !alta</code></td><td>“Reunião”, amanhã às 14:00, tag <em>trabalho</em>, prioridade alta</td></tr>
+        <tr><td><code>Pagar boleto 12/09</code></td><td>“Pagar boleto” com vencimento em 12/09</td></tr>
+        <tr><td><code>Ligar para a Ana hoje às 9</code></td><td>“Ligar para a Ana”, hoje às 09:00</td></tr>
+        <tr><td><code>Treino seg qua sex 7h</code> <em>(hábito)</em></td><td>“Treino” repetindo seg/qua/sex às 07:00</td></tr>
+        <tr><td><code>Standup seg a sex 9:15</code> <em>(hábito)</em></td><td>de segunda a sexta às 09:15</td></tr>
+    </table>
+    <p><strong>Datas:</strong> <code>hoje</code>, <code>amanhã</code>, <code>depois de amanhã</code>, <code>seg</code>…<code>dom</code>, <code>seg a sex</code>, <code>12/09</code>, <code>12/09/2026</code>.<br>
+       <strong>Horas:</strong> <code>14h</code>, <code>14h30</code>, <code>14:30</code>, <code>às 9</code>.<br>
+       <strong>Tags:</strong> <code>#tag</code> &nbsp;·&nbsp; <strong>Prioridade:</strong> <code>!alta</code> <code>!media</code> <code>!baixa</code>.</p>
+    <p>Num <strong>hábito</strong>, os dias da semana viram repetição; numa <strong>atividade</strong>, viram a data.</p>
+
+    <h2>No cartão</h2>
+    <p>Em repouso o cartão mostra só o que tem conteúdo. Passando o mouse aparecem as ações:</p>
+    <ul>
+        <li><strong>✓</strong> concluir — quando concluída, o ✓ fica verde e permanente</li>
+        <li><strong>📌</strong> marcar para hoje, na hora atual</li>
+        <li><strong>→</strong> adiar um dia</li>
+        <li><strong>＋☰</strong> adicionar subtarefa — o contador <code>☰ 2/3</code> ao lado do título expande a lista</li>
+        <li><strong>↑ ↓</strong> mandar para o topo ou para o fim &nbsp;·&nbsp; <strong>🍅</strong> Pomodoro &nbsp;·&nbsp; <strong>🗑</strong> excluir</li>
+    </ul>
+    <p>Clicar no cartão abre o editor completo; clicar fora salva. Excluir e concluir sempre mostram <strong>Desfazer</strong> — não há caixas de confirmação.</p>
+
+    <h2>Calendário</h2>
+    <ul>
+        <li><strong>Arraste</strong> uma tarefa da lista para a grade para agendar (encaixa de 30 em 30 minutos). Use o <code>⋮</code> para mover dentro do calendário.</li>
+        <li>Largar na <strong>faixa do topo</strong> mantém o dia e tira a hora; largar de volta <strong>na lista</strong> tira do calendário.</li>
+        <li>Arraste a <strong>aresta de baixo</strong> de um bloco para mudar a duração.</li>
+        <li><strong>Duplo clique</strong> num espaço vazio cria uma tarefa naquele dia e hora.</li>
+        <li>Clique no título para renomear ali mesmo; no <code>+</code> ou <code>☀</code> do dia (aparecem no hover) para criar atividade ou hábito naquele dia.</li>
+    </ul>
+
+    <h2>Atalhos</h2>
+    <table>
+        <tr><td><kbd>/</kbd></td><td>ir para a pesquisa</td></tr>
+        <tr><td><kbd>N</kbd></td><td>nova atividade</td></tr>
+        <tr><td><kbd>H</kbd></td><td>novo hábito</td></tr>
+        <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>navegar entre cartões</td></tr>
+        <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>trocar de coluna</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>concluir o cartão selecionado</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>desfazer a última ação</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>limpar a pesquisa / fechar</td></tr>
+    </table>
+
+    <h2>No menu ⋯</h2>
+    <ul>
+        <li><strong>Tela</strong> — trocar os lados do workspace</li>
+        <li><strong>Filtros</strong> — Todas / Hoje / Atrasadas / Sem data / Futuras, e as tags. Com algum filtro ativo, o <code>⋯</code> ganha um ponto azul</li>
+        <li><strong>Ver</strong> — mostrar concluídas, mostrar hábitos agendados para outros dias, apagar concluídas</li>
+        <li><strong>Idioma</strong> — 9 idiomas, detectados automaticamente na primeira visita</li>
+        <li><strong>🔔 lembretes</strong> (notificação na hora marcada) · <strong>📋 exportar</strong> · <strong>📥 importar</strong></li>
+    </ul>
+
+    <h2>Outras coisas</h2>
+    <ul>
+        <li><strong>Sequência de hábitos</strong>: só quebra se você faltar num dia em que o hábito estava agendado — pular sábado não zera um hábito de seg/qua/sex.</li>
+        <li><strong>Pomodoro</strong> por tarefa, com o tempo acumulado nas estatísticas.</li>
+        <li><strong>Título da aba</strong> mostra quantas coisas ainda faltam hoje.</li>
+        <li><strong>Celular</strong>: três abas (Hábitos · Atividades · Hoje) com gesto de deslizar.</li>
+    </ul>
+
+    <h2>Onde ficam os dados</h2>
+    <p>Tudo no <code>localStorage</code> do navegador — nada sai do seu aparelho, e não há conta nem sincronização. Isso significa que <strong>limpar os dados do navegador apaga tudo</strong>: use o <strong>📋 exportar</strong> do menu de vez em quando para guardar um JSON de backup, e <strong>📥 importar</strong> para trazer de volta ou levar para outro aparelho.</p>
+
+    <footer>
+        <a class="back" href="index.html">← Voltar ao Habitus</a>
+        <p>Habitus é software livre sob licença MIT.</p>
+    </footer>
+</div>
+</body>
+</html>

@@ -15,6 +15,25 @@ const DragDropManager = {
         if (!container || container.dataset.dndBound === '1') return;
         container.dataset.dndBound = '1';
 
+        // Largar na lista um item vindo do CALENDARIO = desagendar
+        container.addEventListener('dragover', (e) => {
+            if (!this.isCalendarDrag(e)) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            container.classList.add('unschedule-hover');
+        });
+        container.addEventListener('dragleave', (e) => {
+            if (!container.contains(e.relatedTarget)) container.classList.remove('unschedule-hover');
+        });
+        container.addEventListener('drop', (e) => {
+            container.classList.remove('unschedule-hover');
+            if (!this.isCalendarDrag(e)) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const id = e.dataTransfer.getData('application/x-habitus-task-id');
+            if (id) this.unschedule(id);
+        });
+
         ['dragstart', 'dragend', 'dragover', 'drop', 'dragenter', 'dragleave'].forEach((type) => {
             container.addEventListener(type, (e) => {
                 const card = e.target.closest('.task-card');
@@ -32,6 +51,42 @@ const DragDropManager = {
         });
     },
     
+    /** O arrasto vem do calendario? (so de la e enviado o dia de origem) */
+    isCalendarDrag(e) {
+        const types = e.dataTransfer && e.dataTransfer.types ? Array.from(e.dataTransfer.types) : [];
+        return (
+            types.includes('application/x-habitus-source-ymd') &&
+            types.includes('application/x-habitus-task-id')
+        );
+    },
+
+    /** Tira a tarefa do calendario: atividade perde data e hora; habito perde a hora */
+    unschedule(taskId) {
+        const task = DataManager.findTask(taskId);
+        if (!task) return;
+
+        const before =
+            task.task_type === 'todo'
+                ? { due_date: task.due_date, due_time: task.due_time }
+                : { due_time: task.due_time };
+
+        TasksManager.updateTask(
+            task.id,
+            task.task_type === 'todo' ? { due_date: null, due_time: null } : { due_time: null }
+        );
+        RenderManager.renderAll();
+
+        Utils.showActionToast({
+            message: `${t('unscheduled')}: ${task.title || ''}`.trim(),
+            actionLabel: t('undo'),
+            timeoutMs: 5000,
+            onAction: () => {
+                TasksManager.updateTask(task.id, before);
+                RenderManager.renderAll();
+            }
+        });
+    },
+
     handleDragStart(e, card) {
         this.draggedElement = card;
         this.draggedTaskId = card.dataset.taskId;

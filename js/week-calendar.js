@@ -894,11 +894,8 @@ const WeekCalendarManager = {
             const ymd = Utils.dateToYMD(d);
             const isToday = Utils.isToday(ymd);
             const weekday = d.toLocaleDateString(lang, { weekday: 'short' });
-            const fullDate = d.toLocaleDateString(lang, {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
+            // dia/mes chega: o ano esta no intervalo da barra e o cabecalho cabe numa linha
+            const fullDate = d.toLocaleDateString(lang, { day: '2-digit', month: '2-digit' });
             const dow = Utils.ymdToDayOfWeek(ymd);
             html += `<div class="week-cal-day-header ${isToday ? 'is-today' : ''}" data-date="${ymd}">
                 <span class="week-cal-dow">${weekday}</span>

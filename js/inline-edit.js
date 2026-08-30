@@ -165,39 +165,43 @@ const InlineEditManager = {
         
         const isDaily = task.task_type === 'daily';
         
+        // Layout em grelha de 4 colunas: campos curtos lado a lado em vez de
+        // uma linha por campo (o editor ocupava mais que o proprio cartao).
+        const dias = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+        const marcados = task.meta?.days_of_week || [];
+
         editForm.innerHTML = `
-            <div class="edit-form-row">
+            <div class="edit-form-row edit-span-4">
                 <label>${t('title')} *</label>
-                <input type="text" class="edit-title-input" value="${task.title || ''}" placeholder="${t('title')}">
+                <input type="text" class="edit-title-input" value="${(task.title || '').replace(/"/g, '&quot;')}" placeholder="${t('title')}">
             </div>
-            ${!isDaily ? `
-                <div class="edit-form-row">
-                    <label>${t('priority')}</label>
-                    <select class="edit-priority-select">
-                        <option value="">${t('none')}</option>
-                        <option value="low" ${task.priority === 'low' ? 'selected' : ''}>${t('low')}</option>
-                        <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>${t('medium')}</option>
-                        <option value="high" ${task.priority === 'high' ? 'selected' : ''}>${t('high')}</option>
-                    </select>
-                </div>
-                <div class="edit-form-row">
-                    <label>${t('dueDate')}</label>
-                    <input type="date" class="edit-due-date-input" value="${task.due_date || ''}">
-                </div>
-            ` : `
-                <div class="edit-form-row">
-                    <label>${t('daysOfWeek')}</label>
-                    <div class="edit-days-checkboxes">
-                        <label><input type="checkbox" value="monday" class="edit-day-checkbox" ${(task.meta?.days_of_week || []).includes('monday') ? 'checked' : ''}> ${t('monday')}</label>
-                        <label><input type="checkbox" value="tuesday" class="edit-day-checkbox" ${(task.meta?.days_of_week || []).includes('tuesday') ? 'checked' : ''}> ${t('tuesday')}</label>
-                        <label><input type="checkbox" value="wednesday" class="edit-day-checkbox" ${(task.meta?.days_of_week || []).includes('wednesday') ? 'checked' : ''}> ${t('wednesday')}</label>
-                        <label><input type="checkbox" value="thursday" class="edit-day-checkbox" ${(task.meta?.days_of_week || []).includes('thursday') ? 'checked' : ''}> ${t('thursday')}</label>
-                        <label><input type="checkbox" value="friday" class="edit-day-checkbox" ${(task.meta?.days_of_week || []).includes('friday') ? 'checked' : ''}> ${t('friday')}</label>
-                        <label><input type="checkbox" value="saturday" class="edit-day-checkbox" ${(task.meta?.days_of_week || []).includes('saturday') ? 'checked' : ''}> ${t('saturday')}</label>
-                        <label><input type="checkbox" value="sunday" class="edit-day-checkbox" ${(task.meta?.days_of_week || []).includes('sunday') ? 'checked' : ''}> ${t('sunday')}</label>
+            ${
+                isDaily
+                    ? `<div class="edit-form-row edit-span-2">
+                        <label>${t('daysOfWeek')}</label>
+                        <div class="edit-days-checkboxes">
+                            ${dias
+                                .map(
+                                    (d) =>
+                                        `<label class="edit-day-chip"><input type="checkbox" value="${d}" class="edit-day-checkbox" ${marcados.includes(d) ? 'checked' : ''}><span>${t(d)}</span></label>`
+                                )
+                                .join('')}
+                        </div>
+                    </div>`
+                    : `<div class="edit-form-row">
+                        <label>${t('priority')}</label>
+                        <select class="edit-priority-select">
+                            <option value="">${t('none')}</option>
+                            <option value="low" ${task.priority === 'low' ? 'selected' : ''}>${t('low')}</option>
+                            <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>${t('medium')}</option>
+                            <option value="high" ${task.priority === 'high' ? 'selected' : ''}>${t('high')}</option>
+                        </select>
                     </div>
-                </div>
-            `}
+                    <div class="edit-form-row">
+                        <label>${t('dueDate')}</label>
+                        <input type="date" class="edit-due-date-input" value="${task.due_date || ''}">
+                    </div>`
+            }
             <div class="edit-form-row">
                 <label>${t('dueTimeOptional')}</label>
                 <input type="time" class="edit-due-time-input" step="60" value="${task.due_time || ''}">
@@ -206,17 +210,17 @@ const InlineEditManager = {
                 <label>${t('taskDurationLabel')}</label>
                 <input type="number" class="edit-duration-input" min="15" max="480" step="15" value="${Utils.getTaskDurationMinutes(task)}">
             </div>
-            <div class="edit-form-row">
+            <div class="edit-form-row edit-span-2">
                 <label>${t('tags')}</label>
-                <input type="text" class="edit-tags-input" value="${(task.meta?.tags || []).join(', ')}" placeholder="tag1, tag2, tag3">
+                <input type="text" class="edit-tags-input" value="${(task.meta?.tags || []).join(', ')}" placeholder="tag1, tag2">
             </div>
-            <div class="edit-form-actions">
+            <div class="edit-form-actions edit-span-2">
                 <button class="edit-save-btn">${t('save')}</button>
                 <button class="edit-cancel-btn">${t('cancel')}</button>
                 <button class="edit-delete-btn">${t('delete')}</button>
             </div>
         `;
-        
+
         // Hide original content
         taskContent.style.display = 'none';
         card.appendChild(editForm);

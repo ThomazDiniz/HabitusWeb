@@ -455,31 +455,41 @@ body {
 }
 
 .task-edit-form {
-    padding: 12px 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px 7px;
+    padding: 4px 0 0;
 }
 
+.edit-span-2 { grid-column: span 2; }
+.edit-span-4 { grid-column: 1 / -1; }
+
 .edit-form-row {
-    margin-bottom: 16px;
+    margin-bottom: 0;
+    min-width: 0;
 }
 
 .edit-form-row label {
     display: block;
-    margin-bottom: 6px;
-    font-size: 12px;
-    font-weight: 500;
+    margin-bottom: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
     color: var(--text-secondary);
+    opacity: 0.75;
 }
 
-.edit-form-row input[type="text"],
-.edit-form-row input[type="date"],
+.edit-form-row input,
 .edit-form-row select {
     width: 100%;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    padding: 8px 10px;
+    padding: 3px 6px;
     color: var(--text-primary);
-    font-size: 13px;
+    font-size: 12px;
+    line-height: 1.35;
     transition: all 0.2s ease;
 }
 
@@ -493,8 +503,34 @@ body {
 .edit-days-checkboxes {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 8px;
+    gap: 4px;
+    margin-top: 0;
+}
+
+/* dias como chips compactos, em vez de sete caixas com rotulo */
+.edit-day-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    font-size: 11px;
+    line-height: 1.3;
+    cursor: pointer;
+}
+
+.edit-day-chip input {
+    width: 11px;
+    height: 11px;
+    margin: 0;
+    accent-color: var(--blue-primary);
+}
+
+.edit-day-chip:has(input:checked) {
+    border-color: var(--blue-primary);
+    background: var(--blue-hover);
+    color: var(--text-primary);
 }
 
 .edit-days-checkboxes label {
@@ -574,11 +610,12 @@ body {
 
 .edit-form-actions {
     display: flex;
+    align-items: flex-end;
     justify-content: flex-end;
-    gap: 8px;
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border-color);
+    gap: 5px;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
 }
 
 .edit-save-btn,
@@ -2317,88 +2354,6 @@ body {
     }
 }
 
-/* ===== Modo foco ===== */
-/* Botao de trocar a ordem das metades: so existe dentro do modo foco */
-@media (min-width: 641px) {
-}
-
-/* No modo foco o header perde pointer-events: o menu ⋯ vai para junto
-   dos botoes flutuantes (F e ⇅), com o painel a abrir para CIMA. */
-/* Em ecras estreitos o modo foco nao tem o ⇅: o menu encosta ao F */
-@media (max-width: 640px) {
-}
-
-/* Idioma, lembretes, exportar e importar ja NAO se escondem aqui: vivem dentro
-   do menu ⋯, que so aparece quando aberto. */
-body.focus-mode .task-info-row .add-priority,
-body.focus-mode .task-info-row .add-due-date,
-body.focus-mode .task-info-row .add-tag,
-body.focus-mode .task-info-row .add-days,
-body.focus-mode .task-inline-time-input,
-body.focus-mode .task-subtasks-wrap,
-body.focus-mode .tasks-list,
-body.focus-mode .completed-list,
-body.focus-mode .scheduled-list {
-    gap: 4px;
-}
-
-body.focus-mode .task-title {
-    font-size: 13px;
-    margin-bottom: 0;
-}
-
-body.focus-mode .task-info-row {
-    margin-top: 0;
-    gap: 6px;
-}
-
-body.focus-mode .task-header {
-    gap: 8px;
-}
-
-body.focus-mode .task-checkbox {
-    width: 16px;
-    height: 16px;
-    margin-top: 2px;
-}
-
-body.focus-mode .task-btn.edit,
-body.focus-mode .task-btn.delete,
-body.focus-mode .task-btn.pomodoro,
-body.focus-mode .task-btn.task-order-top,
-body.focus-mode .task-btn.task-order-bottom {
-    height: 22px;
-    min-width: 26px;
-    padding: 2px 6px;
-    font-size: 12px;
-}
-
-body.focus-mode .task-btn.task-btn-today {
-    padding: 3px 6px;
-    font-size: 11px;
-}
-
-body.focus-mode .task-actions-inline {
-    gap: 4px;
-}
-
-body.focus-mode .task-priority-badge,
-body.focus-mode .task-due-date,
-body.focus-mode .task-days-of-week,
-body.focus-mode .task-due-time-badge,
-body.focus-mode .task-tag {
-    font-size: 10px;
-}
-
-body.focus-mode .add-input-row {
-    margin-bottom: 8px;
-}
-
-body.focus-mode .add-input {
-    padding: 6px 10px;
-    font-size: 13px;
-}
-
 /* ==========================================================================
    Densidade da visao padrao + cartao "silencioso"
    As acoes e os marcadores de campos vazios so aparecem no hover / foco /
@@ -2474,20 +2429,20 @@ body.focus-mode .add-input {
 
 /* --- Densidade compacta (predefinicao) --- */
 body .task-card {
-    --task-card-pad-y: 7px;
-    --task-card-pad-x: 11px;
-    border-radius: 9px;
+    --task-card-pad-y: 5px;
+    --task-card-pad-x: 10px;
+    border-radius: 8px;
 }
 
 body .task-title {
-    font-size: 13.5px;
+    font-size: 13px;
     margin-bottom: 0;
 }
 
 body .tasks-list,
 body .completed-list,
 body .scheduled-list {
-    gap: 6px;
+    gap: 4px;
 }
 
 body .task-info-row {
@@ -2497,13 +2452,6 @@ body .task-info-row {
 /* Em ecra largo as listas ganham scroll proprio: o calendario fica a um passo,
    sem ter de percorrer a pagina toda */
 @media (min-width: 641px) {
-    body:not(.focus-mode) .tasks-list {
-        max-height: 58vh;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding-right: 4px;
-        scrollbar-width: thin;
-    }
 }
 
 /* ==========================================================================
@@ -2628,7 +2576,6 @@ body .task-info-row {
     width: 100%;
 }
 
-
 /* --- Cartao numa linha (densidade compacta): titulo e badges lado a lado --- */
 @media (min-width: 641px) {
     body .task-content {
@@ -2662,7 +2609,6 @@ body .task-info-row {
         margin-top: 4px;
     }
 }
-
 
 /* ==========================================================================
    Workspace: UM layout so. Listas e calendario sempre visiveis na mesma tela,
@@ -3004,7 +2950,6 @@ body .task-info-row {
     }
 }
 
-
 /* ==========================================================================
    Barra da app (substitui o header fixo): so pesquisa + menu ⋯, no topo da
    coluna das listas. Data, relogio e "Hoje" mudaram-se para a barra do calendario.
@@ -3019,11 +2964,6 @@ body .task-info-row {
 .app-bar .header-search {
     flex: 1 1 auto;
     min-width: 0;
-}
-
-/* no modo foco fica so o ⋯ */
-body.focus-mode .app-bar .header-search {
-    display: none;
 }
 
 /* ponto no ⋯ quando ha filtros ativos escondidos la dentro */
@@ -3334,4 +3274,118 @@ body.focus-mode .app-bar .header-search {
         opacity: 1;
         pointer-events: auto;
     }
+}
+
+/* Cabecalho de cada dia numa unica linha: SEG 24/08 · HOJE · 1h30 */
+@media (min-width: 1024px) {
+    body.workspace .week-cal-day-header {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: baseline;
+        justify-content: center;
+        gap: 5px;
+        padding: 5px 6px 4px;
+    }
+
+    body.workspace .week-cal-day-header .week-cal-dow {
+        font-size: 0.6875rem;
+    }
+
+    body.workspace .week-cal-today-pill {
+        padding: 1px 5px;
+        font-size: 0.5625rem;
+        line-height: 1.4;
+    }
+
+    body.workspace .week-cal-day-load {
+        margin-left: auto;
+    }
+
+    body.workspace .week-cal-day-header .week-cal-dow,
+    body.workspace .week-cal-day-header .week-cal-date-full,
+    body.workspace .week-cal-day-header .week-cal-day-load {
+        white-space: nowrap;
+    }
+}
+
+/* ==========================================================================
+   Concluir: em vez de checkbox, um ✓ que so aparece no hover/foco. Quando a
+   tarefa esta concluida o ✓ fica verde e permanente (e o indicador de estado).
+   ========================================================================== */
+.task-done-btn {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    background: transparent;
+    color: transparent;
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.task-card:hover .task-done-btn,
+.task-card:focus-within .task-done-btn,
+.task-card.keyboard-selected .task-done-btn {
+    opacity: 1;
+    color: var(--text-secondary);
+}
+
+.task-done-btn:hover {
+    border-color: var(--success);
+    color: var(--success);
+}
+
+/* concluida: ✓ verde sempre visivel, sem moldura */
+.task-done-btn.is-done {
+    opacity: 1;
+    border-color: transparent;
+    color: var(--success);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.task-card.completed .task-done-btn.is-done {
+    opacity: 1;
+}
+
+/* adiar para amanha */
+.task-btn-tomorrow {
+    font-weight: 700;
+}
+
+/* alvo de "desagendar": largar na lista um item vindo do calendario */
+.tasks-list.unschedule-hover {
+    outline: 2px dashed var(--blue-primary);
+    outline-offset: 4px;
+    border-radius: 10px;
+    background: rgba(124, 158, 255, 0.06);
+}
+
+/* accoes do editor: alinhadas a direita e compactas */
+.edit-form-actions {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 5px;
+    margin-top: 0;
+}
+
+.edit-form-actions button {
+    padding: 3px 9px;
+    font-size: 11.5px;
+    line-height: 1.5;
+}
+
+.edit-form-actions .edit-delete-btn {
+    margin-right: auto;
+}
+
+a.header-menu-choice {
+    display: block;
+    text-decoration: none;
 }

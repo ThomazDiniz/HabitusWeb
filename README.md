@@ -149,6 +149,24 @@ Os cartões usam a mesma linguagem do calendário: **hábitos amarelos** (`--str
 - **A faixa de itens sem hora fica fixa** por baixo dos cabeçalhos ao percorrer as horas (antes desaparecia no scroll); o `--week-cal-header-h` é medido em `requestAnimationFrame` para o encaixe ser exato.
 - **Cache por render** (`itemsForDayCached`): cada dia era recalculado 4× (janela horária, carga, itens sem hora, itens com hora).
 
+### Concluir, adiar e desagendar
+
+- **Concluir deixou de ser um checkbox**: é um **✓** que só aparece no hover, no foco ou no cartão selecionado pelo teclado. Concluída, o ✓ fica **verde e permanente** — é ele o indicador de estado (`.task-done-btn.is-done`). O <kbd>Enter</kbd> da navegação por teclado carrega nesse botão.
+- **Adiar um dia** (**→** na barra de ações): numa atividade empurra a `due_date` um dia (ou marca amanhã, se não tinha data); num hábito **move os dias da semana** um dia para a frente (seg/qua/sex → ter/qui/sáb). A hora mantém-se.
+- **Desagendar arrastando**: largar na lista um item vindo do **calendário** tira-o da grelha — a atividade perde data e hora, o hábito perde a hora. A lista destaca-se a tracejado durante o arrasto e a ação tem **Desfazer**. `DragDropManager.isCalendarDrag()` distingue a origem pelo tipo `application/x-habitus-source-ymd`, que só o calendário envia.
+
+### Editor do cartão em grelha
+
+O editor inline passou de uma linha por campo para uma **grelha de 4 colunas**: título · (prioridade + data + hora + duração numa linha) · (tags + ações). Nos hábitos, os dias da semana são **chips** compactos em vez de sete caixas com rótulo. Altura do cartão em edição: **~350px → 158px**.
+
+### Página «Sobre»
+
+`about.html` — página estática com o mesmo tema, ligada a partir do menu **⋯** (`ⓘ Sobre o Habitus`, abre em novo separador). Cobre a diferença entre hábitos e atividades, a tela, a escrita rápida, as ações do cartão, o calendário, os atalhos, o menu e onde ficam os dados.
+
+### Uma só vista
+
+O **modo foco foi removido** (com ele, o botão, a tecla **F** e todo o CSS de um segundo layout). Ficou só a vista padrão, com a densidade compacta que o foco usava — título de cartão a 13px, `padding` de 5px e listas com 4px de intervalo. No menu **⋯** resta **Trocar lados**, que troca a coluna das listas com a do calendário.
+
 ### Ajuda no sítio certo (botões «?»)
 
 - **Ao lado de cada título** (`Hábitos` / `Atividades`) há um **?** que abre um cartão curto a explicar a diferença, com exemplos:
@@ -161,7 +179,7 @@ Os cartões usam a mesma linguagem do calendário: **hábitos amarelos** (`--str
 
 - **Título e campo de adicionar na mesma linha**: `.column-topline` junta `Hábitos (3) ?` e o campo — poupa uma linha inteira por coluna.
 - **Título discreto**: 20px → **13px**, maiúsculas, com a **cor do tipo** (amarelo nos hábitos, azul nas atividades) — a coluna identifica-se pela cor, não pelo tamanho da letra.
-- **Botões + / ☀ dos dias só no hover** da respetiva coluna: o cabeçalho do calendário perdeu uma linha inteira e passou de ~90px para **60px** de altura, que viraram grelha útil.
+- **Botões + / ☀ dos dias só no hover** da respetiva coluna, e o **cabeçalho de cada dia numa única linha** (`SÁB. 29/08 · HOJE · 7h`, com data sem o ano — que já está no intervalo da barra): de ~90px para **25px**, ou seja, 65px que viraram grelha útil.
 - Resultado no mesmo ecrã: **13 atividades e 3 hábitos** visíveis sem rolar, e ~15 horas de grelha.
 
 ### Criação rápida com linguagem natural
@@ -273,7 +291,8 @@ Ignorados dentro de campos de texto e com modais abertos (`setupShortcuts` em `a
 
 ```
 HabitusWeb/
-├── index.html           # Marcação principal (header, listas, calendário, modais)
+├── index.html           # Marcação principal (barra da app, listas, calendário, modais)
+├── about.html           # Página «Sobre»: o que a app faz, ligada a partir do menu ⋯
 ├── styles.css           # Tema, layout, calendário, responsivo
 ├── i18n.js              # Motor i18n + pt-BR (fallback); carrega i18n/<lang>.js a pedido
 ├── i18n/                # en, es, zh, ja, de, it, pt, fr — um ficheiro por idioma

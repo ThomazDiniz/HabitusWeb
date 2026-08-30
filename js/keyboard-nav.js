@@ -163,9 +163,9 @@ const KeyboardNavManager = {
         const cards = this.getCards();
         const card = cards.find((c) => String(c.dataset.taskId) === String(this.selectedTaskId));
         if (!card) return;
-        const checkbox = card.querySelector('.task-checkbox');
-        if (checkbox) {
-            checkbox.click();
+        const doneBtn = card.querySelector('.task-done-btn');
+        if (doneBtn) {
+            doneBtn.click();
         }
     },
 

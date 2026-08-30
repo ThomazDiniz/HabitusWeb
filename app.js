@@ -42,7 +42,7 @@ function startApp() {
     }
 
     setupWorkspace();
-    setupFocusMode();
+    setupWorkspaceSide();
     setupHeaderMenu();
     setupShortcuts();
     setupHints();
@@ -99,7 +99,6 @@ function setupHints() {
  *   N        nova atividade      H  novo hábito
  *   Ctrl+Z   desfazer a última ação (a mesma do aviso com "Desfazer")
  *   Esc      limpar a pesquisa
- *   F        modo foco (ver setupFocusMode)
  */
 function setupShortcuts() {
     const isTypingIn = (el) =>
@@ -248,7 +247,7 @@ function setupWorkspace() {
     requestAnimationFrame(() => requestAnimationFrame(scrollCalendarToNow));
 }
 
-/** Fecha o painel do menu ⋯ (usado tambem ao entrar/sair do modo foco) */
+/** Fecha o painel do menu ⋯ */
 function closeHeaderMenu() {
     const panel = document.getElementById('header-menu-panel');
     const btn = document.getElementById('header-menu-btn');
@@ -333,13 +332,12 @@ function scrollCalendarToNow() {
     scroller.scrollTop = Math.max(0, y - headerH - usable / 2);
 }
 
-function setupFocusMode() {
-    const FOCUS_STORAGE_KEY = 'habitus-focus-mode';
+/** Lado do workspace: listas a esquerda (predefinicao) ou a direita */
+function setupWorkspaceSide() {
     const LAYOUT_STORAGE_KEY = 'habitus-workspace-side'; // 'lists-left' | 'lists-right'
-    const btn = document.getElementById('focus-toggle-btn');
     const layoutBtn = document.getElementById('focus-layout-btn');
 
-    const applyFocusLayout = (mode) => {
+    const applyWorkspaceSide = (mode) => {
         const swapped = mode === 'lists-right';
         document.body.classList.toggle('workspace-swapped', swapped);
         if (layoutBtn) {
@@ -355,77 +353,23 @@ function setupFocusMode() {
         requestAnimationFrame(() => requestAnimationFrame(scrollCalendarToNow));
     };
 
-    const applyFocusMode = (on) => {
-        document.body.classList.toggle('focus-mode', on);
-        closeHeaderMenu();
-        if (btn) {
-            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-            btn.classList.toggle('is-active', on);
-            btn.textContent = t('focusModeLabel');
-        }
-        try {
-            localStorage.setItem(FOCUS_STORAGE_KEY, on ? '1' : '0');
-        } catch (e) {
-            /* ignore */
-        }
-        if (on) {
-            // Depois do layout do modo foco, centrar a grelha na hora atual
-            requestAnimationFrame(() => requestAnimationFrame(scrollCalendarToNow));
-        }
-    };
-
-    if (btn) {
-        btn.addEventListener('click', () => {
-            applyFocusMode(!document.body.classList.contains('focus-mode'));
-        });
-    }
-
-    // Atalho de teclado: "F" alterna o modo foco (fora de campos de texto)
-    document.addEventListener('keydown', (e) => {
-        if (e.key !== 'f' && e.key !== 'F') return;
-        if (e.ctrlKey || e.metaKey || e.altKey) return;
-        const el = e.target;
-        if (
-            el &&
-            (el.tagName === 'INPUT' ||
-                el.tagName === 'TEXTAREA' ||
-                el.tagName === 'SELECT' ||
-                el.isContentEditable)
-        ) {
-            return;
-        }
-        e.preventDefault();
-        applyFocusMode(!document.body.classList.contains('focus-mode'));
-    });
-
     if (layoutBtn) {
         layoutBtn.addEventListener('click', () => {
-            applyFocusLayout(
+            applyWorkspaceSide(
                 document.body.classList.contains('workspace-swapped') ? 'lists-left' : 'lists-right'
             );
         });
     }
 
-    let storedLayout = 'lists-left';
+    let stored = 'lists-left';
     try {
-        if (localStorage.getItem(LAYOUT_STORAGE_KEY) === 'lists-right') {
-            storedLayout = 'lists-right';
-        }
+        if (localStorage.getItem(LAYOUT_STORAGE_KEY) === 'lists-right') stored = 'lists-right';
     } catch (e) {
         /* ignore */
     }
-    applyFocusLayout(storedLayout);
-
-    try {
-        if (localStorage.getItem(FOCUS_STORAGE_KEY) === '1') {
-            applyFocusMode(true);
-        }
-    } catch (e) {
-        /* ignore */
-    }
+    applyWorkspaceSide(stored);
 }
 
-// Setup all event listeners
 function setupEventListeners() {
     // Add task/daily - create with title from input (Enter or click +)
     const addTaskInput = document.getElementById('add-task-input');
@@ -534,9 +478,9 @@ function updateMenuViewControls() {
 
     const hBtn = document.getElementById('help-quickadd-btn');
     if (hBtn) hBtn.textContent = `? ${t('helpQuickAddBtn')}`;
+    const aLink = document.getElementById('about-link');
+    if (aLink) aLink.textContent = `ⓘ ${t('aboutLabel')}`;
 
-    const fBtn = document.getElementById('focus-toggle-btn');
-    if (fBtn) fBtn.textContent = t('focusModeLabel');
     const lBtn = document.getElementById('focus-layout-btn');
     if (lBtn) lBtn.textContent = t('swapSidesLabel');
 
