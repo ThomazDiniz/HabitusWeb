@@ -20,6 +20,7 @@
     --blue-hover: rgba(124, 158, 255, 0.2);
     --error: #ef4444;
     --success: #4ade80;
+    --success-light: #86efac;
     --streak: #fbbf24;
     --tag-bg: rgba(124, 158, 255, 0.15);
     --tag-border: rgba(124, 158, 255, 0.3);
@@ -3314,18 +3315,23 @@ body .task-info-row {
    ========================================================================== */
 .task-done-btn {
     flex: 0 0 auto;
-    width: 18px;
-    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
     padding: 0;
-    border: 1px solid var(--border-color);
+    border: 1.5px solid var(--border-color);
     border-radius: 50%;
     background: transparent;
     color: transparent;
-    font-size: 11px;
+    font-size: 15px;
+    font-weight: 700;
     line-height: 1;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+    transition: opacity 0.12s ease, color 0.12s ease, border-color 0.12s ease,
+        background 0.12s ease, transform 0.12s ease;
 }
 
 .task-card:hover .task-done-btn,
@@ -3336,21 +3342,28 @@ body .task-info-row {
 }
 
 .task-done-btn:hover {
-    border-color: var(--success);
-    color: var(--success);
+    border-color: var(--success-light);
+    background: rgba(134, 239, 172, 0.14);
+    color: var(--success-light);
+    transform: scale(1.06);
 }
 
-/* concluida: ✓ verde sempre visivel, sem moldura */
-.task-done-btn.is-done {
-    opacity: 1;
-    border-color: transparent;
-    color: var(--success);
-    font-size: 14px;
-    font-weight: 700;
-}
-
+/* concluida: ✓ verde claro, grande e sempre visivel — e o indicador de estado */
+.task-done-btn.is-done,
 .task-card.completed .task-done-btn.is-done {
     opacity: 1;
+    width: 26px;
+    height: 26px;
+    border-color: rgba(134, 239, 172, 0.5);
+    background: rgba(134, 239, 172, 0.16);
+    color: var(--success-light);
+    font-size: 17px;
+    text-shadow: 0 0 10px rgba(134, 239, 172, 0.35);
+}
+
+.task-done-btn.is-done:hover {
+    border-color: rgba(134, 239, 172, 0.75);
+    background: rgba(134, 239, 172, 0.24);
 }
 
 /* adiar para amanha */
